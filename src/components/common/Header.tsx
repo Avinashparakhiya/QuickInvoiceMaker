@@ -8,7 +8,7 @@ import {
   Platform,
   StatusBar,
 } from 'react-native';
-import { ArrowLeft, ChevronDown, Settings as SettingsIcon } from 'lucide-react-native';
+import { ArrowLeft, ChevronDown, Settings as SettingsIcon, Bell } from 'lucide-react-native';
 import { colors } from '../../theme/colors';
 import { typography } from '../../theme/typography';
 import { Organization } from '../../types';
@@ -21,7 +21,15 @@ interface HeaderProps {
   activeOrg?: Organization | null;
   onPressOrgSwitcher?: () => void;
   onPressSettings?: () => void;
+  onPressNotifications?: () => void;
   rightAction?: React.ReactNode;
+}
+
+function getGreeting(): string {
+  const hour = new Date().getHours();
+  if (hour < 12) return 'Good Morning!';
+  if (hour < 17) return 'Good Afternoon!';
+  return 'Good Evening!';
 }
 
 export const Header: React.FC<HeaderProps> = ({
@@ -32,6 +40,7 @@ export const Header: React.FC<HeaderProps> = ({
   activeOrg,
   onPressOrgSwitcher,
   onPressSettings,
+  onPressNotifications,
   rightAction,
 }) => {
   return (
@@ -43,27 +52,20 @@ export const Header: React.FC<HeaderProps> = ({
             onPress={onBack}
             style={styles.backButton}
           >
-            <ArrowLeft size={22} color={colors.text} />
+            <ArrowLeft size={20} color={colors.text} />
           </TouchableOpacity>
         ) : activeOrg ? (
           <TouchableOpacity
             activeOpacity={0.8}
             onPress={onPressOrgSwitcher}
-            style={styles.orgSwitcher}
+            style={styles.orgHeaderContainer}
           >
-            <View style={styles.orgAvatar}>
-              <Text style={styles.orgAvatarText}>
-                {activeOrg.name.charAt(0).toUpperCase()}
+            <Text style={styles.greeting}>{getGreeting()}</Text>
+            <View style={styles.orgNameRow}>
+              <Text numberOfLines={1} style={styles.orgName}>
+                {activeOrg.displayName || activeOrg.name}
               </Text>
-            </View>
-            <View style={styles.orgInfo}>
-              <View style={styles.orgNameRow}>
-                <Text numberOfLines={1} style={styles.orgName}>
-                  {activeOrg.displayName || activeOrg.name}
-                </Text>
-                <ChevronDown size={16} color={colors.textSecondary} style={styles.chevron} />
-              </View>
-              <Text style={styles.orgSubtitle}>Tap to switch business</Text>
+              <ChevronDown size={16} color={colors.textSecondary} style={styles.chevron} />
             </View>
           </TouchableOpacity>
         ) : (
@@ -89,15 +91,27 @@ export const Header: React.FC<HeaderProps> = ({
         <View style={styles.rightContainer}>
           {rightAction ? (
             rightAction
-          ) : onPressSettings ? (
-            <TouchableOpacity
-              activeOpacity={0.7}
-              onPress={onPressSettings}
-              style={styles.iconButton}
-            >
-              <SettingsIcon size={22} color={colors.textSecondary} />
-            </TouchableOpacity>
-          ) : null}
+          ) : (
+            <View style={styles.rightIcons}>
+              <TouchableOpacity
+                activeOpacity={0.7}
+                onPress={onPressNotifications}
+                style={styles.iconButton}
+              >
+                <Bell size={20} color={colors.textSecondary} />
+                <View style={styles.notificationDot} />
+              </TouchableOpacity>
+              {onPressSettings ? (
+                <TouchableOpacity
+                  activeOpacity={0.7}
+                  onPress={onPressSettings}
+                  style={styles.iconButton}
+                >
+                  <SettingsIcon size={20} color={colors.textSecondary} />
+                </TouchableOpacity>
+              ) : null}
+            </View>
+          )}
         </View>
       </View>
     </SafeAreaView>
@@ -110,7 +124,7 @@ const styles = StyleSheet.create({
     paddingTop: Platform.OS === 'android' ? StatusBar.currentHeight : 0,
   },
   container: {
-    height: 60,
+    height: 64,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
@@ -120,36 +134,27 @@ const styles = StyleSheet.create({
   backButton: {
     width: 40,
     height: 40,
-    borderRadius: 20,
+    borderRadius: 12,
     backgroundColor: '#FFFFFF',
     borderWidth: 1,
-    borderColor: colors.border,
+    borderColor: '#E2E8F0',
     alignItems: 'center',
     justifyContent: 'center',
+    shadowColor: '#000000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.03,
+    shadowRadius: 4,
+    elevation: 1,
   },
-  orgSwitcher: {
-    flexDirection: 'row',
-    alignItems: 'center',
+  orgHeaderContainer: {
     flex: 1,
-  },
-  orgAvatar: {
-    width: 38,
-    height: 38,
-    borderRadius: 12,
-    backgroundColor: colors.primarySoft,
-    borderWidth: 1.5,
-    borderColor: colors.primaryLight,
-    alignItems: 'center',
     justifyContent: 'center',
-    marginRight: 10,
   },
-  orgAvatarText: {
-    ...typography.h3,
-    color: colors.primaryDarker,
-    fontWeight: '700',
-  },
-  orgInfo: {
-    flex: 1,
+  greeting: {
+    fontSize: 12,
+    fontWeight: '500',
+    color: colors.textSecondary,
+    marginBottom: 2,
   },
   orgNameRow: {
     flexDirection: 'row',
@@ -159,15 +164,11 @@ const styles = StyleSheet.create({
     ...typography.bodySemiBold,
     color: colors.text,
     fontSize: 16,
-    maxWidth: 200,
+    fontWeight: '700',
+    maxWidth: 220,
   },
   chevron: {
     marginLeft: 4,
-  },
-  orgSubtitle: {
-    ...typography.captionRegular,
-    color: colors.textSecondary,
-    fontSize: 11,
   },
   titleContainer: {
     flex: 1,
@@ -189,6 +190,7 @@ const styles = StyleSheet.create({
   centerTitle: {
     ...typography.h3,
     color: colors.text,
+    fontWeight: '700',
   },
   centerSubtitle: {
     ...typography.captionRegular,
@@ -199,14 +201,34 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
   },
+  rightIcons: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
   iconButton: {
     width: 40,
     height: 40,
-    borderRadius: 20,
+    borderRadius: 12,
     backgroundColor: '#FFFFFF',
     borderWidth: 1,
-    borderColor: colors.border,
+    borderColor: '#E2E8F0',
     alignItems: 'center',
     justifyContent: 'center',
+    position: 'relative',
+    shadowColor: '#000000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.03,
+    shadowRadius: 4,
+    elevation: 1,
+  },
+  notificationDot: {
+    position: 'absolute',
+    top: 9,
+    right: 9,
+    width: 7,
+    height: 7,
+    borderRadius: 4,
+    backgroundColor: '#EF4444',
   },
 });

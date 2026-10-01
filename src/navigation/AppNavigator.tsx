@@ -19,6 +19,8 @@ import { BackupScreen } from '../features/settings/BackupScreen';
 import { EstimateListScreen } from '../features/estimates/EstimateListScreen';
 import { EstimateDetailScreen } from '../features/estimates/EstimateDetailScreen';
 import { EstimateCreateScreen } from '../features/estimates/EstimateCreateScreen';
+import { InvoicePreviewScreen } from '../features/invoices/InvoicePreviewScreen';
+import { TemplateGalleryScreen } from '../features/invoices/TemplateGalleryScreen';
 import { ExpenseListScreen } from '../features/expenses/ExpenseListScreen';
 import { ExpenseFormScreen } from '../features/expenses/ExpenseFormScreen';
 
@@ -39,6 +41,8 @@ export const AppNavigator: React.FC = () => {
         options={{ animation: 'slide_from_bottom' }}
       />
       <Stack.Screen name="InvoiceDetail" component={InvoiceDetailScreen} />
+      <Stack.Screen name="InvoicePreview" component={InvoicePreviewScreen} />
+      <Stack.Screen name="TemplateGallery" component={TemplateGalleryScreen} />
       <Stack.Screen name="CustomerList" component={CustomerListScreen} />
       <Stack.Screen name="CustomerDetail" component={CustomerDetailScreen} />
       <Stack.Screen

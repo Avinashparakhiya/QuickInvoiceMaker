@@ -1,6 +1,6 @@
 import React from 'react';
-import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
-import { Check, Plus, Building2 } from 'lucide-react-native';
+import { View, Text, StyleSheet, TouchableOpacity, ScrollView } from 'react-native';
+import { Check, Plus, Building2, ChevronRight } from 'lucide-react-native';
 import { BottomSheet } from './BottomSheet';
 import { useOrgStore } from '../../store/useOrgStore';
 import { colors } from '../../theme/colors';
@@ -12,6 +12,14 @@ interface OrgSwitcherModalProps {
   onClose: () => void;
   onAddNewOrg: () => void;
 }
+
+const ORG_AVATAR_COLORS = [
+  { bg: '#DCFCE7', text: '#15803D', border: '#86EFAC' },
+  { bg: '#E0F2FE', text: '#0369A1', border: '#7DD3FC' },
+  { bg: '#EDE9FE', text: '#6D28D9', border: '#C4B5FD' },
+  { bg: '#FEF3C7', text: '#B45309', border: '#FDE68A' },
+  { bg: '#FCE7F3', text: '#BE185D', border: '#FBCFE8' },
+];
 
 export const OrgSwitcherModal: React.FC<OrgSwitcherModalProps> = ({
   visible,
@@ -29,12 +37,13 @@ export const OrgSwitcherModal: React.FC<OrgSwitcherModalProps> = ({
     <BottomSheet
       visible={visible}
       onClose={onClose}
-      title="Switch Business"
-      subtitle="Select active profile for invoicing & reports"
+      title="Select Organization"
+      subtitle="Choose active profile for invoices & reports"
     >
-      <View style={styles.listContainer}>
-        {organizations.map((org: Organization) => {
+      <ScrollView style={styles.listContainer} showsVerticalScrollIndicator={false}>
+        {organizations.map((org: Organization, index: number) => {
           const isSelected = activeOrg?.id === org.id;
+          const colorTheme = ORG_AVATAR_COLORS[index % ORG_AVATAR_COLORS.length];
 
           return (
             <TouchableOpacity
@@ -42,40 +51,37 @@ export const OrgSwitcherModal: React.FC<OrgSwitcherModalProps> = ({
               activeOpacity={0.7}
               onPress={() => handleSelect(org.id)}
               style={[
-                styles.orgRow,
-                isSelected && styles.orgRowSelected,
+                styles.orgCard,
+                isSelected && styles.orgCardSelected,
               ]}
             >
               <View
                 style={[
                   styles.avatar,
-                  isSelected && styles.avatarSelected,
+                  { backgroundColor: colorTheme.bg, borderColor: colorTheme.border },
                 ]}
               >
-                <Text
-                  style={[
-                    styles.avatarText,
-                    isSelected && styles.avatarTextSelected,
-                  ]}
-                >
+                <Text style={[styles.avatarText, { color: colorTheme.text }]}>
                   {org.name.charAt(0).toUpperCase()}
                 </Text>
               </View>
 
               <View style={styles.orgDetails}>
-                <Text style={[styles.orgName, isSelected && styles.orgNameSelected]}>
-                  {org.name}
+                <Text numberOfLines={1} style={[styles.orgName, isSelected && styles.orgNameSelected]}>
+                  {org.displayName || org.name}
                 </Text>
-                <Text style={styles.orgMeta}>
-                  {org.currencySymbol} • {org.invoicePrefix} • {org.taxId || 'No Tax ID'}
+                <Text numberOfLines={1} style={styles.orgMeta}>
+                  {org.currencyCode} ({org.currencySymbol}) {org.taxId ? `| ${org.taxId}` : org.invoicePrefix ? `| Prefix: ${org.invoicePrefix}` : ''}
                 </Text>
               </View>
 
               {isSelected ? (
                 <View style={styles.checkCircle}>
-                  <Check size={16} color="#FFFFFF" strokeWidth={3} />
+                  <Check size={14} color="#FFFFFF" strokeWidth={3} />
                 </View>
-              ) : null}
+              ) : (
+                <ChevronRight size={18} color={colors.textMuted} />
+              )}
             </TouchableOpacity>
           );
         })}
@@ -88,59 +94,55 @@ export const OrgSwitcherModal: React.FC<OrgSwitcherModalProps> = ({
           }}
           style={styles.addOrgBtn}
         >
-          <View style={styles.addIconCircle}>
-            <Plus size={18} color={colors.primaryDark} strokeWidth={2.5} />
-          </View>
-          <Text style={styles.addOrgText}>Add New Business Profile</Text>
+          <Plus size={18} color={colors.primaryDarker} strokeWidth={2.5} style={styles.addIcon} />
+          <Text style={styles.addOrgText}>Add Organization</Text>
         </TouchableOpacity>
-      </View>
+      </ScrollView>
     </BottomSheet>
   );
 };
 
 const styles = StyleSheet.create({
   listContainer: {
+    maxHeight: 400,
     paddingBottom: 16,
   },
-  orgRow: {
+  orgCard: {
     flexDirection: 'row',
     alignItems: 'center',
     paddingVertical: 12,
     paddingHorizontal: 14,
     borderRadius: 14,
     backgroundColor: '#FFFFFF',
-    borderWidth: 1.5,
-    borderColor: colors.borderLight,
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
     marginBottom: 10,
+    shadowColor: '#000000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.03,
+    shadowRadius: 4,
+    elevation: 1,
   },
-  orgRowSelected: {
+  orgCardSelected: {
     borderColor: colors.primary,
-    backgroundColor: colors.primarySubtle,
+    backgroundColor: '#F0FDF4',
   },
   avatar: {
-    width: 44,
-    height: 44,
+    width: 42,
+    height: 42,
     borderRadius: 12,
-    backgroundColor: colors.gray100,
     alignItems: 'center',
     justifyContent: 'center',
     marginRight: 12,
-  },
-  avatarSelected: {
-    backgroundColor: colors.primarySoft,
     borderWidth: 1,
-    borderColor: colors.primaryLight,
   },
   avatarText: {
-    ...typography.h3,
-    color: colors.textSecondary,
+    fontSize: 18,
     fontWeight: '700',
-  },
-  avatarTextSelected: {
-    color: colors.primaryDarker,
   },
   orgDetails: {
     flex: 1,
+    paddingRight: 8,
   },
   orgName: {
     ...typography.bodySemiBold,
@@ -149,16 +151,18 @@ const styles = StyleSheet.create({
   },
   orgNameSelected: {
     color: colors.primaryDarker,
+    fontWeight: '700',
   },
   orgMeta: {
     ...typography.captionRegular,
     color: colors.textSecondary,
+    fontSize: 12,
     marginTop: 2,
   },
   checkCircle: {
-    width: 24,
-    height: 24,
-    borderRadius: 12,
+    width: 22,
+    height: 22,
+    borderRadius: 11,
     backgroundColor: colors.primary,
     alignItems: 'center',
     justifyContent: 'center',
@@ -166,27 +170,22 @@ const styles = StyleSheet.create({
   addOrgBtn: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingVertical: 14,
-    paddingHorizontal: 14,
-    borderRadius: 14,
-    borderWidth: 1.5,
-    borderColor: colors.border,
-    borderStyle: 'dashed',
-    backgroundColor: colors.backgroundSecondary,
-    marginTop: 4,
-  },
-  addIconCircle: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
-    backgroundColor: colors.primarySoft,
-    alignItems: 'center',
     justifyContent: 'center',
-    marginRight: 12,
+    paddingVertical: 13,
+    paddingHorizontal: 16,
+    borderRadius: 14,
+    backgroundColor: '#EAF8EF',
+    borderWidth: 1,
+    borderColor: '#86EFAC',
+    marginTop: 6,
+    marginBottom: 8,
+  },
+  addIcon: {
+    marginRight: 8,
   },
   addOrgText: {
-    ...typography.bodyMedium,
+    ...typography.bodySemiBold,
     color: colors.primaryDarker,
-    fontWeight: '600',
+    fontSize: 14,
   },
 });

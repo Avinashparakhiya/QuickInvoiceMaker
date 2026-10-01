@@ -1,7 +1,10 @@
-import * as SQLite from 'expo-sqlite';
 import { format, subDays, addDays } from 'date-fns';
 
-export async function seedInitialData(db: SQLite.SQLiteDatabase): Promise<void> {
+export interface DatabaseRunner {
+  runAsync(sql: string, ...params: any[]): Promise<any>;
+}
+
+export async function seedInitialData(db: DatabaseRunner): Promise<void> {
   const now = new Date();
   const todayStr = format(now, 'yyyy-MM-dd');
   const nowIso = now.toISOString();

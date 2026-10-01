@@ -1,19 +1,20 @@
 import React from 'react';
-import { View, Text, StyleSheet, ViewStyle } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, ViewStyle } from 'react-native';
 import { colors } from '../../theme/colors';
 import { typography } from '../../theme/typography';
 import { formatCurrency } from '../../utils/currency';
-import { Card } from '../common/Card';
 
-export type KPITone = 'green' | 'blue' | 'amber' | 'red';
+export type KPITone = 'green' | 'amber' | 'red' | 'blue' | 'slate';
 
 interface KPIStatCardProps {
   title: string;
-  amount: number;
+  amount?: number;
+  value?: string | number;
+  isCurrency?: boolean;
   currencySymbol?: string;
   count?: number;
   countLabel?: string;
-  icon: React.ReactNode;
+  icon?: React.ReactNode;
   tone?: KPITone;
   style?: ViewStyle;
   onPress?: () => void;
@@ -22,6 +23,8 @@ interface KPIStatCardProps {
 export const KPIStatCard: React.FC<KPIStatCardProps> = ({
   title,
   amount,
+  value,
+  isCurrency = true,
   currencySymbol = '$',
   count,
   countLabel = 'invoices',
@@ -30,103 +33,139 @@ export const KPIStatCard: React.FC<KPIStatCardProps> = ({
   style,
   onPress,
 }) => {
-  const getToneStyles = () => {
+  const getToneColors = () => {
     switch (tone) {
       case 'green':
         return {
-          iconBg: colors.primarySoft,
-          badgeBg: '#DCFCE7',
-          badgeText: '#15803D',
-        };
-      case 'blue':
-        return {
-          iconBg: '#E0F2FE',
-          badgeBg: '#E0F2FE',
-          badgeText: '#0369A1',
+          accent: '#22C55E',
+          softBg: '#DCFCE7',
+          textColor: '#15803D',
         };
       case 'amber':
         return {
-          iconBg: '#FEF3C7',
-          badgeBg: '#FEF3C7',
-          badgeText: '#B45309',
+          accent: '#F59E0B',
+          softBg: '#FEF3C7',
+          textColor: '#B45309',
         };
       case 'red':
         return {
-          iconBg: '#FEE2E2',
-          badgeBg: '#FEE2E2',
-          badgeText: '#B91C1C',
+          accent: '#EF4444',
+          softBg: '#FEE2E2',
+          textColor: '#B91C1C',
+        };
+      case 'blue':
+        return {
+          accent: '#3B82F6',
+          softBg: '#E0F2FE',
+          textColor: '#0369A1',
+        };
+      case 'slate':
+      default:
+        return {
+          accent: '#64748B',
+          softBg: '#F1F5F9',
+          textColor: '#475569',
         };
     }
   };
 
-  const toneConfig = getToneStyles();
+  const toneConfig = getToneColors();
+
+  const displayValue = isCurrency && amount !== undefined
+    ? formatCurrency(amount, currencySymbol, 'BEFORE', 2)
+    : value !== undefined
+    ? String(value)
+    : '0';
 
   return (
-    <Card
-      variant="elevated"
-      padding={14}
+    <TouchableOpacity
+      activeOpacity={0.7}
       onPress={onPress}
       style={[styles.card, style]}
     >
-      <View style={styles.topRow}>
-        <View style={[styles.iconBox, { backgroundColor: toneConfig.iconBg }]}>
-          {icon}
+      <View style={[styles.leftAccent, { backgroundColor: toneConfig.accent }]} />
+      
+      <View style={styles.cardContent}>
+        <View style={styles.topRow}>
+          <Text numberOfLines={1} style={styles.title}>
+            {title}
+          </Text>
+          {icon ? (
+            <View style={[styles.iconBox, { backgroundColor: toneConfig.softBg }]}>
+              {icon}
+            </View>
+          ) : null}
         </View>
-        {count !== undefined ? (
-          <View style={[styles.countBadge, { backgroundColor: toneConfig.badgeBg }]}>
-            <Text style={[styles.countText, { color: toneConfig.badgeText }]}>
-              {count} {countLabel}
-            </Text>
-          </View>
+
+        <Text numberOfLines={1} style={styles.amount}>
+          {displayValue}
+        </Text>
+
+        {count !== undefined && countLabel ? (
+          <Text numberOfLines={1} style={styles.countText}>
+            {count} {countLabel}
+          </Text>
         ) : null}
       </View>
-
-      <View style={styles.content}>
-        <Text style={styles.title}>{title}</Text>
-        <Text numberOfLines={1} style={styles.amount}>
-          {formatCurrency(amount, currencySymbol, 'BEFORE', 2)}
-        </Text>
-      </View>
-    </Card>
+    </TouchableOpacity>
   );
 };
 
 const styles = StyleSheet.create({
   card: {
     flex: 1,
-    minWidth: 140,
+    backgroundColor: '#FFFFFF',
+    borderRadius: 14,
+    overflow: 'hidden',
+    flexDirection: 'row',
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
+    shadowColor: '#000000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.04,
+    shadowRadius: 6,
+    elevation: 2,
+    minHeight: 88,
+  },
+  leftAccent: {
+    width: 4,
+    height: '100%',
+  },
+  cardContent: {
+    flex: 1,
+    paddingVertical: 12,
+    paddingHorizontal: 12,
+    justifyContent: 'center',
   },
   topRow: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    marginBottom: 10,
-  },
-  iconBox: {
-    width: 36,
-    height: 36,
-    borderRadius: 10,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  countBadge: {
-    paddingHorizontal: 8,
-    paddingVertical: 2,
-    borderRadius: 12,
-  },
-  countText: {
-    ...typography.micro,
-  },
-  content: {
-    marginTop: 2,
+    marginBottom: 6,
   },
   title: {
     ...typography.captionRegular,
     color: colors.textSecondary,
-    marginBottom: 4,
+    fontSize: 12,
+    fontWeight: '500',
+  },
+  iconBox: {
+    width: 26,
+    height: 26,
+    borderRadius: 8,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   amount: {
-    ...typography.kpiNumber,
+    ...typography.h3,
     color: colors.text,
+    fontSize: 18,
+    fontWeight: '700',
+    letterSpacing: -0.3,
+  },
+  countText: {
+    ...typography.micro,
+    color: colors.textMuted,
+    marginTop: 3,
   },
 });

@@ -59,11 +59,11 @@ export const SettingsScreen: React.FC = () => {
       title: 'Invoice Preferences',
       items: [
         {
-          title: 'Default Invoice Template',
-          subtitle: `${activeOrg?.defaultTemplateId || 'classic_green'} (12 styles available)`,
+          title: 'Invoice Templates Gallery',
+          subtitle: `Active: ${activeOrg?.defaultTemplateId || 'classic_green'} (12 visual styles)`,
           icon: <Palette size={20} color="#6D28D9" />,
           iconBg: '#EDE9FE',
-          onPress: () => navigation.navigate('OrganizationForm', { organizationId: activeOrg?.id }),
+          onPress: () => navigation.navigate('TemplateGallery', {}),
         },
         {
           title: 'Currency & Numbering',

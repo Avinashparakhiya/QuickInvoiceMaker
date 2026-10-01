@@ -5,16 +5,23 @@ import {
   StyleSheet,
   FlatList,
   TouchableOpacity,
+  SafeAreaView,
 } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
-import { Plus, Check, Building2, ChevronRight, Edit } from 'lucide-react-native';
+import { Plus, Check, ChevronRight, Edit3 } from 'lucide-react-native';
 import { Header } from '../../components/common/Header';
-import { Card } from '../../components/common/Card';
-import { Badge } from '../../components/common/Badge';
 import { useOrgStore } from '../../store/useOrgStore';
 import { colors } from '../../theme/colors';
 import { typography } from '../../theme/typography';
 import { Organization } from '../../types';
+
+const ORG_AVATAR_COLORS = [
+  { bg: '#DCFCE7', text: '#15803D', border: '#86EFAC' },
+  { bg: '#E0F2FE', text: '#0369A1', border: '#7DD3FC' },
+  { bg: '#EDE9FE', text: '#6D28D9', border: '#C4B5FD' },
+  { bg: '#FEF3C7', text: '#B45309', border: '#FDE68A' },
+  { bg: '#FCE7F3', text: '#BE185D', border: '#FBCFE8' },
+];
 
 export const OrganizationListScreen: React.FC = () => {
   const navigation = useNavigation<any>();
@@ -27,66 +34,75 @@ export const OrganizationListScreen: React.FC = () => {
   return (
     <View style={styles.container}>
       <Header
-        title="Business Profiles"
+        title="Organization"
         showBack
         onBack={() => navigation.goBack()}
-        rightAction={
-          <TouchableOpacity
-            activeOpacity={0.7}
-            onPress={() => navigation.navigate('OrganizationForm', {})}
-            style={styles.addBtn}
-          >
-            <Plus size={20} color="#FFFFFF" />
-          </TouchableOpacity>
-        }
       />
 
       <FlatList
         data={organizations}
         keyExtractor={(item) => item.id}
         contentContainerStyle={styles.listContent}
-        renderItem={({ item }) => {
+        showsVerticalScrollIndicator={false}
+        renderItem={({ item, index }) => {
           const isActive = activeOrg?.id === item.id;
+          const colorTheme = ORG_AVATAR_COLORS[index % ORG_AVATAR_COLORS.length];
+
           return (
-            <Card
-              variant="elevated"
-              padding={16}
+            <TouchableOpacity
+              activeOpacity={0.7}
               onPress={() => setActiveOrg(item.id)}
-              style={[styles.card, isActive && styles.activeCard]}
+              style={[
+                styles.orgCard,
+                isActive && styles.orgCardSelected,
+              ]}
             >
-              <View style={styles.row}>
-                <View style={[styles.avatar, isActive && styles.avatarActive]}>
-                  <Text style={[styles.avatarText, isActive && styles.avatarTextActive]}>
-                    {item.name.charAt(0).toUpperCase()}
-                  </Text>
-                </View>
+              <View
+                style={[
+                  styles.avatar,
+                  { backgroundColor: colorTheme.bg, borderColor: colorTheme.border },
+                ]}
+              >
+                <Text style={[styles.avatarText, { color: colorTheme.text }]}>
+                  {item.name.charAt(0).toUpperCase()}
+                </Text>
+              </View>
 
-                <View style={styles.details}>
-                  <View style={styles.titleRow}>
-                    <Text style={styles.name}>{item.name}</Text>
-                    {isActive ? (
-                      <Badge label="Active Profile" variant="paid" size="sm" />
-                    ) : null}
-                  </View>
-                  <Text style={styles.meta}>
-                    {item.currencySymbol} ({item.currencyCode}) • Prefix: {item.invoicePrefix}
-                  </Text>
-                  <Text style={styles.address}>
-                    {item.addressCity ? `${item.addressCity}, ${item.addressCountry || ''}` : 'No address set'}
-                  </Text>
-                </View>
+              <View style={styles.orgDetails}>
+                <Text numberOfLines={1} style={[styles.orgName, isActive && styles.orgNameSelected]}>
+                  {item.displayName || item.name}
+                </Text>
+                <Text numberOfLines={1} style={styles.orgMeta}>
+                  {item.currencyCode} {item.taxId ? `| ${item.taxId}` : item.invoicePrefix ? `| ${item.invoicePrefix}` : ''}
+                </Text>
+              </View>
 
+              {isActive ? (
+                <View style={styles.checkCircle}>
+                  <Check size={14} color="#FFFFFF" strokeWidth={3} />
+                </View>
+              ) : (
                 <TouchableOpacity
                   activeOpacity={0.7}
                   onPress={() => navigation.navigate('OrganizationForm', { organizationId: item.id })}
                   style={styles.editBtn}
                 >
-                  <Edit size={18} color={colors.textSecondary} />
+                  <Edit3 size={16} color={colors.textMuted} />
                 </TouchableOpacity>
-              </View>
-            </Card>
+              )}
+            </TouchableOpacity>
           );
         }}
+        ListFooterComponent={
+          <TouchableOpacity
+            activeOpacity={0.7}
+            onPress={() => navigation.navigate('OrganizationForm', {})}
+            style={styles.addOrgBtn}
+          >
+            <Plus size={18} color={colors.primaryDarker} strokeWidth={2.5} style={styles.addIcon} />
+            <Text style={styles.addOrgText}>Add Organization</Text>
+          </TouchableOpacity>
+        }
       />
     </View>
   );
@@ -97,81 +113,95 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: colors.background,
   },
-  addBtn: {
-    width: 38,
-    height: 38,
-    borderRadius: 19,
-    backgroundColor: colors.primary,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
   listContent: {
     padding: 16,
   },
-  card: {
-    marginBottom: 12,
-  },
-  activeCard: {
-    borderColor: colors.primary,
-    borderWidth: 1.5,
-    backgroundColor: colors.primarySubtle,
-  },
-  row: {
+  orgCard: {
     flexDirection: 'row',
     alignItems: 'center',
+    paddingVertical: 14,
+    paddingHorizontal: 14,
+    borderRadius: 14,
+    backgroundColor: '#FFFFFF',
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
+    marginBottom: 10,
+    shadowColor: '#000000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.03,
+    shadowRadius: 4,
+    elevation: 1,
+  },
+  orgCardSelected: {
+    borderColor: colors.primary,
+    backgroundColor: '#F0FDF4',
   },
   avatar: {
-    width: 48,
-    height: 48,
-    borderRadius: 14,
-    backgroundColor: colors.gray100,
+    width: 44,
+    height: 44,
+    borderRadius: 12,
     alignItems: 'center',
     justifyContent: 'center',
     marginRight: 12,
-  },
-  avatarActive: {
-    backgroundColor: colors.primarySoft,
-    borderWidth: 1.5,
-    borderColor: colors.primaryLight,
+    borderWidth: 1,
   },
   avatarText: {
-    ...typography.h2,
-    color: colors.textSecondary,
+    fontSize: 18,
+    fontWeight: '700',
   },
-  avatarTextActive: {
-    color: colors.primaryDarker,
-  },
-  details: {
+  orgDetails: {
     flex: 1,
     paddingRight: 8,
   },
-  titleRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    marginBottom: 2,
-  },
-  name: {
+  orgName: {
     ...typography.bodySemiBold,
     color: colors.text,
     fontSize: 15,
   },
-  meta: {
+  orgNameSelected: {
+    color: colors.primaryDarker,
+    fontWeight: '700',
+  },
+  orgMeta: {
     ...typography.captionRegular,
     color: colors.textSecondary,
+    fontSize: 12,
     marginTop: 2,
   },
-  address: {
-    ...typography.micro,
-    color: colors.textMuted,
-    marginTop: 2,
-  },
-  editBtn: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
-    backgroundColor: colors.gray100,
+  checkCircle: {
+    width: 22,
+    height: 22,
+    borderRadius: 11,
+    backgroundColor: colors.primary,
     alignItems: 'center',
     justifyContent: 'center',
+  },
+  editBtn: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: '#F1F5F9',
+  },
+  addOrgBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 14,
+    paddingHorizontal: 16,
+    borderRadius: 14,
+    backgroundColor: '#EAF8EF',
+    borderWidth: 1,
+    borderColor: '#86EFAC',
+    marginTop: 8,
+  },
+  addIcon: {
+    marginRight: 8,
+  },
+  addOrgText: {
+    ...typography.bodySemiBold,
+    color: colors.primaryDarker,
+    fontSize: 14,
   },
 });

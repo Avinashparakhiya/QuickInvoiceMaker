@@ -138,7 +138,7 @@ export const InvoiceDetailScreen: React.FC = () => {
         rightAction={
           <View style={{ flexDirection: 'row', gap: 8 }}>
             <TouchableOpacity
-              onPress={() => setPreviewModalVisible(true)}
+              onPress={() => navigation.navigate('InvoicePreview', { invoice })}
               style={styles.previewIconBtn}
             >
               <Eye size={18} color={colors.primaryDarker} />
@@ -187,7 +187,7 @@ export const InvoiceDetailScreen: React.FC = () => {
             </View>
             <Button
               title="Preview"
-              onPress={() => setPreviewModalVisible(true)}
+              onPress={() => navigation.navigate('InvoicePreview', { invoice })}
               size="sm"
               icon={<Eye size={16} color="#FFFFFF" />}
             />

@@ -65,6 +65,21 @@ export const BackupScreen: React.FC = () => {
   const [restoreModalVisible, setRestoreModalVisible] = useState(false);
   const [restoreJsonInput, setRestoreJsonInput] = useState('');
 
+  const triggerWebDownload = (content: string, filename: string, mimeType: string) => {
+    if (Platform.OS === 'web') {
+      const blob = new Blob([content], { type: mimeType });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.setAttribute('href', url);
+      link.setAttribute('download', filename);
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      return true;
+    }
+    return false;
+  };
+
   // 1. Export JSON Database Backup
   const handleExportJsonBackup = async () => {
     setLoading(true);
@@ -74,18 +89,15 @@ export const BackupScreen: React.FC = () => {
       const timestamp = format(new Date(), 'yyyyMMdd_HHmmss');
       const filename = `QuickInvoiceMaker_Backup_${timestamp}.json`;
 
-      if (await Sharing.isAvailableAsync()) {
-        // Share via temporary HTML/data or native sharing
-        await Share.share({
-          title: filename,
-          message: jsonStr,
-        });
-      } else {
-        await Share.share({
-          title: filename,
-          message: jsonStr,
-        });
+      if (triggerWebDownload(jsonStr, filename, 'application/json')) {
+        Alert.alert('Backup Exported', `Downloaded ${filename}`);
+        return;
       }
+
+      await Share.share({
+        title: filename,
+        message: jsonStr,
+      });
 
       Alert.alert('Backup Exported', 'Your full JSON database backup is ready and shared.');
     } catch (err: any) {
@@ -128,8 +140,13 @@ export const BackupScreen: React.FC = () => {
     try {
       const invs = await invoiceRepository.getAll({ orgId: activeOrg.id });
       const csv = generateInvoicesCsv(invs);
+      const filename = `Invoices_${format(new Date(), 'yyyyMMdd')}.csv`;
+      if (triggerWebDownload(csv, filename, 'text/csv')) {
+        Alert.alert('Exported', `Downloaded ${filename}`);
+        return;
+      }
       await Share.share({
-        title: `Invoices_${format(new Date(), 'yyyyMMdd')}.csv`,
+        title: filename,
         message: csv,
       });
     } catch (err: any) {
@@ -142,8 +159,13 @@ export const BackupScreen: React.FC = () => {
     try {
       const pms = await paymentRepository.getByOrg(activeOrg.id);
       const csv = generatePaymentsCsv(pms);
+      const filename = `Payments_${format(new Date(), 'yyyyMMdd')}.csv`;
+      if (triggerWebDownload(csv, filename, 'text/csv')) {
+        Alert.alert('Exported', `Downloaded ${filename}`);
+        return;
+      }
       await Share.share({
-        title: `Payments_${format(new Date(), 'yyyyMMdd')}.csv`,
+        title: filename,
         message: csv,
       });
     } catch (err: any) {
@@ -156,8 +178,13 @@ export const BackupScreen: React.FC = () => {
     try {
       const custs = await customerRepository.getByOrg(activeOrg.id);
       const csv = generateCustomersCsv(custs);
+      const filename = `Customers_${format(new Date(), 'yyyyMMdd')}.csv`;
+      if (triggerWebDownload(csv, filename, 'text/csv')) {
+        Alert.alert('Exported', `Downloaded ${filename}`);
+        return;
+      }
       await Share.share({
-        title: `Customers_${format(new Date(), 'yyyyMMdd')}.csv`,
+        title: filename,
         message: csv,
       });
     } catch (err: any) {
@@ -170,8 +197,13 @@ export const BackupScreen: React.FC = () => {
     try {
       const exps = await expenseRepository.getByOrg(activeOrg.id);
       const csv = generateExpensesCsv(exps);
+      const filename = `Expenses_${format(new Date(), 'yyyyMMdd')}.csv`;
+      if (triggerWebDownload(csv, filename, 'text/csv')) {
+        Alert.alert('Exported', `Downloaded ${filename}`);
+        return;
+      }
       await Share.share({
-        title: `Expenses_${format(new Date(), 'yyyyMMdd')}.csv`,
+        title: filename,
         message: csv,
       });
     } catch (err: any) {

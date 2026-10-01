@@ -73,6 +73,20 @@ export const ReportsScreen: React.FC = () => {
     try {
       const csvContent = generateInvoicesCsv(invoices);
       const filename = `Invoices_Report_${Date.now()}.csv`;
+
+      if (Platform.OS === 'web') {
+        const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.setAttribute('href', url);
+        link.setAttribute('download', filename);
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        Alert.alert('Exported', `Downloaded ${filename}`);
+        return;
+      }
+
       const fileUri = `${FileSystem.documentDirectory || ''}${filename}`;
 
       await FileSystem.writeAsStringAsync(fileUri, csvContent, {
