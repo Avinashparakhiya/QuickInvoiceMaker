@@ -1,0 +1,28 @@
+{
+  "expo": {
+    "name": "Quick Invoice Maker",
+    "slug": "quick-invoice-maker",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "light",
+    "splash": {
+      "backgroundColor": "#EAF8EF",
+      "resizeMode": "contain"
+    },
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.quickinvoicemaker.app"
+    },
+    "android": {
+      "adaptiveIcon": {
+        "backgroundColor": "#EAF8EF",
+        "foregroundImage": "./assets/icon.png"
+      },
+      "package": "com.quickinvoicemaker.app"
+    },
+    "web": {
+      "favicon": "./assets/favicon.png"
+    }
+  }
+}
