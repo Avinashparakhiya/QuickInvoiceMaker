@@ -6,7 +6,7 @@ import {
   FlatList,
   TouchableOpacity,
   RefreshControl,
-  ScrollView,
+  TextInput,
 } from 'react-native';
 import { useNavigation, useIsFocused } from '@react-navigation/native';
 import {
@@ -14,21 +14,19 @@ import {
   Plus,
   FileText,
   CreditCard,
-  Receipt,
   FileSpreadsheet,
-  ArrowRight,
-  TrendingUp,
-  Clock,
-  AlertTriangle,
-  CheckCircle2,
+  Receipt,
   X,
-  Filter,
-  DollarSign,
+  ArrowDownUp,
 } from 'lucide-react-native';
 import { Header } from '../../components/common/Header';
-import { Card } from '../../components/common/Card';
-import { Badge } from '../../components/common/Badge';
-import { Input } from '../../components/common/Input';
+import { TransactionSummary } from '../../components/transactions/TransactionSummary';
+import { TransactionTabs, TransactionTabKey } from '../../components/transactions/TransactionTabs';
+import { InvoiceFilterChips, FilterChipOption } from '../../components/transactions/InvoiceFilterChips';
+import { InvoiceListItem } from '../../components/transactions/InvoiceListItem';
+import { PaymentListItem } from '../../components/transactions/PaymentListItem';
+import { QuoteListItem } from '../../components/transactions/QuoteListItem';
+import { SortBottomSheet, SortOptionKey } from '../../components/transactions/SortBottomSheet';
 import { EmptyState } from '../../components/common/EmptyState';
 import { useOrgStore } from '../../store/useOrgStore';
 import { useInvoiceStore } from '../../store/useInvoiceStore';
@@ -37,44 +35,13 @@ import { estimateRepository } from '../../database/repositories/estimateReposito
 import { expenseRepository } from '../../database/repositories/expenseRepository';
 import { colors } from '../../theme/colors';
 import { typography } from '../../theme/typography';
-import { formatCurrency } from '../../utils/currency';
-import { formatDate } from '../../utils/dates';
 import { Invoice, Payment, Estimate, Expense } from '../../types';
 import { useResponsive } from '../../utils/useResponsive';
-
-type TabType = 'INVOICES' | 'PAYMENTS' | 'ESTIMATES' | 'EXPENSES';
-
-const AVATAR_COLORS = [
-  { bg: '#DCFCE7', text: '#15803D' }, // Green
-  { bg: '#E0F2FE', text: '#0369A1' }, // Sky Blue
-  { bg: '#FEF3C7', text: '#B45309' }, // Amber
-  { bg: '#FEE2E2', text: '#B91C1C' }, // Rose
-  { bg: '#F3E8FF', text: '#7E22CE' }, // Purple
-  { bg: '#FFEDD5', text: '#C2410C' }, // Orange
-];
-
-const getAvatarTheme = (name: string) => {
-  let hash = 0;
-  for (let i = 0; i < name.length; i++) {
-    hash = name.charCodeAt(i) + ((hash << 5) - hash);
-  }
-  const index = Math.abs(hash) % AVATAR_COLORS.length;
-  return AVATAR_COLORS[index];
-};
-
-const getInitials = (name: string) => {
-  if (!name) return 'WK';
-  const parts = name.trim().split(/\s+/);
-  if (parts.length >= 2) {
-    return (parts[0][0] + parts[1][0]).toUpperCase();
-  }
-  return name.slice(0, 2).toUpperCase();
-};
 
 export const TransactionsScreen: React.FC = () => {
   const navigation = useNavigation<any>();
   const isFocused = useIsFocused();
-  const { contentMaxWidth, isWideScreen } = useResponsive();
+  const { contentMaxWidth, horizontalPadding } = useResponsive();
   const { activeOrg } = useOrgStore();
   const {
     invoices,
@@ -85,11 +52,14 @@ export const TransactionsScreen: React.FC = () => {
     loadInvoices,
   } = useInvoiceStore();
 
-  const [activeTab, setActiveTab] = useState<TabType>('INVOICES');
+  const [activeTab, setActiveTab] = useState<TransactionTabKey>('INVOICES');
   const [payments, setPayments] = useState<Payment[]>([]);
   const [estimates, setEstimates] = useState<Estimate[]>([]);
   const [expenses, setExpenses] = useState<Expense[]>([]);
   const [refreshing, setRefreshing] = useState(false);
+  const [sortSheetVisible, setSortSheetVisible] = useState(false);
+  const [selectedSort, setSelectedSort] = useState<SortOptionKey>('NEWEST');
+
   const [paymentMethodFilter, setPaymentMethodFilter] = useState('ALL');
   const [estimateStatusFilter, setEstimateStatusFilter] = useState('ALL');
   const [expenseCategoryFilter, setExpenseCategoryFilter] = useState('ALL');
@@ -120,8 +90,8 @@ export const TransactionsScreen: React.FC = () => {
 
   const currencySymbol = activeOrg?.currencySymbol || '$';
 
-  // Financial summary metrics
-  const totalInvoiced = useMemo(() => {
+  // Dynamic Financial Summary Calculations
+  const totalBilled = useMemo(() => {
     return invoices.reduce((sum, inv) => sum + (inv.totalAmount || 0), 0);
   }, [invoices]);
 
@@ -134,7 +104,7 @@ export const TransactionsScreen: React.FC = () => {
   }, [invoices]);
 
   // Invoice Filters
-  const invoiceStatusFilters = [
+  const invoiceStatusFilterOptions: FilterChipOption[] = [
     { label: 'All', value: 'ALL' },
     { label: 'Paid', value: 'PAID' },
     { label: 'Unpaid', value: 'UNPAID' },
@@ -143,22 +113,8 @@ export const TransactionsScreen: React.FC = () => {
     { label: 'Draft', value: 'DRAFT' },
   ];
 
-  const filteredInvoices = useMemo(() => {
-    return invoices.filter((inv) => {
-      // Status filter
-      if (filterStatus !== 'ALL' && inv.status !== filterStatus) return false;
-      // Search term
-      if (!searchQuery.trim()) return true;
-      const term = searchQuery.toLowerCase();
-      return (
-        inv.invoiceNumber.toLowerCase().includes(term) ||
-        (inv.customerName && inv.customerName.toLowerCase().includes(term))
-      );
-    });
-  }, [invoices, filterStatus, searchQuery]);
-
   // Payment Filters
-  const paymentMethods = [
+  const paymentMethodFilterOptions: FilterChipOption[] = [
     { label: 'All', value: 'ALL' },
     { label: 'Bank Transfer', value: 'BANK_TRANSFER' },
     { label: 'UPI', value: 'UPI' },
@@ -167,6 +123,53 @@ export const TransactionsScreen: React.FC = () => {
     { label: 'Cheque', value: 'CHEQUE' },
   ];
 
+  // Quote Filters
+  const estimateStatusFilterOptions: FilterChipOption[] = [
+    { label: 'All', value: 'ALL' },
+    { label: 'Draft', value: 'DRAFT' },
+    { label: 'Sent', value: 'SENT' },
+    { label: 'Accepted', value: 'ACCEPTED' },
+    { label: 'Declined', value: 'DECLINED' },
+    { label: 'Converted', value: 'CONVERTED' },
+  ];
+
+  // Filtered & Sorted Invoices
+  const filteredInvoices = useMemo(() => {
+    let result = invoices.filter((inv) => {
+      // Status filter
+      if (filterStatus !== 'ALL' && inv.status !== filterStatus) {
+        return false;
+      }
+      // Search query
+      if (!searchQuery.trim()) return true;
+      const term = searchQuery.toLowerCase();
+      return (
+        inv.invoiceNumber.toLowerCase().includes(term) ||
+        (inv.customerName && inv.customerName.toLowerCase().includes(term))
+      );
+    });
+
+    // Sorting
+    result.sort((a, b) => {
+      switch (selectedSort) {
+        case 'OLDEST':
+          return new Date(a.issueDate).getTime() - new Date(b.issueDate).getTime();
+        case 'HIGHEST_AMOUNT':
+          return (b.totalAmount || 0) - (a.totalAmount || 0);
+        case 'LOWEST_AMOUNT':
+          return (a.totalAmount || 0) - (b.totalAmount || 0);
+        case 'DUE_DATE':
+          return new Date(a.dueDate || 0).getTime() - new Date(b.dueDate || 0).getTime();
+        case 'NEWEST':
+        default:
+          return new Date(b.issueDate).getTime() - new Date(a.issueDate).getTime();
+      }
+    });
+
+    return result;
+  }, [invoices, filterStatus, searchQuery, selectedSort]);
+
+  // Filtered Payments
   const filteredPayments = useMemo(() => {
     return payments.filter((p) => {
       if (paymentMethodFilter !== 'ALL' && p.paymentMethod !== paymentMethodFilter) return false;
@@ -181,16 +184,7 @@ export const TransactionsScreen: React.FC = () => {
     });
   }, [payments, paymentMethodFilter, searchQuery]);
 
-  // Estimate Filters
-  const estimateStatusFilters = [
-    { label: 'All', value: 'ALL' },
-    { label: 'Draft', value: 'DRAFT' },
-    { label: 'Sent', value: 'SENT' },
-    { label: 'Accepted', value: 'ACCEPTED' },
-    { label: 'Declined', value: 'DECLINED' },
-    { label: 'Converted', value: 'CONVERTED' },
-  ];
-
+  // Filtered Quotes
   const filteredEstimates = useMemo(() => {
     return estimates.filter((e) => {
       if (estimateStatusFilter !== 'ALL' && e.status !== estimateStatusFilter) return false;
@@ -203,30 +197,7 @@ export const TransactionsScreen: React.FC = () => {
     });
   }, [estimates, estimateStatusFilter, searchQuery]);
 
-  // Expense Filters
-  const expenseCategories = [
-    { label: 'All', value: 'ALL' },
-    { label: 'Office Supplies', value: 'Office Supplies' },
-    { label: 'Software / SaaS', value: 'Software / SaaS' },
-    { label: 'Travel & Food', value: 'Travel & Meals' },
-    { label: 'Utilities', value: 'Utilities' },
-    { label: 'Services', value: 'Professional Services' },
-  ];
-
-  const filteredExpenses = useMemo(() => {
-    return expenses.filter((exp) => {
-      if (expenseCategoryFilter !== 'ALL' && exp.category !== expenseCategoryFilter) return false;
-      if (!searchQuery.trim()) return true;
-      const term = searchQuery.toLowerCase();
-      return (
-        exp.category.toLowerCase().includes(term) ||
-        (exp.vendor && exp.vendor.toLowerCase().includes(term)) ||
-        (exp.description && exp.description.toLowerCase().includes(term))
-      );
-    });
-  }, [expenses, expenseCategoryFilter, searchQuery]);
-
-  const handleFabPress = () => {
+  const handleCreateAction = () => {
     switch (activeTab) {
       case 'INVOICES':
         navigation.navigate('InvoiceCreate', {});
@@ -234,7 +205,7 @@ export const TransactionsScreen: React.FC = () => {
       case 'PAYMENTS':
         navigation.navigate('RecordPayment', {});
         break;
-      case 'ESTIMATES':
+      case 'QUOTES':
         navigation.navigate('EstimateCreate', {});
         break;
       case 'EXPENSES':
@@ -243,559 +214,231 @@ export const TransactionsScreen: React.FC = () => {
     }
   };
 
-  const renderInvoiceItem = ({ item }: { item: Invoice }) => {
-    const avatarTheme = getAvatarTheme(item.customerName || 'Walkin');
-    const initials = getInitials(item.customerName || 'Walkin');
-
-    return (
-      <TouchableOpacity
-        activeOpacity={0.7}
-        onPress={() => navigation.navigate('InvoiceDetail', { invoiceId: item.id })}
-        style={styles.cardContainer}
-      >
-        <Card variant="elevated" padding={14} style={styles.card}>
-          <View style={styles.cardRow}>
-            {/* Avatar Initials */}
-            <View style={[styles.avatarCircle, { backgroundColor: avatarTheme.bg }]}>
-              <Text style={[styles.avatarText, { color: avatarTheme.text }]}>{initials}</Text>
-            </View>
-
-            {/* Middle info */}
-            <View style={styles.cardLeft}>
-              <View style={styles.titleRow}>
-                <Text numberOfLines={1} style={styles.customerName}>
-                  {item.customerName || 'Walk-in Customer'}
-                </Text>
-              </View>
-              <View style={styles.metaRow}>
-                <Text style={styles.invNumber}>{item.invoiceNumber}</Text>
-                <Text style={styles.dotSeparator}>•</Text>
-                <Text style={styles.datesText}>
-                  {formatDate(item.issueDate, 'MMM dd, yyyy')}
-                </Text>
-              </View>
-            </View>
-
-            {/* Right amount & status */}
-            <View style={styles.cardRight}>
-              <Text style={styles.totalAmount}>
-                {formatCurrency(item.totalAmount, item.currencySymbol)}
-              </Text>
-              <View style={styles.statusBadgeWrapper}>
-                <Badge status={item.status} size="sm" />
-              </View>
-              {item.balanceDue > 0 && item.status !== 'UNPAID' && (
-                <Text style={styles.balanceText}>
-                  Due: {formatCurrency(item.balanceDue, item.currencySymbol)}
-                </Text>
-              )}
-            </View>
-          </View>
-        </Card>
-      </TouchableOpacity>
-    );
-  };
-
-  const renderPaymentItem = ({ item }: { item: Payment }) => {
-    const avatarTheme = getAvatarTheme(item.customerName || 'Payment');
-    const initials = getInitials(item.customerName || 'Payment');
-
-    return (
-      <TouchableOpacity
-        activeOpacity={0.7}
-        onPress={() => navigation.navigate('PaymentList')}
-        style={styles.cardContainer}
-      >
-        <Card variant="elevated" padding={14} style={styles.card}>
-          <View style={styles.cardRow}>
-            {/* Avatar Circle */}
-            <View style={[styles.avatarCircle, { backgroundColor: avatarTheme.bg }]}>
-              <Text style={[styles.avatarText, { color: avatarTheme.text }]}>{initials}</Text>
-            </View>
-
-            {/* Middle Info */}
-            <View style={styles.cardLeft}>
-              <Text numberOfLines={1} style={styles.customerName}>
-                {item.customerName || 'Customer Payment'}
-              </Text>
-              <View style={styles.metaRow}>
-                <Text style={styles.invNumber}>{item.paymentNumber}</Text>
-                {item.invoiceNumber && (
-                  <>
-                    <Text style={styles.dotSeparator}>•</Text>
-                    <Text style={styles.datesText}>#{item.invoiceNumber}</Text>
-                  </>
-                )}
-                <Text style={styles.dotSeparator}>•</Text>
-                <Text style={styles.datesText}>{formatDate(item.paymentDate, 'MMM dd')}</Text>
-              </View>
-            </View>
-
-            {/* Right Side */}
-            <View style={styles.cardRight}>
-              <Text style={[styles.totalAmount, { color: colors.success }]}>
-                +{formatCurrency(item.amount, activeOrg?.currencySymbol || '$')}
-              </Text>
-              <View style={styles.methodBadge}>
-                <Text style={styles.methodText}>{item.paymentMethod.replace(/_/g, ' ')}</Text>
-              </View>
-            </View>
-          </View>
-        </Card>
-      </TouchableOpacity>
-    );
-  };
-
-  const renderEstimateItem = ({ item }: { item: Estimate }) => {
-    const avatarTheme = getAvatarTheme(item.customerName || 'Estimate');
-    const initials = getInitials(item.customerName || 'Estimate');
-
-    return (
-      <TouchableOpacity
-        activeOpacity={0.7}
-        onPress={() => navigation.navigate('EstimateDetail', { estimateId: item.id })}
-        style={styles.cardContainer}
-      >
-        <Card variant="elevated" padding={14} style={styles.card}>
-          <View style={styles.cardRow}>
-            <View style={[styles.avatarCircle, { backgroundColor: avatarTheme.bg }]}>
-              <Text style={[styles.avatarText, { color: avatarTheme.text }]}>{initials}</Text>
-            </View>
-
-            <View style={styles.cardLeft}>
-              <Text numberOfLines={1} style={styles.customerName}>
-                {item.customerName || 'Potential Client'}
-              </Text>
-              <View style={styles.metaRow}>
-                <Text style={styles.invNumber}>{item.estimateNumber}</Text>
-                <Text style={styles.dotSeparator}>•</Text>
-                <Text style={styles.datesText}>
-                  Valid till {formatDate(item.expiryDate, 'MMM dd')}
-                </Text>
-              </View>
-            </View>
-
-            <View style={styles.cardRight}>
-              <Text style={styles.totalAmount}>
-                {formatCurrency(item.totalAmount, item.currencySymbol || activeOrg?.currencySymbol || '$')}
-              </Text>
-              <View style={[
-                styles.estimateBadge,
-                item.status === 'ACCEPTED' ? { backgroundColor: '#DCFCE7' } :
-                item.status === 'CONVERTED' ? { backgroundColor: '#E0F2FE' } :
-                item.status === 'DECLINED' ? { backgroundColor: '#FEE2E2' } :
-                { backgroundColor: '#F1F5F9' }
-              ]}>
-                <Text style={[
-                  styles.estimateBadgeText,
-                  item.status === 'ACCEPTED' ? { color: '#15803D' } :
-                  item.status === 'CONVERTED' ? { color: '#0369A1' } :
-                  item.status === 'DECLINED' ? { color: '#B91C1C' } :
-                  { color: '#475569' }
-                ]}>
-                  {item.status}
-                </Text>
-              </View>
-            </View>
-          </View>
-        </Card>
-      </TouchableOpacity>
-    );
-  };
-
-  const renderExpenseItem = ({ item }: { item: Expense }) => {
-    const avatarTheme = getAvatarTheme(item.category || 'Expense');
-    const initials = getInitials(item.category || 'Expense');
-
-    return (
-      <TouchableOpacity
-        activeOpacity={0.7}
-        onPress={() => navigation.navigate('ExpenseList')}
-        style={styles.cardContainer}
-      >
-        <Card variant="elevated" padding={14} style={styles.card}>
-          <View style={styles.cardRow}>
-            <View style={[styles.avatarCircle, { backgroundColor: avatarTheme.bg }]}>
-              <Text style={[styles.avatarText, { color: avatarTheme.text }]}>{initials}</Text>
-            </View>
-
-            <View style={styles.cardLeft}>
-              <Text numberOfLines={1} style={styles.customerName}>
-                {item.vendor || item.description || item.category}
-              </Text>
-              <View style={styles.metaRow}>
-                <Text style={styles.invNumber}>{item.category}</Text>
-                <Text style={styles.dotSeparator}>•</Text>
-                <Text style={styles.datesText}>{formatDate(item.expenseDate, 'MMM dd, yyyy')}</Text>
-              </View>
-            </View>
-
-            <View style={styles.cardRight}>
-              <Text style={[styles.totalAmount, { color: colors.danger }]}>
-                -{formatCurrency(item.amount, activeOrg?.currencySymbol || '$')}
-              </Text>
-              {item.isBillable && (
-                <View style={styles.billableBadge}>
-                  <Text style={styles.billableText}>Billable</Text>
-                </View>
-              )}
-            </View>
-          </View>
-        </Card>
-      </TouchableOpacity>
-    );
+  const getSearchPlaceholder = () => {
+    switch (activeTab) {
+      case 'INVOICES':
+        return 'Search invoices, clients...';
+      case 'PAYMENTS':
+        return 'Search receipts, clients...';
+      case 'QUOTES':
+        return 'Search quotes, clients...';
+      case 'EXPENSES':
+        return 'Search expenses, vendors...';
+    }
   };
 
   return (
     <View style={styles.container}>
+      {/* 1. Header with Transactions Hub title, Org name, and 44px round green + button */}
       <Header
         title="Transactions Hub"
         subtitle={activeOrg?.displayName || activeOrg?.name || 'Workspace'}
         rightAction={
           <TouchableOpacity
-            activeOpacity={0.8}
-            onPress={handleFabPress}
-            style={styles.addBtn}
+            activeOpacity={0.85}
+            onPress={handleCreateAction}
+            style={styles.headerAddBtn}
           >
-            <Plus size={20} color="#FFFFFF" strokeWidth={2.5} />
+            <Plus size={22} color="#FFFFFF" strokeWidth={3} />
           </TouchableOpacity>
         }
       />
 
-      {/* Top Financial Summary Metrics Strip */}
-      <View style={[styles.summaryStrip, { maxWidth: contentMaxWidth }]}>
-        <View style={styles.summaryMetricItem}>
-          <Text style={styles.summaryMetricLabel}>Billed</Text>
-          <Text numberOfLines={1} style={styles.summaryMetricValue}>
-            {formatCurrency(totalInvoiced, currencySymbol)}
-          </Text>
-        </View>
-        <View style={styles.summaryDivider} />
-        <View style={styles.summaryMetricItem}>
-          <Text style={styles.summaryMetricLabel}>Collected</Text>
-          <Text numberOfLines={1} style={[styles.summaryMetricValue, { color: colors.success }]}>
-            {formatCurrency(totalCollected, currencySymbol)}
-          </Text>
-        </View>
-        <View style={styles.summaryDivider} />
-        <View style={styles.summaryMetricItem}>
-          <Text style={styles.summaryMetricLabel}>Outstanding</Text>
-          <Text numberOfLines={1} style={[styles.summaryMetricValue, { color: colors.warning }]}>
-            {formatCurrency(totalOutstanding, currencySymbol)}
-          </Text>
-        </View>
-      </View>
-
-      {/* Document Type Switcher Tabs */}
-      <View style={[styles.mainTabContainer, { maxWidth: contentMaxWidth }]}>
-        <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.mainTabRow}>
-          <TouchableOpacity
-            activeOpacity={0.7}
-            onPress={() => setActiveTab('INVOICES')}
-            style={[styles.mainTabBtn, activeTab === 'INVOICES' && styles.mainTabBtnActive]}
-          >
-            <FileText size={15} color={activeTab === 'INVOICES' ? colors.primaryDarker : colors.textSecondary} />
-            <Text style={[styles.mainTabText, activeTab === 'INVOICES' && styles.mainTabTextActive]}>
-              Invoices
-            </Text>
-            <View style={[styles.tabCountPill, activeTab === 'INVOICES' && styles.tabCountPillActive]}>
-              <Text style={[styles.tabCountText, activeTab === 'INVOICES' && styles.tabCountTextActive]}>
-                {invoices.length}
-              </Text>
-            </View>
-          </TouchableOpacity>
-
-          <TouchableOpacity
-            activeOpacity={0.7}
-            onPress={() => setActiveTab('PAYMENTS')}
-            style={[styles.mainTabBtn, activeTab === 'PAYMENTS' && styles.mainTabBtnActive]}
-          >
-            <CreditCard size={15} color={activeTab === 'PAYMENTS' ? colors.primaryDarker : colors.textSecondary} />
-            <Text style={[styles.mainTabText, activeTab === 'PAYMENTS' && styles.mainTabTextActive]}>
-              Payments
-            </Text>
-            <View style={[styles.tabCountPill, activeTab === 'PAYMENTS' && styles.tabCountPillActive]}>
-              <Text style={[styles.tabCountText, activeTab === 'PAYMENTS' && styles.tabCountTextActive]}>
-                {payments.length}
-              </Text>
-            </View>
-          </TouchableOpacity>
-
-          <TouchableOpacity
-            activeOpacity={0.7}
-            onPress={() => setActiveTab('ESTIMATES')}
-            style={[styles.mainTabBtn, activeTab === 'ESTIMATES' && styles.mainTabBtnActive]}
-          >
-            <FileSpreadsheet size={15} color={activeTab === 'ESTIMATES' ? colors.primaryDarker : colors.textSecondary} />
-            <Text style={[styles.mainTabText, activeTab === 'ESTIMATES' && styles.mainTabTextActive]}>
-              Quotes
-            </Text>
-            <View style={[styles.tabCountPill, activeTab === 'ESTIMATES' && styles.tabCountPillActive]}>
-              <Text style={[styles.tabCountText, activeTab === 'ESTIMATES' && styles.tabCountTextActive]}>
-                {estimates.length}
-              </Text>
-            </View>
-          </TouchableOpacity>
-
-          <TouchableOpacity
-            activeOpacity={0.7}
-            onPress={() => setActiveTab('EXPENSES')}
-            style={[styles.mainTabBtn, activeTab === 'EXPENSES' && styles.mainTabBtnActive]}
-          >
-            <Receipt size={15} color={activeTab === 'EXPENSES' ? colors.primaryDarker : colors.textSecondary} />
-            <Text style={[styles.mainTabText, activeTab === 'EXPENSES' && styles.mainTabTextActive]}>
-              Expenses
-            </Text>
-            <View style={[styles.tabCountPill, activeTab === 'EXPENSES' && styles.tabCountPillActive]}>
-              <Text style={[styles.tabCountText, activeTab === 'EXPENSES' && styles.tabCountTextActive]}>
-                {expenses.length}
-              </Text>
-            </View>
-          </TouchableOpacity>
-        </ScrollView>
-      </View>
-
-      {/* Search Input Section */}
-      <View style={[styles.searchSection, { maxWidth: contentMaxWidth }]}>
-        <Input
-          placeholder={
-            activeTab === 'INVOICES'
-              ? 'Search invoices, clients...'
-              : activeTab === 'PAYMENTS'
-              ? 'Search receipts, clients...'
-              : activeTab === 'ESTIMATES'
-              ? 'Search quotes, clients...'
-              : 'Search expenses, vendors...'
-          }
-          value={searchQuery}
-          onChangeText={setSearchQuery}
-          prefix={<Search size={18} color={colors.textSecondary} />}
-          suffix={
-            searchQuery ? (
-              <TouchableOpacity onPress={() => setSearchQuery('')}>
-                <X size={16} color={colors.textSecondary} />
-              </TouchableOpacity>
-            ) : undefined
-          }
-          containerStyle={styles.searchInput}
+      <View style={[styles.mainWrapper, { maxWidth: contentMaxWidth, paddingHorizontal: horizontalPadding }]}>
+        {/* 2. Top 3-Column Financial Summary (Billed, Collected, Outstanding) */}
+        <TransactionSummary
+          billed={totalBilled}
+          collected={totalCollected}
+          outstanding={totalOutstanding}
+          currencySymbol={currencySymbol}
         />
-      </View>
 
-      {/* Sub-Filter Chips */}
-      <View style={[styles.filtersSection, { maxWidth: contentMaxWidth }]}>
-        {activeTab === 'INVOICES' && (
-          <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.filtersList}>
-            {invoiceStatusFilters.map((chip) => (
+        {/* 3. Main Switcher Tabs (Invoices, Payments, Quotes) */}
+        <TransactionTabs
+          activeTab={activeTab}
+          onTabChange={setActiveTab}
+          invoiceCount={invoices.length}
+          paymentCount={payments.length}
+          quoteCount={estimates.length}
+          expenseCount={expenses.length > 0 ? expenses.length : undefined}
+        />
+
+        {/* 4. Search Bar & Sort Trigger */}
+        <View style={styles.searchSortRow}>
+          <View style={styles.searchContainer}>
+            <Search size={18} color="#64748B" style={styles.searchIcon} />
+            <TextInput
+              style={styles.searchInput}
+              placeholder={getSearchPlaceholder()}
+              placeholderTextColor="#94A3B8"
+              value={searchQuery}
+              onChangeText={setSearchQuery}
+            />
+            {searchQuery.length > 0 && (
               <TouchableOpacity
-                key={chip.value}
                 activeOpacity={0.7}
-                onPress={() => setFilterStatus(chip.value)}
-                style={[
-                  styles.filterChip,
-                  filterStatus === chip.value && styles.filterChipActive,
-                ]}
+                onPress={() => setSearchQuery('')}
+                style={styles.clearBtn}
               >
-                <Text
-                  style={[
-                    styles.filterChipText,
-                    filterStatus === chip.value && styles.filterChipTextActive,
-                  ]}
-                >
-                  {chip.label}
-                </Text>
+                <X size={16} color="#64748B" />
               </TouchableOpacity>
-            ))}
-          </ScrollView>
+            )}
+          </View>
+
+          {activeTab === 'INVOICES' && (
+            <TouchableOpacity
+              activeOpacity={0.75}
+              onPress={() => setSortSheetVisible(true)}
+              style={styles.sortBtn}
+            >
+              <ArrowDownUp size={18} color="#15803D" />
+            </TouchableOpacity>
+          )}
+        </View>
+
+        {/* 5. Horizontal Filter Chips */}
+        {activeTab === 'INVOICES' && (
+          <InvoiceFilterChips
+            options={invoiceStatusFilterOptions}
+            selectedValue={filterStatus}
+            onSelect={setFilterStatus}
+          />
         )}
 
         {activeTab === 'PAYMENTS' && (
-          <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.filtersList}>
-            {paymentMethods.map((chip) => (
-              <TouchableOpacity
-                key={chip.value}
-                activeOpacity={0.7}
-                onPress={() => setPaymentMethodFilter(chip.value)}
-                style={[
-                  styles.filterChip,
-                  paymentMethodFilter === chip.value && styles.filterChipActive,
-                ]}
-              >
-                <Text
-                  style={[
-                    styles.filterChipText,
-                    paymentMethodFilter === chip.value && styles.filterChipTextActive,
-                  ]}
-                >
-                  {chip.label}
-                </Text>
-              </TouchableOpacity>
-            ))}
-          </ScrollView>
+          <InvoiceFilterChips
+            options={paymentMethodFilterOptions}
+            selectedValue={paymentMethodFilter}
+            onSelect={setPaymentMethodFilter}
+          />
         )}
 
-        {activeTab === 'ESTIMATES' && (
-          <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.filtersList}>
-            {estimateStatusFilters.map((chip) => (
-              <TouchableOpacity
-                key={chip.value}
-                activeOpacity={0.7}
-                onPress={() => setEstimateStatusFilter(chip.value)}
-                style={[
-                  styles.filterChip,
-                  estimateStatusFilter === chip.value && styles.filterChipActive,
-                ]}
-              >
-                <Text
-                  style={[
-                    styles.filterChipText,
-                    estimateStatusFilter === chip.value && styles.filterChipTextActive,
-                  ]}
-                >
-                  {chip.label}
-                </Text>
-              </TouchableOpacity>
-            ))}
-          </ScrollView>
+        {activeTab === 'QUOTES' && (
+          <InvoiceFilterChips
+            options={estimateStatusFilterOptions}
+            selectedValue={estimateStatusFilter}
+            onSelect={setEstimateStatusFilter}
+          />
         )}
 
-        {activeTab === 'EXPENSES' && (
-          <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.filtersList}>
-            {expenseCategories.map((chip) => (
-              <TouchableOpacity
-                key={chip.value}
-                activeOpacity={0.7}
-                onPress={() => setExpenseCategoryFilter(chip.value)}
-                style={[
-                  styles.filterChip,
-                  expenseCategoryFilter === chip.value && styles.filterChipActive,
-                ]}
-              >
-                <Text
-                  style={[
-                    styles.filterChipText,
-                    expenseCategoryFilter === chip.value && styles.filterChipTextActive,
-                  ]}
-                >
-                  {chip.label}
-                </Text>
-              </TouchableOpacity>
-            ))}
-          </ScrollView>
+        {/* 6. Main List Content */}
+        {activeTab === 'INVOICES' && (
+          <FlatList
+            data={filteredInvoices}
+            keyExtractor={(item) => item.id}
+            renderItem={({ item }) => (
+              <InvoiceListItem
+                invoice={item}
+                onPress={() => navigation.navigate('InvoiceDetail', { invoiceId: item.id })}
+              />
+            )}
+            contentContainerStyle={styles.listContent}
+            showsVerticalScrollIndicator={false}
+            refreshControl={
+              <RefreshControl
+                refreshing={refreshing}
+                onRefresh={onRefresh}
+                tintColor={colors.primary}
+                colors={[colors.primary]}
+              />
+            }
+            ListEmptyComponent={
+              <EmptyState
+                icon={<FileText size={32} color="#15803D" />}
+                title={searchQuery || filterStatus !== 'ALL' ? 'No matching invoices' : 'No invoices yet'}
+                description={
+                  searchQuery || filterStatus !== 'ALL'
+                    ? 'Try changing your filters or search terms.'
+                    : 'Create your first professional invoice in seconds.'
+                }
+                actionTitle={searchQuery || filterStatus !== 'ALL' ? 'Clear Filters' : '+ Create Invoice'}
+                onAction={() => {
+                  if (searchQuery || filterStatus !== 'ALL') {
+                    setFilterStatus('ALL');
+                    setSearchQuery('');
+                  } else {
+                    navigation.navigate('InvoiceCreate', {});
+                  }
+                }}
+              />
+            }
+          />
+        )}
+
+        {activeTab === 'PAYMENTS' && (
+          <FlatList
+            data={filteredPayments}
+            keyExtractor={(item) => item.id}
+            renderItem={({ item }) => (
+              <PaymentListItem
+                payment={item}
+                currencySymbol={currencySymbol}
+                onPress={() => navigation.navigate('PaymentList')}
+              />
+            )}
+            contentContainerStyle={styles.listContent}
+            showsVerticalScrollIndicator={false}
+            refreshControl={
+              <RefreshControl
+                refreshing={refreshing}
+                onRefresh={onRefresh}
+                tintColor={colors.primary}
+                colors={[colors.primary]}
+              />
+            }
+            ListEmptyComponent={
+              <EmptyState
+                icon={<CreditCard size={32} color="#15803D" />}
+                title="No payments recorded"
+                description="Record client payments to keep your business records clean and up-to-date."
+                actionTitle="+ Record Payment"
+                onAction={() => navigation.navigate('RecordPayment', {})}
+              />
+            }
+          />
+        )}
+
+        {activeTab === 'QUOTES' && (
+          <FlatList
+            data={filteredEstimates}
+            keyExtractor={(item) => item.id}
+            renderItem={({ item }) => (
+              <QuoteListItem
+                quote={item}
+                currencySymbol={currencySymbol}
+                onPress={() => navigation.navigate('EstimateDetail', { estimateId: item.id })}
+              />
+            )}
+            contentContainerStyle={styles.listContent}
+            showsVerticalScrollIndicator={false}
+            refreshControl={
+              <RefreshControl
+                refreshing={refreshing}
+                onRefresh={onRefresh}
+                tintColor={colors.primary}
+                colors={[colors.primary]}
+              />
+            }
+            ListEmptyComponent={
+              <EmptyState
+                icon={<FileSpreadsheet size={32} color="#15803D" />}
+                title="No quotes found"
+                description="Create quotes/estimates and convert them to invoices upon customer approval."
+                actionTitle="+ Create Quote"
+                onAction={() => navigation.navigate('EstimateCreate', {})}
+              />
+            }
+          />
         )}
       </View>
 
-      {/* Active Tab List Content */}
-      {activeTab === 'INVOICES' && (
-        <FlatList
-          data={filteredInvoices}
-          keyExtractor={(item) => item.id}
-          renderItem={renderInvoiceItem}
-          contentContainerStyle={[styles.listContent, { maxWidth: contentMaxWidth }]}
-          showsVerticalScrollIndicator={false}
-          refreshControl={
-            <RefreshControl
-              refreshing={refreshing}
-              onRefresh={onRefresh}
-              tintColor={colors.primary}
-              colors={[colors.primary]}
-            />
-          }
-          ListEmptyComponent={
-            <EmptyState
-              icon={<FileText size={32} color={colors.primary} />}
-              title="No Invoices Found"
-              description={
-                searchQuery || filterStatus !== 'ALL'
-                  ? 'No invoices match your current search or filter.'
-                  : 'Create and send your first invoice in seconds.'
-              }
-              actionTitle="+ Create Invoice"
-              onAction={() => navigation.navigate('InvoiceCreate', {})}
-            />
-          }
-        />
-      )}
-
-      {activeTab === 'PAYMENTS' && (
-        <FlatList
-          data={filteredPayments}
-          keyExtractor={(item) => item.id}
-          renderItem={renderPaymentItem}
-          contentContainerStyle={[styles.listContent, { maxWidth: contentMaxWidth }]}
-          showsVerticalScrollIndicator={false}
-          refreshControl={
-            <RefreshControl
-              refreshing={refreshing}
-              onRefresh={onRefresh}
-              tintColor={colors.primary}
-              colors={[colors.primary]}
-            />
-          }
-          ListEmptyComponent={
-            <EmptyState
-              icon={<CreditCard size={32} color={colors.primary} />}
-              title="No Payments Found"
-              description="Record incoming payments to track real-time cashflow."
-              actionTitle="+ Record Payment"
-              onAction={() => navigation.navigate('RecordPayment', {})}
-            />
-          }
-        />
-      )}
-
-      {activeTab === 'ESTIMATES' && (
-        <FlatList
-          data={filteredEstimates}
-          keyExtractor={(item) => item.id}
-          renderItem={renderEstimateItem}
-          contentContainerStyle={[styles.listContent, { maxWidth: contentMaxWidth }]}
-          showsVerticalScrollIndicator={false}
-          refreshControl={
-            <RefreshControl
-              refreshing={refreshing}
-              onRefresh={onRefresh}
-              tintColor={colors.primary}
-              colors={[colors.primary]}
-            />
-          }
-          ListEmptyComponent={
-            <EmptyState
-              icon={<FileSpreadsheet size={32} color={colors.primary} />}
-              title="No Quotes Found"
-              description="Draft estimates and convert them directly to invoices upon client approval."
-              actionTitle="+ Create Estimate"
-              onAction={() => navigation.navigate('EstimateCreate', {})}
-            />
-          }
-        />
-      )}
-
-      {activeTab === 'EXPENSES' && (
-        <FlatList
-          data={filteredExpenses}
-          keyExtractor={(item) => item.id}
-          renderItem={renderExpenseItem}
-          contentContainerStyle={[styles.listContent, { maxWidth: contentMaxWidth }]}
-          showsVerticalScrollIndicator={false}
-          refreshControl={
-            <RefreshControl
-              refreshing={refreshing}
-              onRefresh={onRefresh}
-              tintColor={colors.primary}
-              colors={[colors.primary]}
-            />
-          }
-          ListEmptyComponent={
-            <EmptyState
-              icon={<Receipt size={32} color={colors.primary} />}
-              title="No Expenses Logged"
-              description="Log business expenses to maintain clean tax-ready books."
-              actionTitle="+ Log Expense"
-              onAction={() => navigation.navigate('ExpenseForm', {})}
-            />
-          }
-        />
-      )}
+      {/* Sort Bottom Sheet */}
+      <SortBottomSheet
+        visible={sortSheetVisible}
+        onClose={() => setSortSheetVisible(false)}
+        selectedSort={selectedSort}
+        onSelectSort={setSelectedSort}
+      />
     </View>
   );
 };
@@ -803,271 +446,70 @@ export const TransactionsScreen: React.FC = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: colors.background,
+    backgroundColor: '#EAF8EF',
   },
-  addBtn: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
-    backgroundColor: colors.primary,
+  headerAddBtn: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    backgroundColor: '#22C55E',
     alignItems: 'center',
     justifyContent: 'center',
-    shadowColor: colors.primary,
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.3,
-    shadowRadius: 4,
+    shadowColor: '#22C55E',
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.25,
+    shadowRadius: 6,
     elevation: 3,
   },
-  summaryStrip: {
+  mainWrapper: {
+    flex: 1,
+    width: '100%',
+    alignSelf: 'center',
+    paddingTop: 8,
+  },
+  searchSortRow: {
     flexDirection: 'row',
     alignItems: 'center',
+    gap: 8,
+    marginBottom: 10,
+  },
+  searchContainer: {
+    flex: 1,
+    height: 48,
     backgroundColor: '#FFFFFF',
-    marginHorizontal: 16,
-    marginTop: 10,
-    marginBottom: 4,
-    borderRadius: 14,
-    paddingVertical: 10,
-    paddingHorizontal: 14,
+    borderRadius: 12,
     borderWidth: 1,
     borderColor: '#D7E5DC',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.04,
-    shadowRadius: 3,
-    elevation: 1,
-    width: '100%',
-    alignSelf: 'center',
-  },
-  summaryMetricItem: {
-    flex: 1,
-    alignItems: 'center',
-  },
-  summaryMetricLabel: {
-    fontSize: 11,
-    color: colors.textSecondary,
-    fontWeight: '500',
-    marginBottom: 2,
-    textTransform: 'uppercase',
-    letterSpacing: 0.3,
-  },
-  summaryMetricValue: {
-    fontSize: 14,
-    fontWeight: '700',
-    color: colors.text,
-  },
-  summaryDivider: {
-    width: 1,
-    height: 24,
-    backgroundColor: '#E2E8F0',
-  },
-  mainTabContainer: {
-    paddingHorizontal: 16,
-    paddingTop: 10,
-    width: '100%',
-    alignSelf: 'center',
-  },
-  mainTabRow: {
-    flexDirection: 'row',
-    gap: 8,
-  },
-  mainTabBtn: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 6,
-    paddingVertical: 8,
     paddingHorizontal: 12,
+  },
+  searchIcon: {
+    marginRight: 8,
+  },
+  searchInput: {
+    flex: 1,
+    height: '100%',
+    fontSize: 13,
+    color: '#0F172A',
+    fontWeight: '500',
+  },
+  clearBtn: {
+    padding: 4,
+  },
+  sortBtn: {
+    width: 48,
+    height: 48,
     borderRadius: 12,
     backgroundColor: '#FFFFFF',
     borderWidth: 1,
     borderColor: '#D7E5DC',
-  },
-  mainTabBtnActive: {
-    backgroundColor: '#DCFCE7',
-    borderColor: colors.primary,
-  },
-  mainTabText: {
-    ...typography.caption,
-    color: colors.textSecondary,
-    fontSize: 13,
-    fontWeight: '600',
-  },
-  mainTabTextActive: {
-    color: colors.primaryDarker,
-    fontWeight: '700',
-  },
-  tabCountPill: {
-    backgroundColor: '#F1F5F9',
-    paddingHorizontal: 6,
-    paddingVertical: 1,
-    borderRadius: 10,
-  },
-  tabCountPillActive: {
-    backgroundColor: colors.primary,
-  },
-  tabCountText: {
-    fontSize: 11,
-    fontWeight: '700',
-    color: colors.textSecondary,
-  },
-  tabCountTextActive: {
-    color: '#FFFFFF',
-  },
-  searchSection: {
-    paddingHorizontal: 16,
-    paddingTop: 10,
-    width: '100%',
-    alignSelf: 'center',
-  },
-  searchInput: {
-    marginBottom: 2,
-  },
-  filtersSection: {
-    paddingVertical: 6,
-    width: '100%',
-    alignSelf: 'center',
-  },
-  filtersList: {
-    paddingHorizontal: 16,
-    gap: 8,
-  },
-  filterChip: {
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: 16,
-    backgroundColor: '#FFFFFF',
-    borderWidth: 1,
-    borderColor: '#D7E5DC',
-  },
-  filterChipActive: {
-    backgroundColor: colors.primaryDarker,
-    borderColor: colors.primaryDarker,
-  },
-  filterChipText: {
-    ...typography.caption,
-    color: colors.textSecondary,
-    fontSize: 12,
-    fontWeight: '500',
-  },
-  filterChipTextActive: {
-    color: '#FFFFFF',
-    fontWeight: '700',
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   listContent: {
-    paddingHorizontal: 16,
     paddingTop: 4,
-    paddingBottom: 32,
+    paddingBottom: 96,
     flexGrow: 1,
-    width: '100%',
-    alignSelf: 'center',
-  },
-  cardContainer: {
-    marginBottom: 10,
-  },
-  card: {
-    borderRadius: 14,
-    borderWidth: 1,
-    borderColor: '#D7E5DC',
-  },
-  cardRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  avatarCircle: {
-    width: 42,
-    height: 42,
-    borderRadius: 21,
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginRight: 12,
-  },
-  avatarText: {
-    fontSize: 14,
-    fontWeight: '700',
-  },
-  cardLeft: {
-    flex: 1,
-    paddingRight: 8,
-  },
-  titleRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 2,
-  },
-  customerName: {
-    ...typography.bodySemiBold,
-    color: colors.text,
-    fontSize: 14,
-  },
-  metaRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    flexWrap: 'wrap',
-  },
-  invNumber: {
-    fontSize: 12,
-    fontWeight: '600',
-    color: colors.primaryDarker,
-  },
-  dotSeparator: {
-    marginHorizontal: 5,
-    color: '#94A3B8',
-    fontSize: 10,
-  },
-  datesText: {
-    fontSize: 12,
-    color: colors.textSecondary,
-  },
-  cardRight: {
-    alignItems: 'flex-end',
-    justifyContent: 'center',
-  },
-  totalAmount: {
-    ...typography.h3,
-    color: colors.text,
-    fontSize: 15,
-    fontWeight: '700',
-  },
-  statusBadgeWrapper: {
-    marginTop: 4,
-  },
-  balanceText: {
-    fontSize: 11,
-    color: colors.danger,
-    fontWeight: '600',
-    marginTop: 2,
-  },
-  methodBadge: {
-    backgroundColor: '#FEF3C7',
-    paddingHorizontal: 6,
-    paddingVertical: 2,
-    borderRadius: 6,
-    marginTop: 4,
-  },
-  methodText: {
-    ...typography.micro,
-    color: '#B45309',
-    fontWeight: '700',
-  },
-  estimateBadge: {
-    paddingHorizontal: 6,
-    paddingVertical: 2,
-    borderRadius: 6,
-    marginTop: 4,
-  },
-  estimateBadgeText: {
-    ...typography.micro,
-    fontWeight: '700',
-  },
-  billableBadge: {
-    backgroundColor: '#E0F2FE',
-    paddingHorizontal: 6,
-    paddingVertical: 2,
-    borderRadius: 6,
-    marginTop: 4,
-  },
-  billableText: {
-    ...typography.micro,
-    color: '#0369A1',
-    fontWeight: '700',
   },
 });

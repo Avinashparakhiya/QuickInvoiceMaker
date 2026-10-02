@@ -92,13 +92,16 @@ export const KPIStatCard: React.FC<KPIStatCardProps> = ({
             <View style={[styles.iconBox, { backgroundColor: toneConfig.softBg }]}>
               {icon}
             </View>
-          ) : null}
+          ) : (
+            <View style={[styles.indicatorDot, { backgroundColor: toneConfig.accent }]} />
+          )}
         </View>
 
         <Text
           numberOfLines={1}
           style={[
             styles.amount,
+            tone === 'green' && { color: '#15803D' },
             tone === 'amber' && { color: '#D97706' },
             tone === 'red' && { color: '#EF4444' },
           ]}
@@ -148,6 +151,11 @@ const styles = StyleSheet.create({
     color: colors.textSecondary,
     fontSize: 12,
     fontWeight: '500',
+  },
+  indicatorDot: {
+    width: 8,
+    height: 8,
+    borderRadius: 4,
   },
   iconBox: {
     width: 26,

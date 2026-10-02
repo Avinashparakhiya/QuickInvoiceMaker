@@ -1,10 +1,9 @@
-import React from 'react';
+import React, { useState, useMemo } from 'react';
 import {
   View,
-  Text,
   StyleSheet,
   ScrollView,
-  TouchableOpacity,
+  Alert,
 } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import {
@@ -13,48 +12,70 @@ import {
   Percent,
   QrCode,
   Palette,
-  ShieldCheck,
   Database,
   Info,
-  ChevronRight,
   Hash,
   Bell,
   Lock,
-  FileSpreadsheet,
   Layers,
-  ArrowRight,
   PenTool,
+  Users,
+  Sun,
 } from 'lucide-react-native';
 import { Header } from '../../components/common/Header';
-import { Card } from '../../components/common/Card';
-import { Badge } from '../../components/common/Badge';
+import { ActiveOrgBanner } from '../../components/settings/ActiveOrgBanner';
+import { SettingsSectionCard, SettingItem } from '../../components/settings/SettingsSectionCard';
+import { SettingsSearchBar } from '../../components/settings/SettingsSearchBar';
+import { OrgSwitcherModal } from '../../components/common/OrgSwitcherModal';
 import { useOrgStore } from '../../store/useOrgStore';
 import { colors } from '../../theme/colors';
-import { typography } from '../../theme/typography';
 import { useResponsive } from '../../utils/useResponsive';
+
+interface SectionGroup {
+  title: string;
+  items: SettingItem[];
+}
 
 export const SettingsScreen: React.FC = () => {
   const navigation = useNavigation<any>();
   const { activeOrg } = useOrgStore();
-  const { contentMaxWidth, isWideScreen } = useResponsive();
+  const { contentMaxWidth, horizontalPadding, isWideScreen } = useResponsive();
+  const [searchQuery, setSearchQuery] = useState('');
+  const [orgSwitcherVisible, setOrgSwitcherVisible] = useState(false);
 
-  const settingSections = [
+  const orgName = activeOrg?.displayName || activeOrg?.name || 'Default Workspace';
+  const currencyCode = activeOrg?.currencyCode || 'USD';
+  const currencySymbol = activeOrg?.currencySymbol || '$';
+  const taxId = activeOrg?.taxId || '';
+  const taxMode = activeOrg?.taxType || 'Exclusive';
+  const invoicePrefix = activeOrg?.invoicePrefix || 'INV-';
+  const nextInvoiceNumber = activeOrg?.invoiceNextNumber || 1001;
+  const defaultTemplate = activeOrg?.defaultTemplateId || 'classic_green';
+
+  const allSections: SectionGroup[] = [
     {
       title: 'Business & Organization',
       items: [
         {
           title: 'Organization Profiles',
-          subtitle: `Active: ${activeOrg?.displayName || activeOrg?.name || 'Default Business'}`,
-          icon: <Building2 size={20} color={colors.primaryDarker} />,
+          subtitle: `Active: ${orgName}`,
+          icon: <Building2 size={20} color="#15803D" strokeWidth={2.2} />,
           iconBg: '#DCFCE7',
           onPress: () => navigation.navigate('OrganizationList'),
         },
         {
           title: 'Edit Current Profile',
           subtitle: 'Address, business contact, tax ID & email',
-          icon: <Layers size={20} color="#0369A1" />,
+          icon: <Layers size={20} color="#0369A1" strokeWidth={2.2} />,
           iconBg: '#E0F2FE',
           onPress: () => navigation.navigate('OrganizationForm', { organizationId: activeOrg?.id }),
+        },
+        {
+          title: 'Customers & Contacts',
+          subtitle: 'Manage clients and billing contacts',
+          icon: <Users size={20} color="#7E22CE" strokeWidth={2.2} />,
+          iconBg: '#F3E8FF',
+          onPress: () => navigation.navigate('CustomerList'),
         },
       ],
     },
@@ -63,24 +84,26 @@ export const SettingsScreen: React.FC = () => {
       items: [
         {
           title: 'Currency & Formatting',
-          subtitle: `${activeOrg?.currencyCode || 'USD'} (${activeOrg?.currencySymbol || '$'}) • Standard format`,
-          icon: <DollarSign size={20} color="#15803D" />,
+          subtitle: `${currencyCode} (${currencySymbol}) • Standard format`,
+          icon: <DollarSign size={20} color="#15803D" strokeWidth={2.2} />,
           iconBg: '#DCFCE7',
           onPress: () => navigation.navigate('CurrencySettings'),
         },
         {
           title: 'Tax & GST Settings',
-          subtitle: activeOrg?.taxId
-            ? `Tax ID: ${activeOrg.taxId} • Mode: ${activeOrg.taxType || 'Exclusive'}`
+          subtitle: taxId
+            ? `Tax ID: ${taxId} • Mode: ${taxMode}`
             : 'Configure tax calculations, GSTIN & VAT',
-          icon: <Percent size={20} color="#B45309" />,
+          icon: <Percent size={20} color="#B45309" strokeWidth={2.2} />,
           iconBg: '#FEF3C7',
           onPress: () => navigation.navigate('TaxSettings'),
         },
         {
           title: 'Bank & Receiving Payment Info',
-          subtitle: activeOrg?.bankName ? `${activeOrg.bankName} • UPI: ${activeOrg.upiVpa || 'Active'}` : 'Configure receiving bank details',
-          icon: <QrCode size={20} color="#0369A1" />,
+          subtitle: activeOrg?.bankName
+            ? `${activeOrg.bankName} • UPI: ${activeOrg.upiVpa || 'Configured'}`
+            : 'Configure receiving bank details & UPI',
+          icon: <QrCode size={20} color="#0284C7" strokeWidth={2.2} />,
           iconBg: '#E0F2FE',
           onPress: () => navigation.navigate('PaymentSettings'),
         },
@@ -91,22 +114,22 @@ export const SettingsScreen: React.FC = () => {
       items: [
         {
           title: 'Invoice Numbering & Terms',
-          subtitle: `Prefix: ${activeOrg?.invoicePrefix || 'INV-'} • Next: #${activeOrg?.invoiceNextNumber || '1001'}`,
-          icon: <Hash size={20} color="#7E22CE" />,
+          subtitle: `Prefix: ${invoicePrefix} • Next: #${nextInvoiceNumber}`,
+          icon: <Hash size={20} color="#7E22CE" strokeWidth={2.2} />,
           iconBg: '#F3E8FF',
           onPress: () => navigation.navigate('InvoiceNumbering'),
         },
         {
           title: 'Invoice Templates Gallery',
-          subtitle: `Active style: ${activeOrg?.defaultTemplateId || 'classic_green'} (12 styles available)`,
-          icon: <Palette size={20} color="#C2410C" />,
+          subtitle: `Active style: ${defaultTemplate.replace(/_/g, ' ')} (12 styles)`,
+          icon: <Palette size={20} color="#C2410C" strokeWidth={2.2} />,
           iconBg: '#FFEDD5',
           onPress: () => navigation.navigate('TemplateGallery', {}),
         },
         {
           title: 'Digital Signature & Stamp',
-          subtitle: activeOrg?.signatureUri ? 'Handwritten signature configured' : 'Configure signature & company stamp',
-          icon: <PenTool size={20} color="#15803D" />,
+          subtitle: activeOrg?.signatureUri ? 'Digital signature configured' : 'Configure signature & company stamp',
+          icon: <PenTool size={20} color="#15803D" strokeWidth={2.2} />,
           iconBg: '#DCFCE7',
           onPress: () => navigation.navigate('SignatureSettings'),
         },
@@ -118,33 +141,35 @@ export const SettingsScreen: React.FC = () => {
         {
           title: 'Notifications & Reminders',
           subtitle: 'Due date alerts, overdue notices & summaries',
-          icon: <Bell size={20} color="#B45309" />,
+          icon: <Bell size={20} color="#B45309" strokeWidth={2.2} />,
           iconBg: '#FEF3C7',
           onPress: () => navigation.navigate('NotificationSettings'),
         },
         {
           title: 'Security & App Lock',
           subtitle: 'Biometric / PIN passcode & local sandbox shield',
-          icon: <Lock size={20} color="#15803D" />,
+          icon: <Lock size={20} color="#15803D" strokeWidth={2.2} />,
           iconBg: '#DCFCE7',
           onPress: () => navigation.navigate('SecuritySettings'),
         },
         {
-          title: 'Backup & Data Export',
+          title: 'Data & Backup',
           subtitle: 'Export CSV spreadsheets & full JSON database backup',
-          icon: <Database size={20} color="#0369A1" />,
+          icon: <Database size={20} color="#0369A1" strokeWidth={2.2} />,
           iconBg: '#E0F2FE',
           onPress: () => navigation.navigate('Backup'),
         },
-      ],
-    },
-    {
-      title: 'About & Information',
-      items: [
+        {
+          title: 'Appearance',
+          subtitle: 'Light mint green theme (Active)',
+          icon: <Sun size={20} color="#D97706" strokeWidth={2.2} />,
+          iconBg: '#FEF3C7',
+          onPress: () => Alert.alert('Appearance', 'Quick Invoice Maker uses the curated Light Mint Green design system for high readability and print parity.'),
+        },
         {
           title: 'About Quick Invoice Maker',
           subtitle: 'Version 1.0.0 • Offline-first SQLite edition',
-          icon: <Info size={20} color={colors.textSecondary} />,
+          icon: <Info size={20} color="#475569" strokeWidth={2.2} />,
           iconBg: '#F1F5F9',
           onPress: () => navigation.navigate('About'),
         },
@@ -152,75 +177,82 @@ export const SettingsScreen: React.FC = () => {
     },
   ];
 
+  // Filter sections by search term
+  const filteredSections = useMemo(() => {
+    if (!searchQuery.trim()) return allSections;
+    const term = searchQuery.toLowerCase();
+
+    return allSections
+      .map((section) => ({
+        ...section,
+        items: section.items.filter(
+          (item) =>
+            item.title.toLowerCase().includes(term) ||
+            item.subtitle.toLowerCase().includes(term)
+        ),
+      }))
+      .filter((section) => section.items.length > 0);
+  }, [allSections, searchQuery]);
+
   return (
     <View style={styles.container}>
+      {/* 1. Header with Back button, title, subtitle, and notification button */}
       <Header
         title="Settings Hub"
         subtitle="Configure workspaces, invoicing & security"
         showBack
         onBack={() => navigation.goBack()}
+        onPressNotifications={() => navigation.navigate('NotificationSettings')}
       />
 
-      <ScrollView contentContainerStyle={[styles.scrollContent, { maxWidth: contentMaxWidth, alignSelf: 'center', width: '100%' }]} showsVerticalScrollIndicator={false}>
-        {/* Active Workspace Banner Card */}
-        <Card variant="softGreen" padding={16} style={styles.workspaceCard}>
-          <View style={styles.workspaceRow}>
-            <View style={styles.orgAvatar}>
-              <Text style={styles.orgAvatarText}>
-                {(activeOrg?.displayName || activeOrg?.name || 'Q')[0].toUpperCase()}
-              </Text>
-            </View>
-            <View style={styles.workspaceInfo}>
-              <Text numberOfLines={1} style={styles.workspaceName}>
-                {activeOrg?.displayName || activeOrg?.name || 'Default Workspace'}
-              </Text>
-              <Text style={styles.workspaceSub}>
-                {activeOrg?.currencySymbol || '$'} {activeOrg?.currencyCode || 'USD'} • {activeOrg?.taxId ? `Tax: ${activeOrg.taxId}` : 'Tax ID Unset'}
-              </Text>
-            </View>
-            <TouchableOpacity
-              activeOpacity={0.8}
-              onPress={() => navigation.navigate('OrganizationList')}
-              style={styles.switchBtn}
-            >
-              <Text style={styles.switchBtnText}>Switch</Text>
-            </TouchableOpacity>
-          </View>
-        </Card>
+      <ScrollView
+        contentContainerStyle={[
+          styles.scrollContent,
+          { maxWidth: contentMaxWidth, paddingHorizontal: horizontalPadding },
+        ]}
+        showsVerticalScrollIndicator={false}
+      >
+        {/* 2. Active Organization Card Banner */}
+        <ActiveOrgBanner
+          activeOrg={activeOrg}
+          onPressSwitch={() => setOrgSwitcherVisible(true)}
+        />
 
-        {/* Grouped Settings Sections Grid on wide screen */}
-        <View style={isWideScreen ? styles.gridContainer : undefined}>
-          {settingSections.map((section) => (
-            <View key={section.title} style={[styles.sectionContainer, isWideScreen && styles.sectionContainerWide]}>
-              <Text style={styles.sectionHeaderTitle}>{section.title}</Text>
-              <Card variant="elevated" padding={0} style={styles.sectionCard}>
-                {section.items.map((item, idx) => (
-                  <TouchableOpacity
-                    key={item.title}
-                    activeOpacity={0.7}
-                    onPress={item.onPress}
-                    style={[
-                      styles.itemRow,
-                      idx < section.items.length - 1 && styles.itemBorder,
-                    ]}
-                  >
-                    <View style={[styles.iconContainer, { backgroundColor: item.iconBg }]}>
-                      {item.icon}
-                    </View>
-                    <View style={styles.itemInfo}>
-                      <Text style={styles.itemTitle}>{item.title}</Text>
-                      <Text numberOfLines={1} style={styles.itemSubtitle}>
-                        {item.subtitle}
-                      </Text>
-                    </View>
-                    <ChevronRight size={18} color={colors.textMuted} />
-                  </TouchableOpacity>
-                ))}
-              </Card>
-            </View>
-          ))}
-        </View>
+        {/* 3. Settings Search Bar */}
+        <SettingsSearchBar
+          value={searchQuery}
+          onChangeText={setSearchQuery}
+        />
+
+        {/* 4. Grouped Settings Sections Grid on wide screen */}
+        {isWideScreen ? (
+          <View style={styles.desktopGrid}>
+            {filteredSections.map((section) => (
+              <View key={section.title} style={styles.desktopCol}>
+                <SettingsSectionCard
+                  title={section.title}
+                  items={section.items}
+                />
+              </View>
+            ))}
+          </View>
+        ) : (
+          filteredSections.map((section) => (
+            <SettingsSectionCard
+              key={section.title}
+              title={section.title}
+              items={section.items}
+            />
+          ))
+        )}
       </ScrollView>
+
+      {/* Organization Switcher Bottom Sheet Modal */}
+      <OrgSwitcherModal
+        visible={orgSwitcherVisible}
+        onClose={() => setOrgSwitcherVisible(false)}
+        onAddNewOrg={() => navigation.navigate('OrganizationForm', {})}
+      />
     </View>
   );
 };
@@ -228,119 +260,21 @@ export const SettingsScreen: React.FC = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: colors.background,
+    backgroundColor: '#EAF8EF',
   },
   scrollContent: {
-    padding: 16,
+    width: '100%',
+    alignSelf: 'center',
+    paddingTop: 8,
     paddingBottom: 40,
   },
-  gridContainer: {
+  desktopGrid: {
     flexDirection: 'row',
     flexWrap: 'wrap',
     justifyContent: 'space-between',
     gap: 16,
   },
-  sectionContainerWide: {
+  desktopCol: {
     width: '48.5%',
-  },
-  workspaceCard: {
-    marginBottom: 8,
-    borderRadius: 16,
-  },
-  workspaceRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  orgAvatar: {
-    width: 44,
-    height: 44,
-    borderRadius: 22,
-    backgroundColor: colors.primary,
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginRight: 12,
-  },
-  orgAvatarText: {
-    fontSize: 18,
-    fontWeight: '800',
-    color: '#FFFFFF',
-  },
-  workspaceInfo: {
-    flex: 1,
-    paddingRight: 8,
-  },
-  workspaceName: {
-    fontSize: 15,
-    fontWeight: '700',
-    color: colors.text,
-  },
-  workspaceSub: {
-    fontSize: 12,
-    color: colors.textSecondary,
-    marginTop: 2,
-  },
-  switchBtn: {
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: 12,
-    backgroundColor: '#FFFFFF',
-    borderWidth: 1,
-    borderColor: '#D7E5DC',
-  },
-  switchBtnText: {
-    fontSize: 12,
-    fontWeight: '700',
-    color: colors.primaryDarker,
-  },
-  sectionContainer: {
-    marginTop: 14,
-  },
-  sectionHeaderTitle: {
-    ...typography.caption,
-    color: colors.textSecondary,
-    fontWeight: '700',
-    textTransform: 'uppercase',
-    letterSpacing: 0.5,
-    marginBottom: 8,
-    marginLeft: 4,
-  },
-  sectionCard: {
-    overflow: 'hidden',
-    borderRadius: 14,
-    borderWidth: 1,
-    borderColor: '#D7E5DC',
-  },
-  itemRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingVertical: 14,
-    paddingHorizontal: 16,
-  },
-  itemBorder: {
-    borderBottomWidth: 1,
-    borderBottomColor: '#F1F5F9',
-  },
-  iconContainer: {
-    width: 38,
-    height: 38,
-    borderRadius: 12,
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginRight: 12,
-  },
-  itemInfo: {
-    flex: 1,
-    paddingRight: 8,
-  },
-  itemTitle: {
-    ...typography.bodySemiBold,
-    color: colors.text,
-    fontSize: 14,
-  },
-  itemSubtitle: {
-    ...typography.captionRegular,
-    color: colors.textSecondary,
-    fontSize: 12,
-    marginTop: 2,
   },
 });

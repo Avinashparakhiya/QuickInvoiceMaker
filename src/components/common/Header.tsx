@@ -30,9 +30,9 @@ interface HeaderProps {
 
 function getGreeting(): string {
   const hour = new Date().getHours();
-  if (hour < 12) return 'Good Morning!';
-  if (hour < 17) return 'Good Afternoon!';
-  return 'Good Evening!';
+  if (hour < 12) return 'Good morning,';
+  if (hour < 17) return 'Good afternoon,';
+  return 'Good evening,';
 }
 
 export const Header: React.FC<HeaderProps> = ({
@@ -201,24 +201,25 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   greeting: {
-    fontSize: 12,
+    fontSize: 13,
     fontWeight: '500',
-    color: colors.textSecondary,
+    color: '#64748B',
     marginBottom: 2,
+    letterSpacing: -0.1,
   },
   orgNameRow: {
     flexDirection: 'row',
     alignItems: 'center',
   },
   orgName: {
-    ...typography.bodySemiBold,
-    color: colors.text,
-    fontSize: 16,
-    fontWeight: '700',
+    color: '#0F172A',
+    fontSize: 18,
+    fontWeight: '800',
     maxWidth: 220,
+    letterSpacing: -0.4,
   },
   chevron: {
-    marginLeft: 4,
+    marginLeft: 5,
   },
   titleContainer: {
     flex: 1,
@@ -254,12 +255,12 @@ const styles = StyleSheet.create({
   rightIcons: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 8,
+    gap: 10,
   },
   iconButton: {
-    width: 40,
-    height: 40,
-    borderRadius: 12,
+    width: 44,
+    height: 44,
+    borderRadius: 22,
     backgroundColor: '#FFFFFF',
     borderWidth: 1,
     borderColor: '#D7E5DC',
@@ -268,17 +269,19 @@ const styles = StyleSheet.create({
     position: 'relative',
     shadowColor: '#000000',
     shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.03,
+    shadowOpacity: 0.04,
     shadowRadius: 4,
-    elevation: 1,
+    elevation: 2,
   },
   notificationDot: {
     position: 'absolute',
-    top: 9,
-    right: 9,
-    width: 7,
-    height: 7,
+    top: 10,
+    right: 10,
+    width: 8,
+    height: 8,
     borderRadius: 4,
     backgroundColor: '#EF4444',
+    borderWidth: 1.5,
+    borderColor: '#FFFFFF',
   },
 });
