@@ -32,12 +32,14 @@ import { customerRepository } from '../../database/repositories/customerReposito
 import { expenseRepository } from '../../database/repositories/expenseRepository';
 import { colors } from '../../theme/colors';
 import { typography } from '../../theme/typography';
+import { useResponsive } from '../../utils/useResponsive';
 import { format } from 'date-fns';
 import { Customer } from '../../types';
 
 export const ExpenseFormScreen: React.FC = () => {
   const navigation = useNavigation<any>();
   const { activeOrg } = useOrgStore();
+  const { contentMaxWidth } = useResponsive();
 
   const [amount, setAmount] = useState('');
   const [category, setCategory] = useState('Software');
@@ -116,7 +118,7 @@ export const ExpenseFormScreen: React.FC = () => {
     >
       <Header title="Log Business Expense" showBack onBack={() => navigation.goBack()} />
 
-      <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
+      <ScrollView contentContainerStyle={[styles.scrollContent, { maxWidth: contentMaxWidth, alignSelf: 'center', width: '100%' }]} showsVerticalScrollIndicator={false}>
         {/* Amount & Date Card */}
         <Card variant="elevated" padding={16} style={styles.card}>
           <Text style={styles.sectionHeading}>Expense Amount & Date</Text>

@@ -15,6 +15,7 @@ import { Card } from '../../components/common/Card';
 import { Button } from '../../components/common/Button';
 import { colors } from '../../theme/colors';
 import { typography } from '../../theme/typography';
+import { useResponsive } from '../../utils/useResponsive';
 
 const REMINDER_PRESETS = [
   { id: '3_days_before', label: '3 Days Before Due Date' },
@@ -25,6 +26,7 @@ const REMINDER_PRESETS = [
 
 export const NotificationSettingsScreen: React.FC = () => {
   const navigation = useNavigation<any>();
+  const { contentMaxWidth } = useResponsive();
 
   const [dueSoonEnabled, setDueSoonEnabled] = useState(true);
   const [overdueEnabled, setOverdueEnabled] = useState(true);
@@ -64,7 +66,7 @@ export const NotificationSettingsScreen: React.FC = () => {
         onBack={() => navigation.goBack()}
       />
 
-      <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
+      <ScrollView contentContainerStyle={[styles.scrollContent, { maxWidth: contentMaxWidth, alignSelf: 'center', width: '100%' }]} showsVerticalScrollIndicator={false}>
         {/* Main Alert Toggles */}
         <Card variant="elevated" padding={16} style={styles.card}>
           <Text style={styles.sectionTitle}>Automated Alert Channels</Text>
@@ -172,7 +174,7 @@ export const NotificationSettingsScreen: React.FC = () => {
       </ScrollView>
 
       {/* Sticky Save CTA */}
-      <View style={styles.footer}>
+      <View style={[styles.footer, { maxWidth: Math.min(contentMaxWidth, 800), alignSelf: 'center', width: '100%' }]}>
         <Button
           title="Save Notification Rules"
           onPress={handleSave}

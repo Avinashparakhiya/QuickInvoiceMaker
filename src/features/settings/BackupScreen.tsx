@@ -49,11 +49,13 @@ import {
 import { seedDatabase } from '../../database/db';
 import { colors } from '../../theme/colors';
 import { typography } from '../../theme/typography';
+import { useResponsive } from '../../utils/useResponsive';
 import { format } from 'date-fns';
 
 export const BackupScreen: React.FC = () => {
   const navigation = useNavigation<any>();
   const { activeOrg, initialize } = useOrgStore();
+  const { contentMaxWidth } = useResponsive();
   const {
     isBiometricEnabled,
     isHapticsEnabled,
@@ -275,7 +277,7 @@ export const BackupScreen: React.FC = () => {
     <View style={styles.container}>
       <Header title="Backup & Security" showBack onBack={() => navigation.goBack()} />
 
-      <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
+      <ScrollView contentContainerStyle={[styles.scrollContent, { maxWidth: contentMaxWidth, alignSelf: 'center', width: '100%' }]} showsVerticalScrollIndicator={false}>
         {/* Privacy Pledge Card */}
         <Card variant="softGreen" padding={16} style={styles.card}>
           <View style={styles.privacyHeader}>

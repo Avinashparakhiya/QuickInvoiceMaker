@@ -8,10 +8,11 @@ import {
   Platform,
   StatusBar,
 } from 'react-native';
-import { ArrowLeft, ChevronDown, Settings as SettingsIcon, Bell } from 'lucide-react-native';
+import { ArrowLeft, ChevronDown, Settings as SettingsIcon, Bell, Plus, Search } from 'lucide-react-native';
 import { colors } from '../../theme/colors';
 import { typography } from '../../theme/typography';
 import { Organization } from '../../types';
+import { useResponsive } from '../../utils/useResponsive';
 
 interface HeaderProps {
   title?: string;
@@ -22,6 +23,8 @@ interface HeaderProps {
   onPressOrgSwitcher?: () => void;
   onPressSettings?: () => void;
   onPressNotifications?: () => void;
+  onPressSearch?: () => void;
+  onPressQuickCreate?: () => void;
   rightAction?: React.ReactNode;
 }
 
@@ -41,11 +44,15 @@ export const Header: React.FC<HeaderProps> = ({
   onPressOrgSwitcher,
   onPressSettings,
   onPressNotifications,
+  onPressSearch,
+  onPressQuickCreate,
   rightAction,
 }) => {
+  const { isWideScreen, isDesktop, contentMaxWidth } = useResponsive();
+
   return (
     <SafeAreaView style={styles.safeArea}>
-      <View style={styles.container}>
+      <View style={[styles.container, { maxWidth: contentMaxWidth }]}>
         {showBack ? (
           <TouchableOpacity
             activeOpacity={0.7}
@@ -93,21 +100,43 @@ export const Header: React.FC<HeaderProps> = ({
             rightAction
           ) : (
             <View style={styles.rightIcons}>
+              {isWideScreen && onPressQuickCreate ? (
+                <TouchableOpacity
+                  activeOpacity={0.85}
+                  onPress={onPressQuickCreate}
+                  style={styles.headerPrimaryBtn}
+                >
+                  <Plus size={16} color="#FFFFFF" strokeWidth={2.5} />
+                  <Text style={styles.headerPrimaryBtnText}>New Invoice</Text>
+                </TouchableOpacity>
+              ) : null}
+
+              {onPressSearch ? (
+                <TouchableOpacity
+                  activeOpacity={0.7}
+                  onPress={onPressSearch}
+                  style={styles.iconButton}
+                >
+                  <Search size={19} color={colors.textSecondary} />
+                </TouchableOpacity>
+              ) : null}
+
               <TouchableOpacity
                 activeOpacity={0.7}
                 onPress={onPressNotifications}
                 style={styles.iconButton}
               >
-                <Bell size={20} color={colors.textSecondary} />
+                <Bell size={19} color={colors.textSecondary} />
                 <View style={styles.notificationDot} />
               </TouchableOpacity>
+
               {onPressSettings ? (
                 <TouchableOpacity
                   activeOpacity={0.7}
                   onPress={onPressSettings}
                   style={styles.iconButton}
                 >
-                  <SettingsIcon size={20} color={colors.textSecondary} />
+                  <SettingsIcon size={19} color={colors.textSecondary} />
                 </TouchableOpacity>
               ) : null}
             </View>
@@ -130,6 +159,27 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     paddingHorizontal: 16,
     backgroundColor: colors.background,
+    width: '100%',
+    alignSelf: 'center',
+  },
+  headerPrimaryBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: colors.primary,
+    paddingHorizontal: 14,
+    paddingVertical: 9,
+    borderRadius: 12,
+    gap: 6,
+    shadowColor: '#22C55E',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.25,
+    shadowRadius: 6,
+    elevation: 3,
+  },
+  headerPrimaryBtnText: {
+    color: '#FFFFFF',
+    fontWeight: '700',
+    fontSize: 13,
   },
   backButton: {
     width: 40,
@@ -137,7 +187,7 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     backgroundColor: '#FFFFFF',
     borderWidth: 1,
-    borderColor: '#E2E8F0',
+    borderColor: '#D7E5DC',
     alignItems: 'center',
     justifyContent: 'center',
     shadowColor: '#000000',
@@ -212,7 +262,7 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     backgroundColor: '#FFFFFF',
     borderWidth: 1,
-    borderColor: '#E2E8F0',
+    borderColor: '#D7E5DC',
     alignItems: 'center',
     justifyContent: 'center',
     position: 'relative',

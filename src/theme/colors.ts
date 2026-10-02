@@ -21,7 +21,7 @@ export const colors = {
 
   // Typography / Text Hierarchy (Slate)
   text: '#0F172A', // Slate 900
-  textSecondary: '#475569', // Slate 600
+  textSecondary: '#64748B', // Slate 500
   textMuted: '#94A3B8', // Slate 400
   textInverse: '#FFFFFF',
 

@@ -9,6 +9,8 @@ import {
   Alert,
 } from 'react-native';
 import { useNavigation, useRoute } from '@react-navigation/native';
+import * as Print from 'expo-print';
+import * as Sharing from 'expo-sharing';
 import {
   Phone,
   Mail,
@@ -24,6 +26,8 @@ import {
   AlertTriangle,
   Receipt,
   FileSpreadsheet,
+  Printer,
+  Share2,
 } from 'lucide-react-native';
 import { Header } from '../../components/common/Header';
 import { Button } from '../../components/common/Button';
@@ -32,17 +36,21 @@ import { EmptyState } from '../../components/common/EmptyState';
 import { useOrgStore } from '../../store/useOrgStore';
 import { customerRepository } from '../../database/repositories/customerRepository';
 import { invoiceRepository } from '../../database/repositories/invoiceRepository';
+import { paymentRepository } from '../../database/repositories/paymentRepository';
+import { buildCustomerStatementPdfHtml } from '../../pdf/customerStatementBuilder';
 import { colors } from '../../theme/colors';
 import { typography } from '../../theme/typography';
 import { formatCurrency } from '../../utils/currency';
 import { formatDate } from '../../utils/dates';
 import { Customer, Invoice, Payment } from '../../types';
+import { useResponsive } from '../../utils/useResponsive';
 
 export const CustomerDetailScreen: React.FC = () => {
   const navigation = useNavigation<any>();
   const route = useRoute<any>();
   const customerId = route.params?.customerId;
 
+  const { contentMaxWidth, isWideScreen } = useResponsive();
   const { activeOrg } = useOrgStore();
   const [customer, setCustomer] = useState<Customer | null>(null);
   const [invoices, setInvoices] = useState<Invoice[]>([]);
@@ -113,6 +121,35 @@ export const CustomerDetailScreen: React.FC = () => {
     );
   }
 
+  const handlePrintStatement = async () => {
+    if (!customer || !activeOrg) return;
+    try {
+      const html = buildCustomerStatementPdfHtml(activeOrg, customer, invoices, allPayments);
+      await Print.printAsync({ html });
+    } catch (err: any) {
+      Alert.alert('Print Error', err.message || 'Unable to print statement.');
+    }
+  };
+
+  const handleShareStatement = async () => {
+    if (!customer || !activeOrg) return;
+    try {
+      const html = buildCustomerStatementPdfHtml(activeOrg, customer, invoices, allPayments);
+      const { uri } = await Print.printToFileAsync({ html });
+      if (await Sharing.isAvailableAsync()) {
+        await Sharing.shareAsync(uri, {
+          UTI: '.pdf',
+          mimeType: 'application/pdf',
+          dialogTitle: `Statement of Account - ${customer.name}`,
+        });
+      } else {
+        Alert.alert('Statement Ready', 'Statement generated successfully.');
+      }
+    } catch (err: any) {
+      Alert.alert('Share Error', err.message || 'Unable to share statement.');
+    }
+  };
+
   const symbol = activeOrg?.currencySymbol || '$';
   const totalBilled = invoices.reduce((sum, i) => sum + i.totalAmount, 0);
   const totalPaid = invoices.reduce((sum, i) => sum + i.paidAmount, 0);
@@ -152,7 +189,10 @@ export const CustomerDetailScreen: React.FC = () => {
         }
       />
 
-      <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
+      <ScrollView
+        contentContainerStyle={[styles.scrollContent, { maxWidth: contentMaxWidth }]}
+        showsVerticalScrollIndicator={false}
+      >
         {/* Profile Card */}
         <View style={styles.profileCard}>
           <View style={styles.profileTop}>
@@ -214,6 +254,32 @@ export const CustomerDetailScreen: React.FC = () => {
             <Text numberOfLines={1} style={[styles.kpiValue, { color: totalDue > 0 ? '#EF4444' : '#64748B' }]}>
               {formatCurrency(totalDue, symbol)}
             </Text>
+          </View>
+        </View>
+
+        {/* Customer Statement Quick Action */}
+        <View style={styles.statementCard}>
+          <View style={styles.statementLeft}>
+            <Text style={styles.statementTitle}>Statement of Account</Text>
+            <Text style={styles.statementSubtitle}>Export or share complete ledger PDF</Text>
+          </View>
+          <View style={styles.statementActions}>
+            <TouchableOpacity
+              activeOpacity={0.7}
+              onPress={handlePrintStatement}
+              style={styles.statementBtn}
+            >
+              <Printer size={15} color="#15803D" />
+              <Text style={styles.statementBtnText}>Print</Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              activeOpacity={0.7}
+              onPress={handleShareStatement}
+              style={[styles.statementBtn, styles.statementBtnPrimary]}
+            >
+              <Share2 size={15} color="#FFFFFF" />
+              <Text style={[styles.statementBtnText, { color: '#FFFFFF' }]}>Share PDF</Text>
+            </TouchableOpacity>
           </View>
         </View>
 
@@ -393,6 +459,8 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   scrollContent: {
+    width: '100%',
+    alignSelf: 'center',
     padding: 16,
     paddingBottom: 100,
   },
@@ -659,5 +727,57 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.05,
     shadowRadius: 8,
     elevation: 6,
+  },
+  statementCard: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    backgroundColor: '#F0FDF4',
+    borderRadius: 14,
+    padding: 14,
+    borderWidth: 1,
+    borderColor: '#BBF7D0',
+    marginBottom: 14,
+  },
+  statementLeft: {
+    flex: 1,
+    marginRight: 10,
+  },
+  statementTitle: {
+    ...typography.bodySemiBold,
+    color: '#15803D',
+    fontSize: 13,
+    fontWeight: '700',
+  },
+  statementSubtitle: {
+    ...typography.micro,
+    color: '#166534',
+    marginTop: 2,
+  },
+  statementActions: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+  },
+  statementBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    paddingVertical: 7,
+    paddingHorizontal: 10,
+    borderRadius: 8,
+    backgroundColor: '#FFFFFF',
+    borderWidth: 1,
+    borderColor: '#86EFAC',
+  },
+  statementBtnPrimary: {
+    backgroundColor: '#16A34A',
+    borderColor: '#16A34A',
+  },
+  statementBtnText: {
+    ...typography.caption,
+    fontWeight: '700',
+    color: '#15803D',
+    fontSize: 12,
   },
 });

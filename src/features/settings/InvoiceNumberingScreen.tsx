@@ -17,6 +17,7 @@ import { useOrgStore } from '../../store/useOrgStore';
 import { orgRepository } from '../../database/repositories/orgRepository';
 import { colors } from '../../theme/colors';
 import { typography } from '../../theme/typography';
+import { useResponsive } from '../../utils/useResponsive';
 
 const DUE_DAY_PRESETS = [
   { label: 'On Receipt', value: 0 },
@@ -30,6 +31,7 @@ const DUE_DAY_PRESETS = [
 export const InvoiceNumberingScreen: React.FC = () => {
   const navigation = useNavigation<any>();
   const { activeOrg, updateOrg } = useOrgStore();
+  const { contentMaxWidth } = useResponsive();
 
   const [prefix, setPrefix] = useState(activeOrg?.invoicePrefix || 'INV-');
   const [nextNumber, setNextNumber] = useState(
@@ -76,7 +78,7 @@ export const InvoiceNumberingScreen: React.FC = () => {
         onBack={() => navigation.goBack()}
       />
 
-      <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
+      <ScrollView contentContainerStyle={[styles.scrollContent, { maxWidth: contentMaxWidth, alignSelf: 'center', width: '100%' }]} showsVerticalScrollIndicator={false}>
         {/* Live Sequence Preview Card */}
         <Card variant="softGreen" padding={16} style={styles.card}>
           <Text style={styles.previewHeading}>NEXT INVOICE NUMBER PREVIEW</Text>
@@ -160,7 +162,7 @@ export const InvoiceNumberingScreen: React.FC = () => {
       </ScrollView>
 
       {/* Sticky Save CTA */}
-      <View style={styles.footer}>
+      <View style={[styles.footer, { maxWidth: Math.min(contentMaxWidth, 800), alignSelf: 'center', width: '100%' }]}>
         <Button
           title="Save Invoice Settings"
           onPress={handleSave}

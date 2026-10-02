@@ -26,12 +26,14 @@ import { useOrgStore } from '../../store/useOrgStore';
 import { itemRepository } from '../../database/repositories/itemRepository';
 import { colors } from '../../theme/colors';
 import { typography } from '../../theme/typography';
+import { useResponsive } from '../../utils/useResponsive';
 
 export const ItemFormScreen: React.FC = () => {
   const navigation = useNavigation<any>();
   const route = useRoute<any>();
   const itemId = route.params?.itemId;
   const { activeOrg } = useOrgStore();
+  const { contentMaxWidth } = useResponsive();
 
   const [name, setName] = useState('');
   const [sku, setSku] = useState('');
@@ -123,7 +125,7 @@ export const ItemFormScreen: React.FC = () => {
         onBack={() => navigation.goBack()}
       />
 
-      <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
+      <ScrollView contentContainerStyle={[styles.scrollContent, { maxWidth: contentMaxWidth, alignSelf: 'center', width: '100%' }]} showsVerticalScrollIndicator={false}>
         {/* Category Toggle */}
         <View style={styles.catRow}>
           <TouchableOpacity

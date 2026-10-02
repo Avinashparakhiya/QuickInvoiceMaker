@@ -40,6 +40,7 @@ import { typography } from '../../theme/typography';
 import { formatCurrency } from '../../utils/currency';
 import { formatDate } from '../../utils/dates';
 import { Invoice, Payment, Estimate, Expense } from '../../types';
+import { useResponsive } from '../../utils/useResponsive';
 
 type TabType = 'INVOICES' | 'PAYMENTS' | 'ESTIMATES' | 'EXPENSES';
 
@@ -73,6 +74,7 @@ const getInitials = (name: string) => {
 export const TransactionsScreen: React.FC = () => {
   const navigation = useNavigation<any>();
   const isFocused = useIsFocused();
+  const { contentMaxWidth, isWideScreen } = useResponsive();
   const { activeOrg } = useOrgStore();
   const {
     invoices,
@@ -134,9 +136,9 @@ export const TransactionsScreen: React.FC = () => {
   // Invoice Filters
   const invoiceStatusFilters = [
     { label: 'All', value: 'ALL' },
+    { label: 'Paid', value: 'PAID' },
     { label: 'Unpaid', value: 'UNPAID' },
     { label: 'Partial', value: 'PARTIAL' },
-    { label: 'Paid', value: 'PAID' },
     { label: 'Overdue', value: 'OVERDUE' },
     { label: 'Draft', value: 'DRAFT' },
   ];
@@ -461,7 +463,7 @@ export const TransactionsScreen: React.FC = () => {
       />
 
       {/* Top Financial Summary Metrics Strip */}
-      <View style={styles.summaryStrip}>
+      <View style={[styles.summaryStrip, { maxWidth: contentMaxWidth }]}>
         <View style={styles.summaryMetricItem}>
           <Text style={styles.summaryMetricLabel}>Billed</Text>
           <Text numberOfLines={1} style={styles.summaryMetricValue}>
@@ -485,7 +487,7 @@ export const TransactionsScreen: React.FC = () => {
       </View>
 
       {/* Document Type Switcher Tabs */}
-      <View style={styles.mainTabContainer}>
+      <View style={[styles.mainTabContainer, { maxWidth: contentMaxWidth }]}>
         <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.mainTabRow}>
           <TouchableOpacity
             activeOpacity={0.7}
@@ -554,7 +556,7 @@ export const TransactionsScreen: React.FC = () => {
       </View>
 
       {/* Search Input Section */}
-      <View style={styles.searchSection}>
+      <View style={[styles.searchSection, { maxWidth: contentMaxWidth }]}>
         <Input
           placeholder={
             activeTab === 'INVOICES'
@@ -580,7 +582,7 @@ export const TransactionsScreen: React.FC = () => {
       </View>
 
       {/* Sub-Filter Chips */}
-      <View style={styles.filtersSection}>
+      <View style={[styles.filtersSection, { maxWidth: contentMaxWidth }]}>
         {activeTab === 'INVOICES' && (
           <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.filtersList}>
             {invoiceStatusFilters.map((chip) => (
@@ -688,7 +690,7 @@ export const TransactionsScreen: React.FC = () => {
           data={filteredInvoices}
           keyExtractor={(item) => item.id}
           renderItem={renderInvoiceItem}
-          contentContainerStyle={styles.listContent}
+          contentContainerStyle={[styles.listContent, { maxWidth: contentMaxWidth }]}
           showsVerticalScrollIndicator={false}
           refreshControl={
             <RefreshControl
@@ -719,7 +721,7 @@ export const TransactionsScreen: React.FC = () => {
           data={filteredPayments}
           keyExtractor={(item) => item.id}
           renderItem={renderPaymentItem}
-          contentContainerStyle={styles.listContent}
+          contentContainerStyle={[styles.listContent, { maxWidth: contentMaxWidth }]}
           showsVerticalScrollIndicator={false}
           refreshControl={
             <RefreshControl
@@ -746,7 +748,7 @@ export const TransactionsScreen: React.FC = () => {
           data={filteredEstimates}
           keyExtractor={(item) => item.id}
           renderItem={renderEstimateItem}
-          contentContainerStyle={styles.listContent}
+          contentContainerStyle={[styles.listContent, { maxWidth: contentMaxWidth }]}
           showsVerticalScrollIndicator={false}
           refreshControl={
             <RefreshControl
@@ -773,7 +775,7 @@ export const TransactionsScreen: React.FC = () => {
           data={filteredExpenses}
           keyExtractor={(item) => item.id}
           renderItem={renderExpenseItem}
-          contentContainerStyle={styles.listContent}
+          contentContainerStyle={[styles.listContent, { maxWidth: contentMaxWidth }]}
           showsVerticalScrollIndicator={false}
           refreshControl={
             <RefreshControl
@@ -833,6 +835,8 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.04,
     shadowRadius: 3,
     elevation: 1,
+    width: '100%',
+    alignSelf: 'center',
   },
   summaryMetricItem: {
     flex: 1,
@@ -859,6 +863,8 @@ const styles = StyleSheet.create({
   mainTabContainer: {
     paddingHorizontal: 16,
     paddingTop: 10,
+    width: '100%',
+    alignSelf: 'center',
   },
   mainTabRow: {
     flexDirection: 'row',
@@ -909,12 +915,16 @@ const styles = StyleSheet.create({
   searchSection: {
     paddingHorizontal: 16,
     paddingTop: 10,
+    width: '100%',
+    alignSelf: 'center',
   },
   searchInput: {
     marginBottom: 2,
   },
   filtersSection: {
     paddingVertical: 6,
+    width: '100%',
+    alignSelf: 'center',
   },
   filtersList: {
     paddingHorizontal: 16,
@@ -947,6 +957,8 @@ const styles = StyleSheet.create({
     paddingTop: 4,
     paddingBottom: 32,
     flexGrow: 1,
+    width: '100%',
+    alignSelf: 'center',
   },
   cardContainer: {
     marginBottom: 10,

@@ -93,10 +93,8 @@ export default function App() {
   return (
     <SafeAreaProvider>
       <StatusBar style="dark" backgroundColor={colors.background} />
-      <View style={isLargeWebScreen ? styles.webWrapper : styles.fullScreen}>
-        <View style={isLargeWebScreen ? styles.webMobileFrame : styles.fullScreen}>
-          {renderContent()}
-        </View>
+      <View style={styles.fullScreen}>
+        {renderContent()}
       </View>
     </SafeAreaProvider>
   );
@@ -106,25 +104,7 @@ const styles = StyleSheet.create({
   fullScreen: {
     flex: 1,
     backgroundColor: colors.background,
-  },
-  webWrapper: {
-    flex: 1,
-    backgroundColor: '#0F172A',
-    justifyContent: 'center',
-    alignItems: 'center',
     width: '100%',
     height: '100%',
-  },
-  webMobileFrame: {
-    width: '100%',
-    maxWidth: 480,
-    height: '100%',
-    maxHeight: 960,
-    backgroundColor: colors.background,
-    overflow: 'hidden',
-    borderRadius: 24,
-    borderWidth: 1,
-    borderColor: '#334155',
-    boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.4)',
   },
 });

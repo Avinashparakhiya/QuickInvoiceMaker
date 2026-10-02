@@ -33,6 +33,7 @@ import { colors } from '../../theme/colors';
 import { typography } from '../../theme/typography';
 import { formatCurrency } from '../../utils/currency';
 import { formatDate } from '../../utils/dates';
+import { useResponsive } from '../../utils/useResponsive';
 import { Estimate } from '../../types';
 
 export const EstimateDetailScreen: React.FC = () => {
@@ -41,6 +42,7 @@ export const EstimateDetailScreen: React.FC = () => {
   const estimateId = route.params?.estimateId;
 
   const { activeOrg } = useOrgStore();
+  const { contentMaxWidth, isWideScreen } = useResponsive();
   const [estimate, setEstimate] = useState<Estimate | null>(null);
   const [loading, setLoading] = useState(false);
 
@@ -174,188 +176,196 @@ export const EstimateDetailScreen: React.FC = () => {
         }
       />
 
-      <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
-        {/* Status & Amount Card */}
-        <Card variant="softGreen" padding={18} style={styles.card}>
-          <View style={styles.statusRow}>
-            <View style={styles.statusBadge}>
-              <Text style={styles.statusBadgeText}>{estimate.status}</Text>
-            </View>
-            <Text style={styles.expiryText}>Valid Until: {formatDate(estimate.expiryDate)}</Text>
-          </View>
-
-          <View style={styles.totalBox}>
-            <Text style={styles.totalLabel}>Estimated Proposal Amount</Text>
-            <Text style={styles.totalAmount}>{formatCurrency(estimate.totalAmount, symbol)}</Text>
-          </View>
-
-          {/* Status Changer Chips */}
-          <View style={styles.statusSwitcherRow}>
-            <Text style={styles.statusSwitcherLabel}>Set Status:</Text>
-            <View style={styles.statusChips}>
-              {(['DRAFT', 'SENT', 'ACCEPTED', 'DECLINED'] as Estimate['status'][]).map((st) => (
-                <TouchableOpacity
-                  key={st}
-                  onPress={() => handleUpdateStatus(st)}
-                  style={[
-                    styles.statusChip,
-                    estimate.status === st && styles.statusChipActive,
-                  ]}
-                >
-                  <Text
-                    style={[
-                      styles.statusChipText,
-                      estimate.status === st && styles.statusChipTextActive,
-                    ]}
-                  >
-                    {st}
-                  </Text>
-                </TouchableOpacity>
-              ))}
-            </View>
-          </View>
-        </Card>
-
-        {/* 1-Tap Convert to Invoice Banner */}
-        {estimate.status !== 'CONVERTED' ? (
-          <Card variant="elevated" padding={16} style={[styles.card, styles.convertBanner]}>
-            <View style={styles.convertRow}>
-              <View style={{ flex: 1, paddingRight: 8 }}>
-                <Text style={styles.convertTitle}>Ready to Bill?</Text>
-                <Text style={styles.convertSubtitle}>
-                  Convert this quote to an active invoice with 1 tap.
-                </Text>
+      <ScrollView contentContainerStyle={[styles.scrollContent, { maxWidth: contentMaxWidth, alignSelf: 'center', width: '100%' }]} showsVerticalScrollIndicator={false}>
+        <View style={isWideScreen ? styles.desktopColumns : undefined}>
+          {/* Left Column (Desktop) */}
+          <View style={isWideScreen ? styles.colLeft : undefined}>
+            {/* Status & Amount Card */}
+            <Card variant="softGreen" padding={18} style={styles.card}>
+              <View style={styles.statusRow}>
+                <View style={styles.statusBadge}>
+                  <Text style={styles.statusBadgeText}>{estimate.status}</Text>
+                </View>
+                <Text style={styles.expiryText}>Valid Until: {formatDate(estimate.expiryDate)}</Text>
               </View>
+
+              <View style={styles.totalBox}>
+                <Text style={styles.totalLabel}>Estimated Proposal Amount</Text>
+                <Text style={styles.totalAmount}>{formatCurrency(estimate.totalAmount, symbol)}</Text>
+              </View>
+
+              {/* Status Changer Chips */}
+              <View style={styles.statusSwitcherRow}>
+                <Text style={styles.statusSwitcherLabel}>Set Status:</Text>
+                <View style={styles.statusChips}>
+                  {(['DRAFT', 'SENT', 'ACCEPTED', 'DECLINED'] as Estimate['status'][]).map((st) => (
+                    <TouchableOpacity
+                      key={st}
+                      onPress={() => handleUpdateStatus(st)}
+                      style={[
+                        styles.statusChip,
+                        estimate.status === st && styles.statusChipActive,
+                      ]}
+                    >
+                      <Text
+                        style={[
+                          styles.statusChipText,
+                          estimate.status === st && styles.statusChipTextActive,
+                        ]}
+                      >
+                        {st}
+                      </Text>
+                    </TouchableOpacity>
+                  ))}
+                </View>
+              </View>
+            </Card>
+
+            {/* 1-Tap Convert to Invoice Banner */}
+            {estimate.status !== 'CONVERTED' ? (
+              <Card variant="elevated" padding={16} style={[styles.card, styles.convertBanner]}>
+                <View style={styles.convertRow}>
+                  <View style={{ flex: 1, paddingRight: 8 }}>
+                    <Text style={styles.convertTitle}>Ready to Bill?</Text>
+                    <Text style={styles.convertSubtitle}>
+                      Convert this quote to an active invoice with 1 tap.
+                    </Text>
+                  </View>
+                  <Button
+                    title="Convert to Invoice"
+                    onPress={handleConvertToInvoice}
+                    size="md"
+                    icon={<ArrowRight size={16} color="#FFFFFF" />}
+                  />
+                </View>
+              </Card>
+            ) : (
+              <Card variant="elevated" padding={14} style={[styles.card, { borderColor: colors.info }]}>
+                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
+                  <FileCheck size={24} color={colors.info} />
+                  <View style={{ flex: 1 }}>
+                    <Text style={{ ...typography.bodySemiBold, color: colors.text }}>
+                      Converted to Invoice
+                    </Text>
+                    <Text style={{ ...typography.captionRegular, color: colors.textSecondary }}>
+                      This estimate was converted into an active invoice.
+                    </Text>
+                  </View>
+                  {estimate.convertedInvoiceId ? (
+                    <Button
+                      title="View"
+                      size="sm"
+                      variant="secondary"
+                      onPress={() =>
+                        navigation.navigate('InvoiceDetail', {
+                          invoiceId: estimate.convertedInvoiceId,
+                        })
+                      }
+                    />
+                  ) : null}
+                </View>
+              </Card>
+            )}
+
+            {/* Action Buttons */}
+            <View style={styles.actionsRow}>
               <Button
-                title="Convert to Invoice"
-                onPress={handleConvertToInvoice}
-                size="md"
-                icon={<ArrowRight size={16} color="#FFFFFF" />}
+                title="Share Proposal PDF"
+                onPress={handleSharePdf}
+                icon={<Share2 size={18} color="#FFFFFF" />}
+                loading={loading}
+                style={styles.actionBtn}
+              />
+              <View style={{ width: 10 }} />
+              <Button
+                title="Print"
+                onPress={handlePrint}
+                variant="white"
+                icon={<Printer size={18} color={colors.text} />}
+                style={styles.actionBtn}
               />
             </View>
-          </Card>
-        ) : (
-          <Card variant="elevated" padding={14} style={[styles.card, { borderColor: colors.info }]}>
-            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
-              <FileCheck size={24} color={colors.info} />
-              <View style={{ flex: 1 }}>
-                <Text style={{ ...typography.bodySemiBold, color: colors.text }}>
-                  Converted to Invoice
-                </Text>
-                <Text style={{ ...typography.captionRegular, color: colors.textSecondary }}>
-                  This estimate was converted into an active invoice.
-                </Text>
-              </View>
-              {estimate.convertedInvoiceId ? (
-                <Button
-                  title="View"
-                  size="sm"
-                  variant="secondary"
-                  onPress={() =>
-                    navigation.navigate('InvoiceDetail', {
-                      invoiceId: estimate.convertedInvoiceId,
-                    })
-                  }
-                />
-              ) : null}
-            </View>
-          </Card>
-        )}
 
-        {/* Action Buttons */}
-        <View style={styles.actionsRow}>
-          <Button
-            title="Share Proposal PDF"
-            onPress={handleSharePdf}
-            icon={<Share2 size={18} color="#FFFFFF" />}
-            loading={loading}
-            style={styles.actionBtn}
-          />
-          <View style={{ width: 10 }} />
-          <Button
-            title="Print"
-            onPress={handlePrint}
-            variant="white"
-            icon={<Printer size={18} color={colors.text} />}
-            style={styles.actionBtn}
-          />
-        </View>
-
-        {/* Customer Information */}
-        <Card variant="elevated" padding={16} style={styles.card}>
-          <Text style={styles.sectionHeading}>Proposed For</Text>
-          <Text style={styles.customerName}>{estimate.customerName || 'Potential Client'}</Text>
-        </Card>
-
-        {/* Line Items */}
-        <Card variant="elevated" padding={16} style={styles.card}>
-          <Text style={styles.sectionHeading}>
-            Scope / Proposed Deliverables ({(estimate.items || []).length})
-          </Text>
-
-          {(estimate.items || []).map((item, idx) => (
-            <View key={item.id || idx} style={styles.itemRow}>
-              <View style={styles.itemLeft}>
-                <Text style={styles.itemDesc}>{item.description}</Text>
-                <Text style={styles.itemSub}>
-                  {item.quantity} {item.unit || 'pcs'} × {formatCurrency(item.rate, symbol)}
-                  {item.taxRate > 0 ? ` • Tax ${item.taxRate}%` : ''}
-                </Text>
-              </View>
-              <Text style={styles.itemTotal}>{formatCurrency(item.lineTotal, symbol)}</Text>
-            </View>
-          ))}
-
-          <View style={styles.divider} />
-
-          {/* Breakdown */}
-          <View style={styles.breakdownRow}>
-            <Text style={styles.breakdownLabel}>Subtotal</Text>
-            <Text style={styles.breakdownValue}>{formatCurrency(estimate.subtotal, symbol)}</Text>
+            {/* Customer Information */}
+            <Card variant="elevated" padding={16} style={styles.card}>
+              <Text style={styles.sectionHeading}>Proposed For</Text>
+              <Text style={styles.customerName}>{estimate.customerName || 'Potential Client'}</Text>
+            </Card>
           </View>
 
-          {estimate.discountAmount > 0 && (
-            <View style={styles.breakdownRow}>
-              <Text style={styles.breakdownLabel}>Discount</Text>
-              <Text style={[styles.breakdownValue, { color: colors.danger }]}>
-                -{formatCurrency(estimate.discountAmount, symbol)}
+          {/* Right Column (Desktop) */}
+          <View style={isWideScreen ? styles.colRight : undefined}>
+            {/* Line Items */}
+            <Card variant="elevated" padding={16} style={styles.card}>
+              <Text style={styles.sectionHeading}>
+                Scope / Proposed Deliverables ({(estimate.items || []).length})
               </Text>
-            </View>
-          )}
 
-          {estimate.taxAmount > 0 && (
-            <View style={styles.breakdownRow}>
-              <Text style={styles.breakdownLabel}>Tax</Text>
-              <Text style={styles.breakdownValue}>{formatCurrency(estimate.taxAmount, symbol)}</Text>
-            </View>
-          )}
+              {(estimate.items || []).map((item, idx) => (
+                <View key={item.id || idx} style={styles.itemRow}>
+                  <View style={styles.itemLeft}>
+                    <Text style={styles.itemDesc}>{item.description}</Text>
+                    <Text style={styles.itemSub}>
+                      {item.quantity} {item.unit || 'pcs'} × {formatCurrency(item.rate, symbol)}
+                      {item.taxRate > 0 ? ` • Tax ${item.taxRate}%` : ''}
+                    </Text>
+                  </View>
+                  <Text style={styles.itemTotal}>{formatCurrency(item.lineTotal, symbol)}</Text>
+                </View>
+              ))}
 
-          <View style={[styles.breakdownRow, styles.grandTotalRow]}>
-            <Text style={styles.grandTotalLabel}>Estimated Total</Text>
-            <Text style={styles.grandTotalValue}>
-              {formatCurrency(estimate.totalAmount, symbol)}
-            </Text>
+              <View style={styles.divider} />
+
+              {/* Breakdown */}
+              <View style={styles.breakdownRow}>
+                <Text style={styles.breakdownLabel}>Subtotal</Text>
+                <Text style={styles.breakdownValue}>{formatCurrency(estimate.subtotal, symbol)}</Text>
+              </View>
+
+              {estimate.discountAmount > 0 && (
+                <View style={styles.breakdownRow}>
+                  <Text style={styles.breakdownLabel}>Discount</Text>
+                  <Text style={[styles.breakdownValue, { color: colors.danger }]}>
+                    -{formatCurrency(estimate.discountAmount, symbol)}
+                  </Text>
+                </View>
+              )}
+
+              {estimate.taxAmount > 0 && (
+                <View style={styles.breakdownRow}>
+                  <Text style={styles.breakdownLabel}>Tax</Text>
+                  <Text style={styles.breakdownValue}>{formatCurrency(estimate.taxAmount, symbol)}</Text>
+                </View>
+              )}
+
+              <View style={[styles.breakdownRow, styles.grandTotalRow]}>
+                <Text style={styles.grandTotalLabel}>Estimated Total</Text>
+                <Text style={styles.grandTotalValue}>
+                  {formatCurrency(estimate.totalAmount, symbol)}
+                </Text>
+              </View>
+            </Card>
+
+            {/* Notes & Terms */}
+            {(estimate.notes || estimate.termsConditions) && (
+              <Card variant="elevated" padding={16} style={styles.card}>
+                {estimate.notes ? (
+                  <View style={{ marginBottom: 12 }}>
+                    <Text style={styles.noteTitle}>Proposal Notes</Text>
+                    <Text style={styles.noteBody}>{estimate.notes}</Text>
+                  </View>
+                ) : null}
+
+                {estimate.termsConditions ? (
+                  <View>
+                    <Text style={styles.noteTitle}>Terms & Validity</Text>
+                    <Text style={styles.noteBody}>{estimate.termsConditions}</Text>
+                  </View>
+                ) : null}
+              </Card>
+            )}
           </View>
-        </Card>
-
-        {/* Notes & Terms */}
-        {(estimate.notes || estimate.termsConditions) && (
-          <Card variant="elevated" padding={16} style={styles.card}>
-            {estimate.notes ? (
-              <View style={{ marginBottom: 12 }}>
-                <Text style={styles.noteTitle}>Proposal Notes</Text>
-                <Text style={styles.noteBody}>{estimate.notes}</Text>
-              </View>
-            ) : null}
-
-            {estimate.termsConditions ? (
-              <View>
-                <Text style={styles.noteTitle}>Terms & Validity</Text>
-                <Text style={styles.noteBody}>{estimate.termsConditions}</Text>
-              </View>
-            ) : null}
-          </Card>
-        )}
+        </View>
       </ScrollView>
     </View>
   );
@@ -378,6 +388,17 @@ const styles = StyleSheet.create({
   scrollContent: {
     padding: 16,
     paddingBottom: 40,
+  },
+  desktopColumns: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    gap: 20,
+  },
+  colLeft: {
+    flex: 1.1,
+  },
+  colRight: {
+    flex: 1.3,
   },
   card: {
     marginBottom: 14,

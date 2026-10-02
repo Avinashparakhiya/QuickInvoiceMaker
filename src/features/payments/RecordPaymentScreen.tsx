@@ -27,6 +27,7 @@ import { buildPaymentReceiptHtml } from '../../pdf/receiptBuilder';
 import { colors } from '../../theme/colors';
 import { typography } from '../../theme/typography';
 import { formatCurrency } from '../../utils/currency';
+import { useResponsive } from '../../utils/useResponsive';
 import { format } from 'date-fns';
 import { Invoice, Customer, PaymentMethod, PaymentType } from '../../types';
 
@@ -37,6 +38,7 @@ export const RecordPaymentScreen: React.FC = () => {
 
   const { activeOrg } = useOrgStore();
   const { loadDashboardData, loadInvoices } = useInvoiceStore();
+  const { contentMaxWidth } = useResponsive();
 
   const [invoices, setInvoices] = useState<Invoice[]>([]);
   const [customers, setCustomers] = useState<Customer[]>([]);
@@ -191,7 +193,7 @@ export const RecordPaymentScreen: React.FC = () => {
         onBack={() => navigation.goBack()}
       />
 
-      <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
+      <ScrollView contentContainerStyle={[styles.scrollContent, { maxWidth: contentMaxWidth, alignSelf: 'center', width: '100%' }]} showsVerticalScrollIndicator={false}>
         {/* Payment Type Selector */}
         <View style={styles.typeSelectorRow}>
           {paymentTypes.map((t) => (

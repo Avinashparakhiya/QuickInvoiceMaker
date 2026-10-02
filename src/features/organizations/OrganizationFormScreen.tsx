@@ -17,12 +17,14 @@ import { useOrgStore } from '../../store/useOrgStore';
 import { orgRepository } from '../../database/repositories/orgRepository';
 import { colors } from '../../theme/colors';
 import { typography } from '../../theme/typography';
+import { useResponsive } from '../../utils/useResponsive';
 import { Organization } from '../../types';
 
 export const OrganizationFormScreen: React.FC = () => {
   const navigation = useNavigation<any>();
   const route = useRoute<any>();
   const organizationId = route.params?.organizationId;
+  const { contentMaxWidth } = useResponsive();
 
   const { createOrg, updateOrg } = useOrgStore();
 
@@ -159,7 +161,7 @@ export const OrganizationFormScreen: React.FC = () => {
         onBack={() => navigation.goBack()}
       />
 
-      <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
+      <ScrollView contentContainerStyle={[styles.scrollContent, { maxWidth: contentMaxWidth, alignSelf: 'center', width: '100%' }]} showsVerticalScrollIndicator={false}>
         {/* Business Identity */}
         <Card variant="elevated" padding={16} style={styles.card}>
           <Text style={styles.sectionHeading}>Business Identity</Text>

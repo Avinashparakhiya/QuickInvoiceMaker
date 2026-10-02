@@ -51,6 +51,7 @@ import { typography } from '../../theme/typography';
 import { formatCurrency } from '../../utils/currency';
 import { format, addDays } from 'date-fns';
 import { Customer, Item, TemplateId, PaymentTerms, Invoice } from '../../types';
+import { useResponsive } from '../../utils/useResponsive';
 
 interface LineItemState {
   itemId?: string;
@@ -66,6 +67,7 @@ interface LineItemState {
 export const InvoiceCreateScreen: React.FC = () => {
   const navigation = useNavigation<any>();
   const route = useRoute<any>();
+  const { contentMaxWidth, isWideScreen } = useResponsive();
   const { activeOrg } = useOrgStore();
   const { createInvoice } = useInvoiceStore();
 
@@ -123,34 +125,60 @@ export const InvoiceCreateScreen: React.FC = () => {
     setNotes(activeOrg.defaultNotes || 'Thank you for your business!');
     setTerms(activeOrg.defaultTerms || 'Payment due according to specified terms.');
 
-    // Default sample item if none
-    if (itms.length > 0) {
-      const first = itms[0];
-      const lineTax = (first.rate * first.taxRate) / 100;
-      setLineItems([
-        {
-          itemId: first.id,
-          description: first.name,
-          unit: first.unit || 'pcs',
-          quantity: 1,
-          rate: first.rate,
-          discountRate: 0,
-          taxRate: first.taxRate,
-          lineTotal: first.rate + lineTax,
-        },
-      ]);
+    const cloneInvoice = route.params?.cloneInvoice as Invoice | undefined;
+    if (cloneInvoice) {
+      if (cloneInvoice.customerId) {
+        const found = custs.find((c) => c.id === cloneInvoice.customerId);
+        if (found) setSelectedCustomer(found);
+      }
+      if (cloneInvoice.items && cloneInvoice.items.length > 0) {
+        setLineItems(
+          cloneInvoice.items.map((it) => ({
+            itemId: it.itemId,
+            description: it.description,
+            unit: it.unit || 'pcs',
+            quantity: it.quantity,
+            rate: it.rate,
+            discountRate: it.discountRate || 0,
+            taxRate: it.taxRate || 0,
+            lineTotal: it.lineTotal,
+          }))
+        );
+      }
+      if (cloneInvoice.templateId) setTemplateId(cloneInvoice.templateId as TemplateId);
+      if (cloneInvoice.paymentTerms) setPaymentTerms(cloneInvoice.paymentTerms as PaymentTerms);
+      if (cloneInvoice.notes) setNotes(cloneInvoice.notes);
+      if (cloneInvoice.termsConditions) setTerms(cloneInvoice.termsConditions);
     } else {
-      setLineItems([
-        {
-          description: 'Web Design & Consulting',
-          unit: 'hrs',
-          quantity: 1,
-          rate: 500,
-          discountRate: 0,
-          taxRate: 10,
-          lineTotal: 550,
-        },
-      ]);
+      // Default sample item if none
+      if (itms.length > 0) {
+        const first = itms[0];
+        const lineTax = (first.rate * first.taxRate) / 100;
+        setLineItems([
+          {
+            itemId: first.id,
+            description: first.name,
+            unit: first.unit || 'pcs',
+            quantity: 1,
+            rate: first.rate,
+            discountRate: 0,
+            taxRate: first.taxRate,
+            lineTotal: first.rate + lineTax,
+          },
+        ]);
+      } else {
+        setLineItems([
+          {
+            description: 'Web Design & Consulting',
+            unit: 'hrs',
+            quantity: 1,
+            rate: 500,
+            discountRate: 0,
+            taxRate: 10,
+            lineTotal: 550,
+          },
+        ]);
+      }
     }
   };
 
@@ -416,7 +444,7 @@ export const InvoiceCreateScreen: React.FC = () => {
       />
 
       <ScrollView
-        contentContainerStyle={styles.scrollContent}
+        contentContainerStyle={[styles.scrollContent, { maxWidth: contentMaxWidth }]}
         showsVerticalScrollIndicator={false}
       >
         {/* ================= STEP 1: CUSTOMER & DETAILS ================= */}
@@ -938,6 +966,8 @@ const styles = StyleSheet.create({
     backgroundColor: colors.background,
   },
   scrollContent: {
+    width: '100%',
+    alignSelf: 'center',
     paddingHorizontal: 16,
     paddingTop: 12,
     paddingBottom: 40,

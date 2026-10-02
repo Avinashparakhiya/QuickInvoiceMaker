@@ -16,6 +16,7 @@ import { useOrgStore } from '../../store/useOrgStore';
 import { orgRepository } from '../../database/repositories/orgRepository';
 import { colors } from '../../theme/colors';
 import { typography } from '../../theme/typography';
+import { useResponsive } from '../../utils/useResponsive';
 import { TemplateId } from '../../types';
 
 interface TemplateItem {
@@ -130,6 +131,7 @@ export const TemplateGalleryScreen: React.FC = () => {
   const navigation = useNavigation<any>();
   const route = useRoute<any>();
   const { activeOrg, updateOrg } = useOrgStore();
+  const { contentMaxWidth } = useResponsive();
 
   const [selectedCategory, setSelectedCategory] = useState<'All' | 'Modern' | 'Classic' | 'Professional'>('All');
   const [selectedTemplate, setSelectedTemplate] = useState<TemplateId>(
@@ -253,7 +255,7 @@ export const TemplateGalleryScreen: React.FC = () => {
       />
 
       {/* Category Tabs */}
-      <View style={styles.categoryBar}>
+      <View style={[styles.categoryBar, { maxWidth: contentMaxWidth, alignSelf: 'center', width: '100%' }]}>
         {(['All', 'Modern', 'Classic', 'Professional'] as const).map((cat) => {
           const isSelected = selectedCategory === cat;
           return (
@@ -285,7 +287,7 @@ export const TemplateGalleryScreen: React.FC = () => {
         keyExtractor={(item) => item.id}
         numColumns={2}
         columnWrapperStyle={styles.columnWrapper}
-        contentContainerStyle={styles.listContent}
+        contentContainerStyle={[styles.listContent, { maxWidth: contentMaxWidth, alignSelf: 'center', width: '100%' }]}
         showsVerticalScrollIndicator={false}
         renderItem={({ item }) => {
           const isSelected = selectedTemplate === item.id;
@@ -321,7 +323,7 @@ export const TemplateGalleryScreen: React.FC = () => {
       />
 
       {/* Bottom Save CTA Bar */}
-      <View style={styles.bottomBar}>
+      <View style={[styles.bottomBar, { maxWidth: Math.min(contentMaxWidth, 800), alignSelf: 'center', width: '100%' }]}>
         <Button
           title={`Set "${TEMPLATES.find((t) => t.id === selectedTemplate)?.name || 'Template'}" as Default`}
           onPress={handleSaveAsDefault}

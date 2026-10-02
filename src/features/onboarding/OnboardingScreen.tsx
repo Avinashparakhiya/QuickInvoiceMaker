@@ -104,15 +104,6 @@ export const OnboardingScreen: React.FC<OnboardingScreenProps> = ({
 
   return (
     <View style={styles.container}>
-      {/* Skip button */}
-      <TouchableOpacity
-        activeOpacity={0.7}
-        onPress={onComplete}
-        style={styles.skipButton}
-      >
-        <Text style={styles.skipText}>Skip</Text>
-      </TouchableOpacity>
-
       {/* Carousel */}
       <ScrollView
         ref={scrollRef}
@@ -153,7 +144,7 @@ export const OnboardingScreen: React.FC<OnboardingScreenProps> = ({
                 {page.title}{'\n'}
                 <Text style={styles.pageTitleHighlight}>{page.titleHighlight}</Text>
               </Text>
-              <Text style={styles.pageSubtitle}>{page.subtitle}</Text>
+              <Text style={styles.pageSubtitle}>Fast. Simple. Professional.</Text>
             </View>
           </View>
         ))}
@@ -191,15 +182,19 @@ export const OnboardingScreen: React.FC<OnboardingScreenProps> = ({
         {/* Action button */}
         <TouchableOpacity
           activeOpacity={0.85}
-          onPress={handleNext}
+          onPress={onComplete}
           style={styles.nextButton}
         >
-          <Text style={styles.nextButtonText}>
-            {isLastPage ? 'Get Started' : 'Next'}
-          </Text>
-          {!isLastPage && (
-            <ChevronRight size={18} color="#FFFFFF" style={{ marginLeft: 4 }} />
-          )}
+          <Text style={styles.nextButtonText}>Get Started</Text>
+        </TouchableOpacity>
+
+        {/* Skip button below */}
+        <TouchableOpacity
+          activeOpacity={0.7}
+          onPress={onComplete}
+          style={styles.skipButtonBottom}
+        >
+          <Text style={styles.skipText}>Skip</Text>
         </TouchableOpacity>
       </View>
     </View>
@@ -211,18 +206,17 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: '#FFFFFF',
   },
-  skipButton: {
-    position: 'absolute',
-    top: 52,
-    right: 24,
-    zIndex: 10,
-    paddingVertical: 6,
-    paddingHorizontal: 16,
+  skipButtonBottom: {
+    paddingVertical: 12,
+    paddingHorizontal: 20,
+    marginTop: 8,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   skipText: {
     fontSize: 14,
     fontWeight: '600',
-    color: '#94A3B8',
+    color: '#64748B',
   },
   carousel: {
     flex: 1,

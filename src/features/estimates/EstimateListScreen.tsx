@@ -20,12 +20,14 @@ import { colors } from '../../theme/colors';
 import { typography } from '../../theme/typography';
 import { formatCurrency } from '../../utils/currency';
 import { formatDate } from '../../utils/dates';
+import { useResponsive } from '../../utils/useResponsive';
 import { Estimate } from '../../types';
 
 export const EstimateListScreen: React.FC = () => {
   const navigation = useNavigation<any>();
   const isFocused = useIsFocused();
   const { activeOrg } = useOrgStore();
+  const { contentMaxWidth } = useResponsive();
 
   const [estimates, setEstimates] = useState<Estimate[]>([]);
   const [filterStatus, setFilterStatus] = useState<string>('ALL');
@@ -192,7 +194,7 @@ export const EstimateListScreen: React.FC = () => {
       />
 
       {/* Search Input */}
-      <View style={styles.searchSection}>
+      <View style={[styles.searchSection, { maxWidth: contentMaxWidth, alignSelf: 'center', width: '100%' }]}>
         <Input
           placeholder="Search by quote # or client name..."
           value={searchQuery}
@@ -203,7 +205,7 @@ export const EstimateListScreen: React.FC = () => {
       </View>
 
       {/* Status Filter Chips */}
-      <View style={styles.filtersSection}>
+      <View style={[styles.filtersSection, { maxWidth: contentMaxWidth, alignSelf: 'center', width: '100%' }]}>
         <FlatList
           horizontal
           showsHorizontalScrollIndicator={false}
@@ -236,7 +238,7 @@ export const EstimateListScreen: React.FC = () => {
         data={filteredEstimates}
         keyExtractor={(item) => item.id}
         renderItem={renderEstimateItem}
-        contentContainerStyle={styles.listContent}
+        contentContainerStyle={[styles.listContent, { maxWidth: contentMaxWidth, alignSelf: 'center', width: '100%' }]}
         showsVerticalScrollIndicator={false}
         refreshControl={
           <RefreshControl

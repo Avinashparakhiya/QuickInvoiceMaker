@@ -40,6 +40,7 @@ import { colors } from '../../theme/colors';
 import { typography } from '../../theme/typography';
 import { formatCurrency } from '../../utils/currency';
 import { Payment, Invoice } from '../../types';
+import { useResponsive } from '../../utils/useResponsive';
 import { subMonths, format } from 'date-fns';
 
 type DateRangeType = 'THIS_MONTH' | 'THIS_QUARTER' | 'THIS_YEAR' | 'LAST_30_DAYS' | 'ALL_TIME';
@@ -69,6 +70,7 @@ const getInitials = (name: string) => {
 };
 
 export const ReportsScreen: React.FC = () => {
+  const { contentMaxWidth, isWideScreen } = useResponsive();
   const { activeOrg } = useOrgStore();
   const { kpiSummary, invoices, loadDashboardData, loadInvoices } = useInvoiceStore();
   const [payments, setPayments] = useState<Payment[]>([]);
@@ -281,7 +283,10 @@ export const ReportsScreen: React.FC = () => {
         subtitle={activeOrg?.displayName || activeOrg?.name || 'Workspace'}
       />
 
-      <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
+      <ScrollView
+        contentContainerStyle={[styles.scrollContent, { maxWidth: contentMaxWidth }]}
+        showsVerticalScrollIndicator={false}
+      >
         {/* Date Range Selector Strip */}
         <View style={styles.dateFilterContainer}>
           <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.dateFilterRow}>
@@ -362,212 +367,421 @@ export const ReportsScreen: React.FC = () => {
           </Card>
         </View>
 
-        {/* Visual Inflow vs Outstanding Ratio Bar Card */}
-        <Card variant="elevated" padding={16} style={styles.sectionCard}>
-          <Text style={styles.cardHeading}>Collection Efficiency</Text>
-          <View style={styles.ratioBarContainer}>
-            <View style={styles.ratioBarLabels}>
-              <Text style={[styles.ratioLabel, { color: colors.success }]}>
-                Collected ({collectionRate}%)
-              </Text>
-              <Text style={[styles.ratioLabel, { color: colors.warning }]}>
-                Pending ({outstandingRate}%)
-              </Text>
-            </View>
-            <View style={styles.ratioTrack}>
-              <View style={[styles.ratioFillPaid, { width: `${collectionRate}%` }]} />
-              <View style={[styles.ratioFillPending, { width: `${outstandingRate}%` }]} />
-            </View>
-          </View>
-
-          {/* Secondary Metric Grid */}
-          <View style={styles.miniMetricsGrid}>
-            <View style={styles.miniMetricCol}>
-              <Text style={styles.miniMetricLabel}>Outstanding</Text>
-              <Text numberOfLines={1} style={[styles.miniMetricVal, { color: colors.warning }]}>
-                {formatCurrency(totalOutstanding, currencySymbol)}
-              </Text>
-            </View>
-            <View style={styles.miniMetricDivider} />
-            <View style={styles.miniMetricCol}>
-              <Text style={styles.miniMetricLabel}>Overdue</Text>
-              <Text numberOfLines={1} style={[styles.miniMetricVal, { color: colors.danger }]}>
-                {formatCurrency(totalOverdue, currencySymbol)}
-              </Text>
-            </View>
-            <View style={styles.miniMetricDivider} />
-            <View style={styles.miniMetricCol}>
-              <Text style={styles.miniMetricLabel}>Tax Billed</Text>
-              <Text numberOfLines={1} style={styles.miniMetricVal}>
-                {formatCurrency(totalTax, currencySymbol)}
-              </Text>
-            </View>
-          </View>
-        </Card>
-
-        {/* 6-Month Invoiced vs Collected Bar Chart */}
-        <Card variant="elevated" padding={16} style={styles.sectionCard}>
-          <View style={styles.chartHeaderRow}>
-            <View>
-              <Text style={styles.cardHeading}>Revenue vs Inflow (6 Mo)</Text>
-              <Text style={styles.chartSubtitle}>Monthly comparison</Text>
-            </View>
-            <View style={styles.chartLegend}>
-              <View style={styles.legendItem}>
-                <View style={[styles.legendBox, { backgroundColor: colors.primary }]} />
-                <Text style={styles.legendLabel}>Billed</Text>
-              </View>
-              <View style={styles.legendItem}>
-                <View style={[styles.legendBox, { backgroundColor: '#10B981' }]} />
-                <Text style={styles.legendLabel}>Paid</Text>
-              </View>
-            </View>
-          </View>
-
-          {/* Interactive Tooltip Card if month tapped */}
-          {selectedChartItem && (
-            <View style={styles.chartTooltip}>
-              <Text style={styles.tooltipMonth}>{selectedChartItem.label} Details:</Text>
-              <Text style={styles.tooltipText}>
-                Billed: <Text style={{ fontWeight: '700' }}>{formatCurrency(selectedChartItem.billed, currencySymbol)}</Text> • Collected: <Text style={{ fontWeight: '700', color: colors.success }}>{formatCurrency(selectedChartItem.collected, currencySymbol)}</Text>
-              </Text>
-            </View>
-          )}
-
-          {/* Bar Chart Columns */}
-          <View style={styles.barsContainer}>
-            {monthlyChartData.map((item) => {
-              const billedHeight = maxChartValue > 0 ? Math.max(6, Math.round((item.billed / maxChartValue) * 110)) : 6;
-              const paidHeight = maxChartValue > 0 ? Math.max(6, Math.round((item.collected / maxChartValue) * 110)) : 6;
-              const isSelected = selectedChartMonth === item.mStr;
-
-              return (
-                <TouchableOpacity
-                  key={item.mStr}
-                  activeOpacity={0.8}
-                  onPress={() => setSelectedChartMonth(isSelected ? null : item.mStr)}
-                  style={[styles.chartColWrapper, isSelected && styles.chartColSelected]}
-                >
-                  <View style={styles.barPair}>
-                    {/* Billed Bar */}
-                    <View style={[styles.bar, { height: billedHeight, backgroundColor: colors.primary }]} />
-                    {/* Collected Bar */}
-                    <View style={[styles.bar, { height: paidHeight, backgroundColor: '#10B981' }]} />
+        {isWideScreen ? (
+          <View style={styles.desktopColumns}>
+            {/* Left Column */}
+            <View style={styles.desktopLeftCol}>
+              {/* 6-Month Invoiced vs Collected Bar Chart */}
+              <Card variant="elevated" padding={16} style={styles.sectionCard}>
+                <View style={styles.chartHeaderRow}>
+                  <View>
+                    <Text style={styles.cardHeading}>Revenue vs Inflow (6 Mo)</Text>
+                    <Text style={styles.chartSubtitle}>Monthly comparison</Text>
                   </View>
-                  <Text style={[styles.monthLabel, isSelected && styles.monthLabelActive]}>
-                    {item.label}
+                  <View style={styles.chartLegend}>
+                    <View style={styles.legendItem}>
+                      <View style={[styles.legendBox, { backgroundColor: colors.primary }]} />
+                      <Text style={styles.legendLabel}>Billed</Text>
+                    </View>
+                    <View style={styles.legendItem}>
+                      <View style={[styles.legendBox, { backgroundColor: '#10B981' }]} />
+                      <Text style={styles.legendLabel}>Paid</Text>
+                    </View>
+                  </View>
+                </View>
+
+                {selectedChartItem && (
+                  <View style={styles.chartTooltip}>
+                    <Text style={styles.tooltipMonth}>{selectedChartItem.label} Details:</Text>
+                    <Text style={styles.tooltipText}>
+                      Billed: <Text style={{ fontWeight: '700' }}>{formatCurrency(selectedChartItem.billed, currencySymbol)}</Text> • Collected: <Text style={{ fontWeight: '700', color: colors.success }}>{formatCurrency(selectedChartItem.collected, currencySymbol)}</Text>
+                    </Text>
+                  </View>
+                )}
+
+                <View style={styles.barsContainer}>
+                  {monthlyChartData.map((item) => {
+                    const billedHeight = maxChartValue > 0 ? Math.max(6, Math.round((item.billed / maxChartValue) * 110)) : 6;
+                    const paidHeight = maxChartValue > 0 ? Math.max(6, Math.round((item.collected / maxChartValue) * 110)) : 6;
+                    const isSelected = selectedChartMonth === item.mStr;
+
+                    return (
+                      <TouchableOpacity
+                        key={item.mStr}
+                        activeOpacity={0.8}
+                        onPress={() => setSelectedChartMonth(isSelected ? null : item.mStr)}
+                        style={[styles.chartColWrapper, isSelected && styles.chartColSelected]}
+                      >
+                        <View style={styles.barPair}>
+                          <View style={[styles.bar, { height: billedHeight, backgroundColor: colors.primary }]} />
+                          <View style={[styles.bar, { height: paidHeight, backgroundColor: '#10B981' }]} />
+                        </View>
+                        <Text style={[styles.monthLabel, isSelected && styles.monthLabelActive]}>
+                          {item.label}
+                        </Text>
+                      </TouchableOpacity>
+                    );
+                  })}
+                </View>
+              </Card>
+
+              {/* Visual Inflow vs Outstanding Ratio Bar Card */}
+              <Card variant="elevated" padding={16} style={styles.sectionCard}>
+                <Text style={styles.cardHeading}>Collection Efficiency</Text>
+                <View style={styles.ratioBarContainer}>
+                  <View style={styles.ratioBarLabels}>
+                    <Text style={[styles.ratioLabel, { color: colors.success }]}>
+                      Collected ({collectionRate}%)
+                    </Text>
+                    <Text style={[styles.ratioLabel, { color: colors.warning }]}>
+                      Pending ({outstandingRate}%)
+                    </Text>
+                  </View>
+                  <View style={styles.ratioTrack}>
+                    <View style={[styles.ratioFillPaid, { width: `${collectionRate}%` }]} />
+                    <View style={[styles.ratioFillPending, { width: `${outstandingRate}%` }]} />
+                  </View>
+                </View>
+
+                <View style={styles.miniMetricsGrid}>
+                  <View style={styles.miniMetricCol}>
+                    <Text style={styles.miniMetricLabel}>Outstanding</Text>
+                    <Text numberOfLines={1} style={[styles.miniMetricVal, { color: colors.warning }]}>
+                      {formatCurrency(totalOutstanding, currencySymbol)}
+                    </Text>
+                  </View>
+                  <View style={styles.miniMetricDivider} />
+                  <View style={styles.miniMetricCol}>
+                    <Text style={styles.miniMetricLabel}>Overdue</Text>
+                    <Text numberOfLines={1} style={[styles.miniMetricVal, { color: colors.danger }]}>
+                      {formatCurrency(totalOverdue, currencySymbol)}
+                    </Text>
+                  </View>
+                  <View style={styles.miniMetricDivider} />
+                  <View style={styles.miniMetricCol}>
+                    <Text style={styles.miniMetricLabel}>Tax Billed</Text>
+                    <Text numberOfLines={1} style={styles.miniMetricVal}>
+                      {formatCurrency(totalTax, currencySymbol)}
+                    </Text>
+                  </View>
+                </View>
+              </Card>
+
+              {/* Receivables Aging Analysis */}
+              <Card variant="elevated" padding={16} style={styles.sectionCard}>
+                <View style={styles.cardTitleRow}>
+                  <Clock size={18} color={colors.primaryDarker} />
+                  <Text style={styles.cardHeading}>Receivables Aging Analysis</Text>
+                </View>
+
+                <View style={styles.agingItem}>
+                  <View style={styles.agingHeader}>
+                    <Text style={styles.agingLabel}>Current (0 – 30 Days)</Text>
+                    <Text style={styles.agingAmount}>
+                      {formatCurrency(Math.max(0, totalOutstanding - totalOverdue), currencySymbol)}
+                    </Text>
+                  </View>
+                  <View style={styles.progressBarBg}>
+                    <View style={[styles.progressBarFill, { width: '75%', backgroundColor: colors.primary }]} />
+                  </View>
+                </View>
+
+                <View style={styles.agingItem}>
+                  <View style={styles.agingHeader}>
+                    <Text style={styles.agingLabel}>31 – 60 Days Overdue</Text>
+                    <Text style={[styles.agingAmount, { color: colors.warning }]}>
+                      {formatCurrency(totalOverdue, currencySymbol)}
+                    </Text>
+                  </View>
+                  <View style={styles.progressBarBg}>
+                    <View style={[styles.progressBarFill, { width: totalOverdue > 0 ? '35%' : '0%', backgroundColor: colors.warning }]} />
+                  </View>
+                </View>
+
+                <View style={styles.agingItem}>
+                  <View style={styles.agingHeader}>
+                    <Text style={styles.agingLabel}>60+ Days Overdue</Text>
+                    <Text style={[styles.agingAmount, { color: colors.danger }]}>
+                      {formatCurrency(0, currencySymbol)}
+                    </Text>
+                  </View>
+                  <View style={styles.progressBarBg}>
+                    <View style={[styles.progressBarFill, { width: '0%', backgroundColor: colors.danger }]} />
+                  </View>
+                </View>
+              </Card>
+            </View>
+
+            {/* Right Column */}
+            <View style={styles.desktopRightCol}>
+              {/* Top 5 Customers by Revenue */}
+              <Card variant="elevated" padding={16} style={styles.sectionCard}>
+                <View style={styles.cardTitleRow}>
+                  <Users size={18} color={colors.primaryDarker} />
+                  <Text style={styles.cardHeading}>Top Clients by Revenue</Text>
+                </View>
+
+                {topCustomers.length === 0 ? (
+                  <Text style={styles.emptyText}>No customer invoice data available.</Text>
+                ) : (
+                  topCustomers.map((cust, idx) => {
+                    const avatarTheme = getAvatarTheme(cust.name);
+                    const initials = getInitials(cust.name);
+
+                    return (
+                      <View key={cust.name} style={styles.custRow}>
+                        <View style={styles.custRankBadge}>
+                          <Text style={styles.custRankText}>#{idx + 1}</Text>
+                        </View>
+                        <View style={[styles.custAvatar, { backgroundColor: avatarTheme.bg }]}>
+                          <Text style={[styles.custAvatarText, { color: avatarTheme.text }]}>{initials}</Text>
+                        </View>
+                        <View style={styles.custInfo}>
+                          <Text numberOfLines={1} style={styles.custName}>{cust.name}</Text>
+                          <Text style={styles.custCount}>{cust.count} {cust.count === 1 ? 'Invoice' : 'Invoices'}</Text>
+                        </View>
+                        <Text style={styles.custTotal}>
+                          {formatCurrency(cust.total, currencySymbol)}
+                        </Text>
+                      </View>
+                    );
+                  })
+                )}
+              </Card>
+
+              {/* Invoice Status Counts Grid */}
+              <Card variant="elevated" padding={16} style={styles.sectionCard}>
+                <Text style={styles.cardHeading}>Invoice Status Overview</Text>
+                <View style={styles.statusGrid}>
+                  <View style={styles.statusBox}>
+                    <Text style={[styles.statusBoxCount, { color: colors.success }]}>{statusCounts.PAID}</Text>
+                    <Text style={styles.statusBoxLabel}>Paid</Text>
+                  </View>
+                  <View style={styles.statusBox}>
+                    <Text style={[styles.statusBoxCount, { color: '#E11D48' }]}>{statusCounts.UNPAID}</Text>
+                    <Text style={styles.statusBoxLabel}>Unpaid</Text>
+                  </View>
+                  <View style={styles.statusBox}>
+                    <Text style={[styles.statusBoxCount, { color: colors.warning }]}>{statusCounts.PARTIAL}</Text>
+                    <Text style={styles.statusBoxLabel}>Partial</Text>
+                  </View>
+                  <View style={styles.statusBox}>
+                    <Text style={[styles.statusBoxCount, { color: colors.danger }]}>{statusCounts.OVERDUE}</Text>
+                    <Text style={styles.statusBoxLabel}>Overdue</Text>
+                  </View>
+                  <View style={styles.statusBox}>
+                    <Text style={[styles.statusBoxCount, { color: '#64748B' }]}>{statusCounts.DRAFT}</Text>
+                    <Text style={styles.statusBoxLabel}>Draft</Text>
+                  </View>
+                </View>
+              </Card>
+            </View>
+          </View>
+        ) : (
+          <>
+            {/* Visual Inflow vs Outstanding Ratio Bar Card */}
+            <Card variant="elevated" padding={16} style={styles.sectionCard}>
+              <Text style={styles.cardHeading}>Collection Efficiency</Text>
+              <View style={styles.ratioBarContainer}>
+                <View style={styles.ratioBarLabels}>
+                  <Text style={[styles.ratioLabel, { color: colors.success }]}>
+                    Collected ({collectionRate}%)
                   </Text>
-                </TouchableOpacity>
-              );
-            })}
-          </View>
-        </Card>
-
-        {/* Receivables Aging Analysis */}
-        <Card variant="elevated" padding={16} style={styles.sectionCard}>
-          <View style={styles.cardTitleRow}>
-            <Clock size={18} color={colors.primaryDarker} />
-            <Text style={styles.cardHeading}>Receivables Aging Analysis</Text>
-          </View>
-
-          <View style={styles.agingItem}>
-            <View style={styles.agingHeader}>
-              <Text style={styles.agingLabel}>Current (0 – 30 Days)</Text>
-              <Text style={styles.agingAmount}>
-                {formatCurrency(Math.max(0, totalOutstanding - totalOverdue), currencySymbol)}
-              </Text>
-            </View>
-            <View style={styles.progressBarBg}>
-              <View style={[styles.progressBarFill, { width: '75%', backgroundColor: colors.primary }]} />
-            </View>
-          </View>
-
-          <View style={styles.agingItem}>
-            <View style={styles.agingHeader}>
-              <Text style={styles.agingLabel}>31 – 60 Days Overdue</Text>
-              <Text style={[styles.agingAmount, { color: colors.warning }]}>
-                {formatCurrency(totalOverdue, currencySymbol)}
-              </Text>
-            </View>
-            <View style={styles.progressBarBg}>
-              <View style={[styles.progressBarFill, { width: totalOverdue > 0 ? '35%' : '0%', backgroundColor: colors.warning }]} />
-            </View>
-          </View>
-
-          <View style={styles.agingItem}>
-            <View style={styles.agingHeader}>
-              <Text style={styles.agingLabel}>60+ Days Overdue</Text>
-              <Text style={[styles.agingAmount, { color: colors.danger }]}>
-                {formatCurrency(0, currencySymbol)}
-              </Text>
-            </View>
-            <View style={styles.progressBarBg}>
-              <View style={[styles.progressBarFill, { width: '0%', backgroundColor: colors.danger }]} />
-            </View>
-          </View>
-        </Card>
-
-        {/* Top 5 Customers by Revenue */}
-        <Card variant="elevated" padding={16} style={styles.sectionCard}>
-          <View style={styles.cardTitleRow}>
-            <Users size={18} color={colors.primaryDarker} />
-            <Text style={styles.cardHeading}>Top Clients by Revenue</Text>
-          </View>
-
-          {topCustomers.length === 0 ? (
-            <Text style={styles.emptyText}>No customer invoice data available.</Text>
-          ) : (
-            topCustomers.map((cust, idx) => {
-              const avatarTheme = getAvatarTheme(cust.name);
-              const initials = getInitials(cust.name);
-
-              return (
-                <View key={cust.name} style={styles.custRow}>
-                  <View style={styles.custRankBadge}>
-                    <Text style={styles.custRankText}>#{idx + 1}</Text>
-                  </View>
-                  <View style={[styles.custAvatar, { backgroundColor: avatarTheme.bg }]}>
-                    <Text style={[styles.custAvatarText, { color: avatarTheme.text }]}>{initials}</Text>
-                  </View>
-                  <View style={styles.custInfo}>
-                    <Text numberOfLines={1} style={styles.custName}>{cust.name}</Text>
-                    <Text style={styles.custCount}>{cust.count} {cust.count === 1 ? 'Invoice' : 'Invoices'}</Text>
-                  </View>
-                  <Text style={styles.custTotal}>
-                    {formatCurrency(cust.total, currencySymbol)}
+                  <Text style={[styles.ratioLabel, { color: colors.warning }]}>
+                    Pending ({outstandingRate}%)
                   </Text>
                 </View>
-              );
-            })
-          )}
-        </Card>
+                <View style={styles.ratioTrack}>
+                  <View style={[styles.ratioFillPaid, { width: `${collectionRate}%` }]} />
+                  <View style={[styles.ratioFillPending, { width: `${outstandingRate}%` }]} />
+                </View>
+              </View>
 
-        {/* Invoice Status Counts Grid */}
-        <Card variant="elevated" padding={16} style={styles.sectionCard}>
-          <Text style={styles.cardHeading}>Invoice Status Overview</Text>
-          <View style={styles.statusGrid}>
-            <View style={styles.statusBox}>
-              <Text style={[styles.statusBoxCount, { color: colors.success }]}>{statusCounts.PAID}</Text>
-              <Text style={styles.statusBoxLabel}>Paid</Text>
-            </View>
-            <View style={styles.statusBox}>
-              <Text style={[styles.statusBoxCount, { color: '#E11D48' }]}>{statusCounts.UNPAID}</Text>
-              <Text style={styles.statusBoxLabel}>Unpaid</Text>
-            </View>
-            <View style={styles.statusBox}>
-              <Text style={[styles.statusBoxCount, { color: colors.warning }]}>{statusCounts.PARTIAL}</Text>
-              <Text style={styles.statusBoxLabel}>Partial</Text>
-            </View>
-            <View style={styles.statusBox}>
-              <Text style={[styles.statusBoxCount, { color: colors.danger }]}>{statusCounts.OVERDUE}</Text>
-              <Text style={styles.statusBoxLabel}>Overdue</Text>
-            </View>
-            <View style={styles.statusBox}>
-              <Text style={[styles.statusBoxCount, { color: '#64748B' }]}>{statusCounts.DRAFT}</Text>
-              <Text style={styles.statusBoxLabel}>Draft</Text>
-            </View>
-          </View>
-        </Card>
+              <View style={styles.miniMetricsGrid}>
+                <View style={styles.miniMetricCol}>
+                  <Text style={styles.miniMetricLabel}>Outstanding</Text>
+                  <Text numberOfLines={1} style={[styles.miniMetricVal, { color: colors.warning }]}>
+                    {formatCurrency(totalOutstanding, currencySymbol)}
+                  </Text>
+                </View>
+                <View style={styles.miniMetricDivider} />
+                <View style={styles.miniMetricCol}>
+                  <Text style={styles.miniMetricLabel}>Overdue</Text>
+                  <Text numberOfLines={1} style={[styles.miniMetricVal, { color: colors.danger }]}>
+                    {formatCurrency(totalOverdue, currencySymbol)}
+                  </Text>
+                </View>
+                <View style={styles.miniMetricDivider} />
+                <View style={styles.miniMetricCol}>
+                  <Text style={styles.miniMetricLabel}>Tax Billed</Text>
+                  <Text numberOfLines={1} style={styles.miniMetricVal}>
+                    {formatCurrency(totalTax, currencySymbol)}
+                  </Text>
+                </View>
+              </View>
+            </Card>
+
+            {/* 6-Month Invoiced vs Collected Bar Chart */}
+            <Card variant="elevated" padding={16} style={styles.sectionCard}>
+              <View style={styles.chartHeaderRow}>
+                <View>
+                  <Text style={styles.cardHeading}>Revenue vs Inflow (6 Mo)</Text>
+                  <Text style={styles.chartSubtitle}>Monthly comparison</Text>
+                </View>
+                <View style={styles.chartLegend}>
+                  <View style={styles.legendItem}>
+                    <View style={[styles.legendBox, { backgroundColor: colors.primary }]} />
+                    <Text style={styles.legendLabel}>Billed</Text>
+                  </View>
+                  <View style={styles.legendItem}>
+                    <View style={[styles.legendBox, { backgroundColor: '#10B981' }]} />
+                    <Text style={styles.legendLabel}>Paid</Text>
+                  </View>
+                </View>
+              </View>
+
+              {selectedChartItem && (
+                <View style={styles.chartTooltip}>
+                  <Text style={styles.tooltipMonth}>{selectedChartItem.label} Details:</Text>
+                  <Text style={styles.tooltipText}>
+                    Billed: <Text style={{ fontWeight: '700' }}>{formatCurrency(selectedChartItem.billed, currencySymbol)}</Text> • Collected: <Text style={{ fontWeight: '700', color: colors.success }}>{formatCurrency(selectedChartItem.collected, currencySymbol)}</Text>
+                  </Text>
+                </View>
+              )}
+
+              <View style={styles.barsContainer}>
+                {monthlyChartData.map((item) => {
+                  const billedHeight = maxChartValue > 0 ? Math.max(6, Math.round((item.billed / maxChartValue) * 110)) : 6;
+                  const paidHeight = maxChartValue > 0 ? Math.max(6, Math.round((item.collected / maxChartValue) * 110)) : 6;
+                  const isSelected = selectedChartMonth === item.mStr;
+
+                  return (
+                    <TouchableOpacity
+                      key={item.mStr}
+                      activeOpacity={0.8}
+                      onPress={() => setSelectedChartMonth(isSelected ? null : item.mStr)}
+                      style={[styles.chartColWrapper, isSelected && styles.chartColSelected]}
+                    >
+                      <View style={styles.barPair}>
+                        <View style={[styles.bar, { height: billedHeight, backgroundColor: colors.primary }]} />
+                        <View style={[styles.bar, { height: paidHeight, backgroundColor: '#10B981' }]} />
+                      </View>
+                      <Text style={[styles.monthLabel, isSelected && styles.monthLabelActive]}>
+                        {item.label}
+                      </Text>
+                    </TouchableOpacity>
+                  );
+                })}
+              </View>
+            </Card>
+
+            {/* Receivables Aging Analysis */}
+            <Card variant="elevated" padding={16} style={styles.sectionCard}>
+              <View style={styles.cardTitleRow}>
+                <Clock size={18} color={colors.primaryDarker} />
+                <Text style={styles.cardHeading}>Receivables Aging Analysis</Text>
+              </View>
+
+              <View style={styles.agingItem}>
+                <View style={styles.agingHeader}>
+                  <Text style={styles.agingLabel}>Current (0 – 30 Days)</Text>
+                  <Text style={styles.agingAmount}>
+                    {formatCurrency(Math.max(0, totalOutstanding - totalOverdue), currencySymbol)}
+                  </Text>
+                </View>
+                <View style={styles.progressBarBg}>
+                  <View style={[styles.progressBarFill, { width: '75%', backgroundColor: colors.primary }]} />
+                </View>
+              </View>
+
+              <View style={styles.agingItem}>
+                <View style={styles.agingHeader}>
+                  <Text style={styles.agingLabel}>31 – 60 Days Overdue</Text>
+                  <Text style={[styles.agingAmount, { color: colors.warning }]}>
+                    {formatCurrency(totalOverdue, currencySymbol)}
+                  </Text>
+                </View>
+                <View style={styles.progressBarBg}>
+                  <View style={[styles.progressBarFill, { width: totalOverdue > 0 ? '35%' : '0%', backgroundColor: colors.warning }]} />
+                </View>
+              </View>
+
+              <View style={styles.agingItem}>
+                <View style={styles.agingHeader}>
+                  <Text style={styles.agingLabel}>60+ Days Overdue</Text>
+                  <Text style={[styles.agingAmount, { color: colors.danger }]}>
+                    {formatCurrency(0, currencySymbol)}
+                  </Text>
+                </View>
+                <View style={styles.progressBarBg}>
+                  <View style={[styles.progressBarFill, { width: '0%', backgroundColor: colors.danger }]} />
+                </View>
+              </View>
+            </Card>
+
+            {/* Top 5 Customers by Revenue */}
+            <Card variant="elevated" padding={16} style={styles.sectionCard}>
+              <View style={styles.cardTitleRow}>
+                <Users size={18} color={colors.primaryDarker} />
+                <Text style={styles.cardHeading}>Top Clients by Revenue</Text>
+              </View>
+
+              {topCustomers.length === 0 ? (
+                <Text style={styles.emptyText}>No customer invoice data available.</Text>
+              ) : (
+                topCustomers.map((cust, idx) => {
+                  const avatarTheme = getAvatarTheme(cust.name);
+                  const initials = getInitials(cust.name);
+
+                  return (
+                    <View key={cust.name} style={styles.custRow}>
+                      <View style={styles.custRankBadge}>
+                        <Text style={styles.custRankText}>#{idx + 1}</Text>
+                      </View>
+                      <View style={[styles.custAvatar, { backgroundColor: avatarTheme.bg }]}>
+                        <Text style={[styles.custAvatarText, { color: avatarTheme.text }]}>{initials}</Text>
+                      </View>
+                      <View style={styles.custInfo}>
+                        <Text numberOfLines={1} style={styles.custName}>{cust.name}</Text>
+                        <Text style={styles.custCount}>{cust.count} {cust.count === 1 ? 'Invoice' : 'Invoices'}</Text>
+                      </View>
+                      <Text style={styles.custTotal}>
+                        {formatCurrency(cust.total, currencySymbol)}
+                      </Text>
+                    </View>
+                  );
+                })
+              )}
+            </Card>
+
+            {/* Invoice Status Counts Grid */}
+            <Card variant="elevated" padding={16} style={styles.sectionCard}>
+              <Text style={styles.cardHeading}>Invoice Status Overview</Text>
+              <View style={styles.statusGrid}>
+                <View style={styles.statusBox}>
+                  <Text style={[styles.statusBoxCount, { color: colors.success }]}>{statusCounts.PAID}</Text>
+                  <Text style={styles.statusBoxLabel}>Paid</Text>
+                </View>
+                <View style={styles.statusBox}>
+                  <Text style={[styles.statusBoxCount, { color: '#E11D48' }]}>{statusCounts.UNPAID}</Text>
+                  <Text style={styles.statusBoxLabel}>Unpaid</Text>
+                </View>
+                <View style={styles.statusBox}>
+                  <Text style={[styles.statusBoxCount, { color: colors.warning }]}>{statusCounts.PARTIAL}</Text>
+                  <Text style={styles.statusBoxLabel}>Partial</Text>
+                </View>
+                <View style={styles.statusBox}>
+                  <Text style={[styles.statusBoxCount, { color: colors.danger }]}>{statusCounts.OVERDUE}</Text>
+                  <Text style={styles.statusBoxLabel}>Overdue</Text>
+                </View>
+                <View style={styles.statusBox}>
+                  <Text style={[styles.statusBoxCount, { color: '#64748B' }]}>{statusCounts.DRAFT}</Text>
+                  <Text style={styles.statusBoxLabel}>Draft</Text>
+                </View>
+              </View>
+            </Card>
+          </>
+        )}
       </ScrollView>
     </View>
   );
@@ -579,8 +793,22 @@ const styles = StyleSheet.create({
     backgroundColor: colors.background,
   },
   scrollContent: {
+    width: '100%',
+    alignSelf: 'center',
     paddingHorizontal: 16,
     paddingBottom: 36,
+  },
+  desktopColumns: {
+    flexDirection: 'row',
+    gap: 20,
+    alignItems: 'flex-start',
+    width: '100%',
+  },
+  desktopLeftCol: {
+    flex: 1.3,
+  },
+  desktopRightCol: {
+    flex: 1,
   },
   dateFilterContainer: {
     paddingTop: 10,

@@ -36,6 +36,7 @@ import { colors } from '../../theme/colors';
 import { typography } from '../../theme/typography';
 import { formatCurrency } from '../../utils/currency';
 import { formatDate } from '../../utils/dates';
+import { useResponsive } from '../../utils/useResponsive';
 import { Expense } from '../../types';
 
 export const ExpenseListScreen: React.FC = () => {
@@ -43,6 +44,7 @@ export const ExpenseListScreen: React.FC = () => {
   const isFocused = useIsFocused();
   const { activeOrg } = useOrgStore();
   const { kpiSummary } = useInvoiceStore();
+  const { contentMaxWidth } = useResponsive();
 
   const [expenses, setExpenses] = useState<Expense[]>([]);
   const [totalExpenseAmount, setTotalExpenseAmount] = useState(0);
@@ -197,7 +199,7 @@ export const ExpenseListScreen: React.FC = () => {
       />
 
       {/* Net Profit & Financial Health Card */}
-      <View style={styles.kpiContainer}>
+      <View style={[styles.kpiContainer, { maxWidth: contentMaxWidth, alignSelf: 'center', width: '100%' }]}>
         <Card variant="softGreen" padding={16} style={styles.kpiCard}>
           <View style={styles.profitHeaderRow}>
             <View>
@@ -246,7 +248,7 @@ export const ExpenseListScreen: React.FC = () => {
       </View>
 
       {/* Search Input */}
-      <View style={styles.searchSection}>
+      <View style={[styles.searchSection, { maxWidth: contentMaxWidth, alignSelf: 'center', width: '100%' }]}>
         <Input
           placeholder="Search by vendor, category, memo..."
           value={searchQuery}
@@ -257,7 +259,7 @@ export const ExpenseListScreen: React.FC = () => {
       </View>
 
       {/* Category Filter Chips */}
-      <View style={styles.filtersSection}>
+      <View style={[styles.filtersSection, { maxWidth: contentMaxWidth, alignSelf: 'center', width: '100%' }]}>
         <FlatList
           horizontal
           showsHorizontalScrollIndicator={false}
@@ -290,7 +292,7 @@ export const ExpenseListScreen: React.FC = () => {
         data={filteredExpenses}
         keyExtractor={(item) => item.id}
         renderItem={renderExpenseItem}
-        contentContainerStyle={styles.listContent}
+        contentContainerStyle={[styles.listContent, { maxWidth: contentMaxWidth, alignSelf: 'center', width: '100%' }]}
         showsVerticalScrollIndicator={false}
         refreshControl={
           <RefreshControl

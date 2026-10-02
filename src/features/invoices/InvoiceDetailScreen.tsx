@@ -21,6 +21,7 @@ import {
   FileText,
   Bell,
   Eye,
+  Copy,
 } from 'lucide-react-native';
 import { Header } from '../../components/common/Header';
 import { Card } from '../../components/common/Card';
@@ -35,6 +36,7 @@ import { typography } from '../../theme/typography';
 import { formatCurrency } from '../../utils/currency';
 import { formatDate } from '../../utils/dates';
 import { Invoice } from '../../types';
+import { useResponsive } from '../../utils/useResponsive';
 
 import { InvoicePreviewModal } from './InvoicePreviewModal';
 import { PaymentReminderModal } from './PaymentReminderModal';
@@ -44,6 +46,7 @@ export const InvoiceDetailScreen: React.FC = () => {
   const route = useRoute<any>();
   const invoiceId = route.params?.invoiceId;
 
+  const { contentMaxWidth, isWideScreen } = useResponsive();
   const { activeOrg } = useOrgStore();
   const { deleteInvoice } = useInvoiceStore();
   const [invoice, setInvoice] = useState<Invoice | null>(null);
@@ -115,6 +118,11 @@ export const InvoiceDetailScreen: React.FC = () => {
     );
   };
 
+  const handleDuplicate = () => {
+    if (!invoice) return;
+    navigation.navigate('InvoiceCreate', { cloneInvoice: invoice });
+  };
+
   if (!invoice) {
     return (
       <View style={styles.container}>
@@ -138,160 +146,343 @@ export const InvoiceDetailScreen: React.FC = () => {
         rightAction={
           <View style={{ flexDirection: 'row', gap: 8 }}>
             <TouchableOpacity
+              onPress={handleDuplicate}
+              style={styles.previewIconBtn}
+            >
+              <Copy size={17} color={colors.primaryDarker} />
+            </TouchableOpacity>
+            <TouchableOpacity
               onPress={() => navigation.navigate('InvoicePreview', { invoice })}
               style={styles.previewIconBtn}
             >
-              <Eye size={18} color={colors.primaryDarker} />
+              <Eye size={17} color={colors.primaryDarker} />
             </TouchableOpacity>
             <TouchableOpacity onPress={handleDelete} style={styles.deleteBtn}>
-              <Trash2 size={18} color={colors.danger} />
+              <Trash2 size={17} color={colors.danger} />
             </TouchableOpacity>
           </View>
         }
       />
 
-      <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
-        {/* Status & Total Header Card */}
-        <Card variant="softGreen" padding={18} style={styles.card}>
-          <View style={styles.statusRow}>
-            <Badge status={invoice.status} size="md" />
-            <Text style={styles.dueText}>Due: {formatDate(invoice.dueDate)}</Text>
-          </View>
+      <ScrollView
+        contentContainerStyle={[styles.scrollContent, { maxWidth: contentMaxWidth }]}
+        showsVerticalScrollIndicator={false}
+      >
+        {isWideScreen ? (
+          <View style={styles.desktopColumns}>
+            {/* Left Column: Metadata & Actions */}
+            <View style={styles.desktopLeftCol}>
+              {/* Status & Total Header Card */}
+              <Card variant="softGreen" padding={18} style={styles.card}>
+                <View style={styles.statusRow}>
+                  <Badge status={invoice.status} size="md" />
+                  <Text style={styles.dueText}>Due: {formatDate(invoice.dueDate)}</Text>
+                </View>
 
-          <View style={styles.totalBox}>
-            <Text style={styles.totalLabel}>Total Invoiced Amount</Text>
-            <Text style={styles.totalAmount}>{formatCurrency(invoice.totalAmount, symbol)}</Text>
-          </View>
+                <View style={styles.totalBox}>
+                  <Text style={styles.totalLabel}>Total Invoiced Amount</Text>
+                  <Text style={styles.totalAmount}>{formatCurrency(invoice.totalAmount, symbol)}</Text>
+                </View>
 
-          {invoice.balanceDue > 0 ? (
-            <View style={styles.balanceRow}>
-              <Text style={styles.balanceLabel}>Remaining Balance Due:</Text>
-              <Text style={styles.balanceValue}>{formatCurrency(invoice.balanceDue, symbol)}</Text>
+                {invoice.balanceDue > 0 ? (
+                  <View style={styles.balanceRow}>
+                    <Text style={styles.balanceLabel}>Remaining Balance Due:</Text>
+                    <Text style={styles.balanceValue}>{formatCurrency(invoice.balanceDue, symbol)}</Text>
+                  </View>
+                ) : (
+                  <View style={styles.settledRow}>
+                    <CheckCircle2 size={16} color={colors.success} />
+                    <Text style={styles.settledText}>Fully settled & paid in full</Text>
+                  </View>
+                )}
+              </Card>
+
+              {/* Live Template Preview Action Card */}
+              <Card variant="elevated" padding={14} style={[styles.card, { borderColor: colors.primary }]}>
+                <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <View style={{ flex: 1, paddingRight: 8 }}>
+                    <Text style={{ ...typography.bodySemiBold, color: colors.text }}>12 Invoice Templates</Text>
+                    <Text style={{ ...typography.captionRegular, color: colors.textSecondary }}>
+                      Switch styles & preview live PDF before sending
+                    </Text>
+                  </View>
+                  <Button
+                    title="Preview"
+                    onPress={() => navigation.navigate('InvoicePreview', { invoice })}
+                    size="sm"
+                    icon={<Eye size={16} color="#FFFFFF" />}
+                  />
+                </View>
+              </Card>
+
+              {/* Primary Action Buttons */}
+              <View style={styles.actionsRow}>
+                <Button
+                  title="Share PDF / WhatsApp"
+                  onPress={handleSharePdf}
+                  icon={<Share2 size={18} color="#FFFFFF" />}
+                  loading={loading}
+                  style={styles.actionBtn}
+                />
+                <View style={{ width: 10 }} />
+                <Button
+                  title="Print"
+                  onPress={handlePrintOrPdf}
+                  variant="white"
+                  icon={<Printer size={18} color={colors.text} />}
+                  style={styles.actionBtn}
+                />
+              </View>
+
+              <View style={{ marginBottom: 14 }}>
+                <Button
+                  title="Duplicate / Clone Invoice"
+                  onPress={handleDuplicate}
+                  variant="outline"
+                  size="md"
+                  icon={<Copy size={17} color={colors.primaryDarker} />}
+                />
+              </View>
+
+              {invoice.balanceDue > 0 ? (
+                <View style={{ marginBottom: 14, gap: 10 }}>
+                  <Button
+                    title="Record Payment"
+                    onPress={() => navigation.navigate('RecordPayment', { invoiceId: invoice.id })}
+                    variant="secondary"
+                    size="lg"
+                    icon={<CreditCard size={20} color={colors.primaryDark} />}
+                  />
+                  <Button
+                    title="Send Payment Reminder (WhatsApp/Email)"
+                    onPress={() => setReminderModalVisible(true)}
+                    variant="outline"
+                    size="md"
+                    icon={<Bell size={18} color={colors.primaryDarker} />}
+                  />
+                </View>
+              ) : null}
+
+              {/* Customer Information */}
+              <Card variant="elevated" padding={16} style={styles.card}>
+                <Text style={styles.sectionHeading}>Customer Details</Text>
+                <Text style={styles.customerName}>{invoice.customerName || 'Walk-in Client'}</Text>
+                {invoice.customerEmail ? <Text style={styles.metaText}>{invoice.customerEmail}</Text> : null}
+                {invoice.poNumber ? <Text style={styles.metaText}>PO Ref: {invoice.poNumber}</Text> : null}
+              </Card>
             </View>
-          ) : (
-            <View style={styles.settledRow}>
-              <CheckCircle2 size={16} color={colors.success} />
-              <Text style={styles.settledText}>Fully settled & paid in full</Text>
+
+            {/* Right Column: Line Items & Payment History */}
+            <View style={styles.desktopRightCol}>
+              {/* Line Items */}
+              <Card variant="elevated" padding={16} style={styles.card}>
+                <Text style={styles.sectionHeading}>Items & Charges ({(invoice.items || []).length})</Text>
+
+                {(invoice.items || []).map((item, idx) => (
+                  <View key={item.id || idx} style={styles.itemRow}>
+                    <View style={styles.itemLeft}>
+                      <Text style={styles.itemDesc}>{item.description}</Text>
+                      <Text style={styles.itemSub}>
+                        {item.quantity} {item.unit || 'pcs'} × {formatCurrency(item.rate, symbol)}
+                        {item.taxRate > 0 ? ` • Tax ${item.taxRate}%` : ''}
+                      </Text>
+                    </View>
+                    <Text style={styles.itemTotal}>{formatCurrency(item.lineTotal, symbol)}</Text>
+                  </View>
+                ))}
+
+                <View style={styles.divider} />
+
+                <View style={styles.summaryLine}>
+                  <Text style={styles.summaryLabel}>Subtotal</Text>
+                  <Text style={styles.summaryVal}>{formatCurrency(invoice.subtotal, symbol)}</Text>
+                </View>
+                {invoice.taxAmount > 0 ? (
+                  <View style={styles.summaryLine}>
+                    <Text style={styles.summaryLabel}>Tax</Text>
+                    <Text style={styles.summaryVal}>{formatCurrency(invoice.taxAmount, symbol)}</Text>
+                  </View>
+                ) : null}
+                <View style={styles.summaryLine}>
+                  <Text style={[styles.summaryLabel, { fontWeight: '700', color: colors.text }]}>Grand Total</Text>
+                  <Text style={[styles.summaryVal, { fontWeight: '700', color: colors.primaryDarker }]}>
+                    {formatCurrency(invoice.totalAmount, symbol)}
+                  </Text>
+                </View>
+              </Card>
+
+              {/* Payments History */}
+              {(invoice.payments || []).length > 0 ? (
+                <Card variant="elevated" padding={16} style={styles.card}>
+                  <Text style={styles.sectionHeading}>Payment History ({(invoice.payments || []).length})</Text>
+                  {invoice.payments?.map((p) => (
+                    <View key={p.id} style={styles.paymentRow}>
+                      <View>
+                        <Text style={styles.paymentNum}>{p.paymentNumber} • {p.paymentMethod}</Text>
+                        <Text style={styles.metaText}>{formatDate(p.paymentDate)}</Text>
+                      </View>
+                      <Text style={styles.paymentAmount}>{formatCurrency(p.amount, symbol)}</Text>
+                    </View>
+                  ))}
+                </Card>
+              ) : null}
             </View>
-          )}
-        </Card>
+          </View>
+        ) : (
+          <>
+            {/* Status & Total Header Card */}
+            <Card variant="softGreen" padding={18} style={styles.card}>
+              <View style={styles.statusRow}>
+                <Badge status={invoice.status} size="md" />
+                <Text style={styles.dueText}>Due: {formatDate(invoice.dueDate)}</Text>
+              </View>
 
-        {/* Live Template Preview Action Card */}
-        <Card variant="elevated" padding={14} style={[styles.card, { borderColor: colors.primary }]}>
-          <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
-            <View style={{ flex: 1, paddingRight: 8 }}>
-              <Text style={{ ...typography.bodySemiBold, color: colors.text }}>12 Invoice Templates</Text>
-              <Text style={{ ...typography.captionRegular, color: colors.textSecondary }}>
-                Switch styles & preview live PDF before sending
-              </Text>
+              <View style={styles.totalBox}>
+                <Text style={styles.totalLabel}>Total Invoiced Amount</Text>
+                <Text style={styles.totalAmount}>{formatCurrency(invoice.totalAmount, symbol)}</Text>
+              </View>
+
+              {invoice.balanceDue > 0 ? (
+                <View style={styles.balanceRow}>
+                  <Text style={styles.balanceLabel}>Remaining Balance Due:</Text>
+                  <Text style={styles.balanceValue}>{formatCurrency(invoice.balanceDue, symbol)}</Text>
+                </View>
+              ) : (
+                <View style={styles.settledRow}>
+                  <CheckCircle2 size={16} color={colors.success} />
+                  <Text style={styles.settledText}>Fully settled & paid in full</Text>
+                </View>
+              )}
+            </Card>
+
+            {/* Live Template Preview Action Card */}
+            <Card variant="elevated" padding={14} style={[styles.card, { borderColor: colors.primary }]}>
+              <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
+                <View style={{ flex: 1, paddingRight: 8 }}>
+                  <Text style={{ ...typography.bodySemiBold, color: colors.text }}>12 Invoice Templates</Text>
+                  <Text style={{ ...typography.captionRegular, color: colors.textSecondary }}>
+                    Switch styles & preview live PDF before sending
+                  </Text>
+                </View>
+                <Button
+                  title="Preview"
+                  onPress={() => navigation.navigate('InvoicePreview', { invoice })}
+                  size="sm"
+                  icon={<Eye size={16} color="#FFFFFF" />}
+                />
+              </View>
+            </Card>
+
+            {/* Primary Action Buttons */}
+            <View style={styles.actionsRow}>
+              <Button
+                title="Share PDF / WhatsApp"
+                onPress={handleSharePdf}
+                icon={<Share2 size={18} color="#FFFFFF" />}
+                loading={loading}
+                style={styles.actionBtn}
+              />
+              <View style={{ width: 10 }} />
+              <Button
+                title="Print"
+                onPress={handlePrintOrPdf}
+                variant="white"
+                icon={<Printer size={18} color={colors.text} />}
+                style={styles.actionBtn}
+              />
             </View>
-            <Button
-              title="Preview"
-              onPress={() => navigation.navigate('InvoicePreview', { invoice })}
-              size="sm"
-              icon={<Eye size={16} color="#FFFFFF" />}
-            />
-          </View>
-        </Card>
 
-        {/* Primary Action Buttons */}
-        <View style={styles.actionsRow}>
-          <Button
-            title="Share PDF / WhatsApp"
-            onPress={handleSharePdf}
-            icon={<Share2 size={18} color="#FFFFFF" />}
-            loading={loading}
-            style={styles.actionBtn}
-          />
-          <View style={{ width: 10 }} />
-          <Button
-            title="Print"
-            onPress={handlePrintOrPdf}
-            variant="white"
-            icon={<Printer size={18} color={colors.text} />}
-            style={styles.actionBtn}
-          />
-        </View>
+            <View style={{ marginBottom: 14 }}>
+              <Button
+                title="Duplicate / Clone Invoice"
+                onPress={handleDuplicate}
+                variant="outline"
+                size="md"
+                icon={<Copy size={17} color={colors.primaryDarker} />}
+              />
+            </View>
 
-        {invoice.balanceDue > 0 ? (
-          <View style={{ marginBottom: 14, gap: 10 }}>
-            <Button
-              title="Record Payment"
-              onPress={() => navigation.navigate('RecordPayment', { invoiceId: invoice.id })}
-              variant="secondary"
-              size="lg"
-              icon={<CreditCard size={20} color={colors.primaryDark} />}
-            />
-            <Button
-              title="Send Payment Reminder (WhatsApp/Email)"
-              onPress={() => setReminderModalVisible(true)}
-              variant="outline"
-              size="md"
-              icon={<Bell size={18} color={colors.primaryDarker} />}
-            />
-          </View>
-        ) : null}
+            {invoice.balanceDue > 0 ? (
+              <View style={{ marginBottom: 14, gap: 10 }}>
+                <Button
+                  title="Record Payment"
+                  onPress={() => navigation.navigate('RecordPayment', { invoiceId: invoice.id })}
+                  variant="secondary"
+                  size="lg"
+                  icon={<CreditCard size={20} color={colors.primaryDark} />}
+                />
+                <Button
+                  title="Send Payment Reminder (WhatsApp/Email)"
+                  onPress={() => setReminderModalVisible(true)}
+                  variant="outline"
+                  size="md"
+                  icon={<Bell size={18} color={colors.primaryDarker} />}
+                />
+              </View>
+            ) : null}
 
-        {/* Customer Information */}
-        <Card variant="elevated" padding={16} style={styles.card}>
-          <Text style={styles.sectionHeading}>Customer Details</Text>
-          <Text style={styles.customerName}>{invoice.customerName || 'Walk-in Client'}</Text>
-          {invoice.customerEmail ? <Text style={styles.metaText}>{invoice.customerEmail}</Text> : null}
-          {invoice.poNumber ? <Text style={styles.metaText}>PO Ref: {invoice.poNumber}</Text> : null}
-        </Card>
+            {/* Customer Information */}
+            <Card variant="elevated" padding={16} style={styles.card}>
+              <Text style={styles.sectionHeading}>Customer Details</Text>
+              <Text style={styles.customerName}>{invoice.customerName || 'Walk-in Client'}</Text>
+              {invoice.customerEmail ? <Text style={styles.metaText}>{invoice.customerEmail}</Text> : null}
+              {invoice.poNumber ? <Text style={styles.metaText}>PO Ref: {invoice.poNumber}</Text> : null}
+            </Card>
 
-        {/* Line Items */}
-        <Card variant="elevated" padding={16} style={styles.card}>
-          <Text style={styles.sectionHeading}>Items & Charges ({(invoice.items || []).length})</Text>
+            {/* Line Items */}
+            <Card variant="elevated" padding={16} style={styles.card}>
+              <Text style={styles.sectionHeading}>Items & Charges ({(invoice.items || []).length})</Text>
 
-          {(invoice.items || []).map((item, idx) => (
-            <View key={item.id || idx} style={styles.itemRow}>
-              <View style={styles.itemLeft}>
-                <Text style={styles.itemDesc}>{item.description}</Text>
-                <Text style={styles.itemSub}>
-                  {item.quantity} {item.unit || 'pcs'} × {formatCurrency(item.rate, symbol)}
-                  {item.taxRate > 0 ? ` • Tax ${item.taxRate}%` : ''}
+              {(invoice.items || []).map((item, idx) => (
+                <View key={item.id || idx} style={styles.itemRow}>
+                  <View style={styles.itemLeft}>
+                    <Text style={styles.itemDesc}>{item.description}</Text>
+                    <Text style={styles.itemSub}>
+                      {item.quantity} {item.unit || 'pcs'} × {formatCurrency(item.rate, symbol)}
+                      {item.taxRate > 0 ? ` • Tax ${item.taxRate}%` : ''}
+                    </Text>
+                  </View>
+                  <Text style={styles.itemTotal}>{formatCurrency(item.lineTotal, symbol)}</Text>
+                </View>
+              ))}
+
+              <View style={styles.divider} />
+
+              <View style={styles.summaryLine}>
+                <Text style={styles.summaryLabel}>Subtotal</Text>
+                <Text style={styles.summaryVal}>{formatCurrency(invoice.subtotal, symbol)}</Text>
+              </View>
+              {invoice.taxAmount > 0 ? (
+                <View style={styles.summaryLine}>
+                  <Text style={styles.summaryLabel}>Tax</Text>
+                  <Text style={styles.summaryVal}>{formatCurrency(invoice.taxAmount, symbol)}</Text>
+                </View>
+              ) : null}
+              <View style={styles.summaryLine}>
+                <Text style={[styles.summaryLabel, { fontWeight: '700', color: colors.text }]}>Grand Total</Text>
+                <Text style={[styles.summaryVal, { fontWeight: '700', color: colors.primaryDarker }]}>
+                  {formatCurrency(invoice.totalAmount, symbol)}
                 </Text>
               </View>
-              <Text style={styles.itemTotal}>{formatCurrency(item.lineTotal, symbol)}</Text>
-            </View>
-          ))}
+            </Card>
 
-          <View style={styles.divider} />
-
-          <View style={styles.summaryLine}>
-            <Text style={styles.summaryLabel}>Subtotal</Text>
-            <Text style={styles.summaryVal}>{formatCurrency(invoice.subtotal, symbol)}</Text>
-          </View>
-          {invoice.taxAmount > 0 ? (
-            <View style={styles.summaryLine}>
-              <Text style={styles.summaryLabel}>Tax</Text>
-              <Text style={styles.summaryVal}>{formatCurrency(invoice.taxAmount, symbol)}</Text>
-            </View>
-          ) : null}
-          <View style={styles.summaryLine}>
-            <Text style={[styles.summaryLabel, { fontWeight: '700', color: colors.text }]}>Grand Total</Text>
-            <Text style={[styles.summaryVal, { fontWeight: '700', color: colors.primaryDarker }]}>
-              {formatCurrency(invoice.totalAmount, symbol)}
-            </Text>
-          </View>
-        </Card>
-
-        {/* Payments History */}
-        {(invoice.payments || []).length > 0 ? (
-          <Card variant="elevated" padding={16} style={styles.card}>
-            <Text style={styles.sectionHeading}>Payment History ({(invoice.payments || []).length})</Text>
-            {invoice.payments?.map((p) => (
-              <View key={p.id} style={styles.paymentRow}>
-                <View>
-                  <Text style={styles.paymentNum}>{p.paymentNumber} • {p.paymentMethod}</Text>
-                  <Text style={styles.metaText}>{formatDate(p.paymentDate)}</Text>
-                </View>
-                <Text style={styles.paymentAmount}>{formatCurrency(p.amount, symbol)}</Text>
-              </View>
-            ))}
-          </Card>
-        ) : null}
+            {/* Payments History */}
+            {(invoice.payments || []).length > 0 ? (
+              <Card variant="elevated" padding={16} style={styles.card}>
+                <Text style={styles.sectionHeading}>Payment History ({(invoice.payments || []).length})</Text>
+                {invoice.payments?.map((p) => (
+                  <View key={p.id} style={styles.paymentRow}>
+                    <View>
+                      <Text style={styles.paymentNum}>{p.paymentNumber} • {p.paymentMethod}</Text>
+                      <Text style={styles.metaText}>{formatDate(p.paymentDate)}</Text>
+                    </View>
+                    <Text style={styles.paymentAmount}>{formatCurrency(p.amount, symbol)}</Text>
+                  </View>
+                ))}
+              </Card>
+            ) : null}
+          </>
+        )}
       </ScrollView>
 
       {/* 12-Template Live Preview Modal */}
@@ -348,8 +539,22 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   scrollContent: {
+    width: '100%',
+    alignSelf: 'center',
     padding: 16,
     paddingBottom: 40,
+  },
+  desktopColumns: {
+    flexDirection: 'row',
+    gap: 20,
+    alignItems: 'flex-start',
+    width: '100%',
+  },
+  desktopLeftCol: {
+    flex: 1,
+  },
+  desktopRightCol: {
+    flex: 1.2,
   },
   card: {
     marginBottom: 14,

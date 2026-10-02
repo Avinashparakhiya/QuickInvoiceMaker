@@ -18,10 +18,12 @@ import { useOrgStore } from '../../store/useOrgStore';
 import { orgRepository } from '../../database/repositories/orgRepository';
 import { colors } from '../../theme/colors';
 import { typography } from '../../theme/typography';
+import { useResponsive } from '../../utils/useResponsive';
 
 export const PaymentSettingsScreen: React.FC = () => {
   const navigation = useNavigation<any>();
   const { activeOrg, updateOrg } = useOrgStore();
+  const { contentMaxWidth } = useResponsive();
 
   const [bankName, setBankName] = useState(activeOrg?.bankName || '');
   const [bankAccount, setBankAccount] = useState(activeOrg?.bankAccountNo || '');
@@ -65,7 +67,7 @@ export const PaymentSettingsScreen: React.FC = () => {
         onBack={() => navigation.goBack()}
       />
 
-      <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
+      <ScrollView contentContainerStyle={[styles.scrollContent, { maxWidth: contentMaxWidth, alignSelf: 'center', width: '100%' }]} showsVerticalScrollIndicator={false}>
         {/* Visibility Toggle Card */}
         <Card variant="elevated" padding={16} style={styles.card}>
           <View style={styles.switchRow}>
@@ -159,7 +161,7 @@ export const PaymentSettingsScreen: React.FC = () => {
       </ScrollView>
 
       {/* Sticky Save CTA */}
-      <View style={styles.footer}>
+      <View style={[styles.footer, { maxWidth: Math.min(contentMaxWidth, 800), alignSelf: 'center', width: '100%' }]}>
         <Button
           title="Save Payment Details"
           onPress={handleSave}

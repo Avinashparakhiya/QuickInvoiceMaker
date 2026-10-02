@@ -16,6 +16,7 @@ import { Button } from '../../components/common/Button';
 import { useSettingsStore } from '../../store/useSettingsStore';
 import { colors } from '../../theme/colors';
 import { typography } from '../../theme/typography';
+import { useResponsive } from '../../utils/useResponsive';
 
 const TIMEOUT_OPTIONS = [
   { id: 'immediate', label: 'Immediately upon exit' },
@@ -26,6 +27,7 @@ const TIMEOUT_OPTIONS = [
 
 export const SecuritySettingsScreen: React.FC = () => {
   const navigation = useNavigation<any>();
+  const { contentMaxWidth } = useResponsive();
   const {
     isBiometricEnabled,
     isHapticsEnabled,
@@ -55,7 +57,7 @@ export const SecuritySettingsScreen: React.FC = () => {
         onBack={() => navigation.goBack()}
       />
 
-      <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
+      <ScrollView contentContainerStyle={[styles.scrollContent, { maxWidth: contentMaxWidth, alignSelf: 'center', width: '100%' }]} showsVerticalScrollIndicator={false}>
         {/* Privacy Card */}
         <Card variant="softGreen" padding={16} style={styles.card}>
           <View style={styles.privacyHeader}>
@@ -142,7 +144,7 @@ export const SecuritySettingsScreen: React.FC = () => {
       </ScrollView>
 
       {/* Sticky Save CTA */}
-      <View style={styles.footer}>
+      <View style={[styles.footer, { maxWidth: Math.min(contentMaxWidth, 800), alignSelf: 'center', width: '100%' }]}>
         <Button
           title="Save Security Settings"
           onPress={handleSave}

@@ -83,11 +83,9 @@ export const KPIStatCard: React.FC<KPIStatCardProps> = ({
       onPress={onPress}
       style={[styles.card, style]}
     >
-      <View style={[styles.leftAccent, { backgroundColor: toneConfig.accent }]} />
-      
       <View style={styles.cardContent}>
         <View style={styles.topRow}>
-          <Text numberOfLines={1} style={styles.title}>
+          <Text numberOfLines={1} style={[styles.title, tone === 'red' && { color: '#EF4444' }]}>
             {title}
           </Text>
           {icon ? (
@@ -97,7 +95,14 @@ export const KPIStatCard: React.FC<KPIStatCardProps> = ({
           ) : null}
         </View>
 
-        <Text numberOfLines={1} style={styles.amount}>
+        <Text
+          numberOfLines={1}
+          style={[
+            styles.amount,
+            tone === 'amber' && { color: '#D97706' },
+            tone === 'red' && { color: '#EF4444' },
+          ]}
+        >
           {displayValue}
         </Text>
 
@@ -115,21 +120,16 @@ const styles = StyleSheet.create({
   card: {
     flex: 1,
     backgroundColor: '#FFFFFF',
-    borderRadius: 14,
+    borderRadius: 16,
     overflow: 'hidden',
-    flexDirection: 'row',
     borderWidth: 1,
-    borderColor: '#E2E8F0',
+    borderColor: '#D7E5DC',
     shadowColor: '#000000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.04,
-    shadowRadius: 6,
-    elevation: 2,
-    minHeight: 88,
-  },
-  leftAccent: {
-    width: 4,
-    height: '100%',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.03,
+    shadowRadius: 8,
+    elevation: 1,
+    minHeight: 84,
   },
   cardContent: {
     flex: 1,

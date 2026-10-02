@@ -19,6 +19,7 @@ import { orgRepository } from '../../database/repositories/orgRepository';
 import { colors } from '../../theme/colors';
 import { typography } from '../../theme/typography';
 import { formatCurrency } from '../../utils/currency';
+import { useResponsive } from '../../utils/useResponsive';
 import { TaxType } from '../../types';
 
 const TAX_RATE_PRESETS = [0, 5, 10, 12, 18, 20, 28];
@@ -26,6 +27,7 @@ const TAX_RATE_PRESETS = [0, 5, 10, 12, 18, 20, 28];
 export const TaxSettingsScreen: React.FC = () => {
   const navigation = useNavigation<any>();
   const { activeOrg, updateOrg } = useOrgStore();
+  const { contentMaxWidth } = useResponsive();
 
   const [taxEnabled, setTaxEnabled] = useState(activeOrg?.taxEnabled ?? true);
   const [taxId, setTaxId] = useState(activeOrg?.taxId || '');
@@ -67,7 +69,7 @@ export const TaxSettingsScreen: React.FC = () => {
         onBack={() => navigation.goBack()}
       />
 
-      <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
+      <ScrollView contentContainerStyle={[styles.scrollContent, { maxWidth: contentMaxWidth, alignSelf: 'center', width: '100%' }]} showsVerticalScrollIndicator={false}>
         {/* Enable Tax Calculation Toggle Card */}
         <Card variant="elevated" padding={16} style={styles.card}>
           <View style={styles.switchRow}>
@@ -167,7 +169,7 @@ export const TaxSettingsScreen: React.FC = () => {
       </ScrollView>
 
       {/* Sticky Save CTA */}
-      <View style={styles.footer}>
+      <View style={[styles.footer, { maxWidth: Math.min(contentMaxWidth, 800), alignSelf: 'center', width: '100%' }]}>
         <Button
           title="Save Tax Settings"
           onPress={handleSave}

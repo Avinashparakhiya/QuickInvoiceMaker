@@ -30,10 +30,12 @@ import { Badge } from '../../components/common/Badge';
 import { useOrgStore } from '../../store/useOrgStore';
 import { colors } from '../../theme/colors';
 import { typography } from '../../theme/typography';
+import { useResponsive } from '../../utils/useResponsive';
 
 export const SettingsScreen: React.FC = () => {
   const navigation = useNavigation<any>();
   const { activeOrg } = useOrgStore();
+  const { contentMaxWidth, isWideScreen } = useResponsive();
 
   const settingSections = [
     {
@@ -151,7 +153,7 @@ export const SettingsScreen: React.FC = () => {
         onBack={() => navigation.goBack()}
       />
 
-      <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
+      <ScrollView contentContainerStyle={[styles.scrollContent, { maxWidth: contentMaxWidth, alignSelf: 'center', width: '100%' }]} showsVerticalScrollIndicator={false}>
         {/* Active Workspace Banner Card */}
         <Card variant="softGreen" padding={16} style={styles.workspaceCard}>
           <View style={styles.workspaceRow}>
@@ -178,36 +180,38 @@ export const SettingsScreen: React.FC = () => {
           </View>
         </Card>
 
-        {/* Grouped Settings Sections */}
-        {settingSections.map((section) => (
-          <View key={section.title} style={styles.sectionContainer}>
-            <Text style={styles.sectionHeaderTitle}>{section.title}</Text>
-            <Card variant="elevated" padding={0} style={styles.sectionCard}>
-              {section.items.map((item, idx) => (
-                <TouchableOpacity
-                  key={item.title}
-                  activeOpacity={0.7}
-                  onPress={item.onPress}
-                  style={[
-                    styles.itemRow,
-                    idx < section.items.length - 1 && styles.itemBorder,
-                  ]}
-                >
-                  <View style={[styles.iconContainer, { backgroundColor: item.iconBg }]}>
-                    {item.icon}
-                  </View>
-                  <View style={styles.itemInfo}>
-                    <Text style={styles.itemTitle}>{item.title}</Text>
-                    <Text numberOfLines={1} style={styles.itemSubtitle}>
-                      {item.subtitle}
-                    </Text>
-                  </View>
-                  <ChevronRight size={18} color={colors.textMuted} />
-                </TouchableOpacity>
-              ))}
-            </Card>
-          </View>
-        ))}
+        {/* Grouped Settings Sections Grid on wide screen */}
+        <View style={isWideScreen ? styles.gridContainer : undefined}>
+          {settingSections.map((section) => (
+            <View key={section.title} style={[styles.sectionContainer, isWideScreen && styles.sectionContainerWide]}>
+              <Text style={styles.sectionHeaderTitle}>{section.title}</Text>
+              <Card variant="elevated" padding={0} style={styles.sectionCard}>
+                {section.items.map((item, idx) => (
+                  <TouchableOpacity
+                    key={item.title}
+                    activeOpacity={0.7}
+                    onPress={item.onPress}
+                    style={[
+                      styles.itemRow,
+                      idx < section.items.length - 1 && styles.itemBorder,
+                    ]}
+                  >
+                    <View style={[styles.iconContainer, { backgroundColor: item.iconBg }]}>
+                      {item.icon}
+                    </View>
+                    <View style={styles.itemInfo}>
+                      <Text style={styles.itemTitle}>{item.title}</Text>
+                      <Text numberOfLines={1} style={styles.itemSubtitle}>
+                        {item.subtitle}
+                      </Text>
+                    </View>
+                    <ChevronRight size={18} color={colors.textMuted} />
+                  </TouchableOpacity>
+                ))}
+              </Card>
+            </View>
+          ))}
+        </View>
       </ScrollView>
     </View>
   );
@@ -221,6 +225,15 @@ const styles = StyleSheet.create({
   scrollContent: {
     padding: 16,
     paddingBottom: 40,
+  },
+  gridContainer: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    justifyContent: 'space-between',
+    gap: 16,
+  },
+  sectionContainerWide: {
+    width: '48.5%',
   },
   workspaceCard: {
     marginBottom: 8,

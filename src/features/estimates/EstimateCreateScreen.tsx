@@ -24,12 +24,14 @@ import { orgRepository } from '../../database/repositories/orgRepository';
 import { colors } from '../../theme/colors';
 import { typography } from '../../theme/typography';
 import { formatCurrency } from '../../utils/currency';
+import { useResponsive } from '../../utils/useResponsive';
 import { format, addDays } from 'date-fns';
 import { Customer, Item, EstimateItem } from '../../types';
 
 export const EstimateCreateScreen: React.FC = () => {
   const navigation = useNavigation<any>();
   const { activeOrg } = useOrgStore();
+  const { contentMaxWidth } = useResponsive();
 
   const [estimateNumber, setEstimateNumber] = useState('EST-101');
   const [issueDate, setIssueDate] = useState(format(new Date(), 'yyyy-MM-dd'));
@@ -235,7 +237,7 @@ export const EstimateCreateScreen: React.FC = () => {
     >
       <Header title="Create Estimate / Quote" showBack onBack={() => navigation.goBack()} />
 
-      <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
+      <ScrollView contentContainerStyle={[styles.scrollContent, { maxWidth: contentMaxWidth, alignSelf: 'center', width: '100%' }]} showsVerticalScrollIndicator={false}>
         {/* Estimate Details */}
         <Card variant="elevated" padding={16} style={styles.card}>
           <Text style={styles.sectionHeading}>Estimate Details</Text>

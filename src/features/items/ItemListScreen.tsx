@@ -26,9 +26,11 @@ import { colors } from '../../theme/colors';
 import { typography } from '../../theme/typography';
 import { formatCurrency } from '../../utils/currency';
 import { Item } from '../../types';
+import { useResponsive } from '../../utils/useResponsive';
 
 export const ItemListScreen: React.FC = () => {
   const navigation = useNavigation<any>();
+  const { contentMaxWidth, isWideScreen } = useResponsive();
   const { activeOrg } = useOrgStore();
 
   const [items, setItems] = useState<Item[]>([]);
@@ -84,7 +86,7 @@ export const ItemListScreen: React.FC = () => {
       />
 
       {/* Search Bar & Category Filter Chips */}
-      <View style={styles.searchSection}>
+      <View style={[styles.searchSection, { maxWidth: contentMaxWidth, alignSelf: 'center', width: '100%' }]}>
         <View style={styles.searchBox}>
           <Search size={18} color="#94A3B8" />
           <TextInput
@@ -133,7 +135,7 @@ export const ItemListScreen: React.FC = () => {
       <FlatList
         data={items}
         keyExtractor={(item) => item.id}
-        contentContainerStyle={styles.listContent}
+        contentContainerStyle={[styles.listContent, { maxWidth: contentMaxWidth, alignSelf: 'center', width: '100%' }]}
         refreshControl={
           <RefreshControl
             refreshing={refreshing}

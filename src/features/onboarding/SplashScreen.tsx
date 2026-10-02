@@ -100,15 +100,15 @@ export const SplashScreen: React.FC<SplashScreenProps> = ({ onFinish }) => {
           style={{
             opacity: titleOpacity,
             transform: [{ translateY: titleTranslateY }],
+            alignItems: 'center',
           }}
         >
-          <Text style={styles.appName}>Quick</Text>
-          <Text style={styles.appNameBold}>Invoice Maker</Text>
+          <Text style={styles.appNameBold}>Quick Invoice Maker</Text>
         </Animated.View>
 
         {/* Tagline */}
-        <Animated.View style={{ opacity: taglineOpacity }}>
-          <Text style={styles.tagline}>Simple. Fast. Professional Invoices.</Text>
+        <Animated.View style={{ opacity: taglineOpacity, marginTop: 8 }}>
+          <Text style={styles.tagline}>Create Professional Invoices in Seconds</Text>
         </Animated.View>
       </View>
 
@@ -234,19 +234,19 @@ const styles = StyleSheet.create({
     letterSpacing: -0.5,
   },
   appNameBold: {
-    fontSize: 32,
+    fontSize: 28,
     fontWeight: '800',
-    color: '#22C55E',
+    color: '#0F172A',
     textAlign: 'center',
     letterSpacing: -0.5,
-    marginBottom: 12,
+    marginBottom: 4,
   },
   tagline: {
     fontSize: 14,
     fontWeight: '500',
     color: '#64748B',
     textAlign: 'center',
-    letterSpacing: 0.3,
+    letterSpacing: 0.1,
   },
 
   // Bottom

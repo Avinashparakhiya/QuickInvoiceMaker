@@ -31,6 +31,7 @@ import { typography } from '../../theme/typography';
 import { formatCurrency } from '../../utils/currency';
 import { formatDate } from '../../utils/dates';
 import { Invoice, Payment } from '../../types';
+import { useResponsive } from '../../utils/useResponsive';
 import {
   format,
   addMonths,
@@ -69,6 +70,7 @@ const getInitials = (name: string) => {
 
 export const CalendarScreen: React.FC = () => {
   const navigation = useNavigation<any>();
+  const { contentMaxWidth, isWideScreen } = useResponsive();
   const { activeOrg } = useOrgStore();
   const { invoices, loadInvoices } = useInvoiceStore();
   const [payments, setPayments] = useState<Payment[]>([]);
@@ -141,7 +143,10 @@ export const CalendarScreen: React.FC = () => {
         }
       />
 
-      <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
+      <ScrollView
+        contentContainerStyle={[styles.scrollContent, { maxWidth: contentMaxWidth }]}
+        showsVerticalScrollIndicator={false}
+      >
         {/* Month Summary KPI Bar */}
         <View style={styles.monthKpiBar}>
           <View style={styles.kpiItem}>
@@ -164,252 +169,509 @@ export const CalendarScreen: React.FC = () => {
           </View>
         </View>
 
-        {/* Calendar Month Card */}
-        <Card variant="elevated" padding={16} style={styles.calendarCard}>
-          {/* Navigation & Month Title */}
-          <View style={styles.monthHeader}>
-            <TouchableOpacity
-              activeOpacity={0.7}
-              onPress={() => setCurrentMonth(subMonths(currentMonth, 1))}
-              style={styles.navArrow}
-            >
-              <ChevronLeft size={20} color={colors.text} />
-            </TouchableOpacity>
-
-            <View style={styles.monthTitleWrapper}>
-              <Text style={styles.monthTitle}>
-                {format(currentMonth, 'MMMM yyyy')}
-              </Text>
-            </View>
-
-            <TouchableOpacity
-              activeOpacity={0.7}
-              onPress={() => setCurrentMonth(addMonths(currentMonth, 1))}
-              style={styles.navArrow}
-            >
-              <ChevronRight size={20} color={colors.text} />
-            </TouchableOpacity>
-          </View>
-
-          {/* Weekday Labels */}
-          <View style={styles.weekdaysRow}>
-            {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map((day) => (
-              <Text key={day} style={styles.weekdayLabel}>
-                {day}
-              </Text>
-            ))}
-          </View>
-
-          {/* Days Grid */}
-          <View style={styles.daysGrid}>
-            {/* Blank filler cells for starting day offset */}
-            {Array.from({ length: startDayOfWeek }).map((_, index) => (
-              <View key={`empty-${index}`} style={styles.dayCellEmpty} />
-            ))}
-
-            {/* Actual Month Days */}
-            {daysInMonth.map((day) => {
-              const dayStr = format(day, 'yyyy-MM-dd');
-              const isSelected = isSameDay(day, selectedDate);
-              const isCurrentDay = isToday(day);
-
-              // Check activity for this day
-              const dueOnDay = invoices.filter((i) => i.dueDate === dayStr);
-              const hasOverdue = dueOnDay.some(
-                (i) => i.status === 'OVERDUE' || (i.status === 'UNPAID' && dayStr < todayStr)
-              );
-              const hasDue = dueOnDay.some(
-                (i) => (i.status === 'UNPAID' || i.status === 'PARTIAL') && dayStr >= todayStr
-              );
-              const hasPaid = invoices.some((i) => i.issueDate === dayStr && i.status === 'PAID');
-              const hasPayment = payments.some((p) => p.paymentDate === dayStr);
-
-              return (
-                <TouchableOpacity
-                  key={dayStr}
-                  activeOpacity={0.7}
-                  onPress={() => setSelectedDate(day)}
-                  style={[
-                    styles.dayCell,
-                    isSelected && styles.dayCellSelected,
-                    isCurrentDay && !isSelected && styles.dayCellToday,
-                  ]}
-                >
-                  <Text
-                    style={[
-                      styles.dayText,
-                      isSelected && styles.dayTextSelected,
-                      isCurrentDay && !isSelected && styles.dayTextToday,
-                    ]}
+        {isWideScreen ? (
+          <View style={styles.desktopColumns}>
+            {/* Left Column: Calendar Card */}
+            <View style={styles.desktopLeftCol}>
+              <Card variant="elevated" padding={16} style={styles.calendarCard}>
+                {/* Navigation & Month Title */}
+                <View style={styles.monthHeader}>
+                  <TouchableOpacity
+                    activeOpacity={0.7}
+                    onPress={() => setCurrentMonth(subMonths(currentMonth, 1))}
+                    style={styles.navArrow}
                   >
-                    {format(day, 'd')}
-                  </Text>
+                    <ChevronLeft size={20} color={colors.text} />
+                  </TouchableOpacity>
 
-                  {/* Multi-color Activity Dots */}
-                  <View style={styles.dotsRow}>
-                    {hasOverdue && <View style={[styles.dot, { backgroundColor: colors.danger }]} />}
-                    {hasDue && <View style={[styles.dot, { backgroundColor: colors.warning }]} />}
-                    {hasPaid && <View style={[styles.dot, { backgroundColor: colors.success }]} />}
-                    {hasPayment && <View style={[styles.dot, { backgroundColor: '#3B82F6' }]} />}
+                  <View style={styles.monthTitleWrapper}>
+                    <Text style={styles.monthTitle}>
+                      {format(currentMonth, 'MMMM yyyy')}
+                    </Text>
                   </View>
+
+                  <TouchableOpacity
+                    activeOpacity={0.7}
+                    onPress={() => setCurrentMonth(addMonths(currentMonth, 1))}
+                    style={styles.navArrow}
+                  >
+                    <ChevronRight size={20} color={colors.text} />
+                  </TouchableOpacity>
+                </View>
+
+                {/* Weekday Labels */}
+                <View style={styles.weekdaysRow}>
+                  {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map((day) => (
+                    <Text key={day} style={styles.weekdayLabel}>
+                      {day}
+                    </Text>
+                  ))}
+                </View>
+
+                {/* Days Grid */}
+                <View style={styles.daysGrid}>
+                  {/* Blank filler cells for starting day offset */}
+                  {Array.from({ length: startDayOfWeek }).map((_, index) => (
+                    <View key={`empty-${index}`} style={styles.dayCellEmpty} />
+                  ))}
+
+                  {/* Actual Month Days */}
+                  {daysInMonth.map((day) => {
+                    const dayStr = format(day, 'yyyy-MM-dd');
+                    const isSelected = isSameDay(day, selectedDate);
+                    const isCurrentDay = isToday(day);
+
+                    // Check activity for this day
+                    const dueOnDay = invoices.filter((i) => i.dueDate === dayStr);
+                    const hasOverdue = dueOnDay.some(
+                      (i) => i.status === 'OVERDUE' || (i.status === 'UNPAID' && dayStr < todayStr)
+                    );
+                    const hasDue = dueOnDay.some(
+                      (i) => (i.status === 'UNPAID' || i.status === 'PARTIAL') && dayStr >= todayStr
+                    );
+                    const hasPaid = invoices.some((i) => i.issueDate === dayStr && i.status === 'PAID');
+                    const hasPayment = payments.some((p) => p.paymentDate === dayStr);
+
+                    return (
+                      <TouchableOpacity
+                        key={dayStr}
+                        activeOpacity={0.7}
+                        onPress={() => setSelectedDate(day)}
+                        style={[
+                          styles.dayCell,
+                          isSelected && styles.dayCellSelected,
+                          isCurrentDay && !isSelected && styles.dayCellToday,
+                        ]}
+                      >
+                        <Text
+                          style={[
+                            styles.dayText,
+                            isSelected && styles.dayTextSelected,
+                            isCurrentDay && !isSelected && styles.dayTextToday,
+                          ]}
+                        >
+                          {format(day, 'd')}
+                        </Text>
+
+                        {/* Multi-color Activity Dots */}
+                        <View style={styles.dotsRow}>
+                          {hasOverdue && <View style={[styles.dot, { backgroundColor: colors.danger }]} />}
+                          {hasDue && <View style={[styles.dot, { backgroundColor: colors.warning }]} />}
+                          {hasPaid && <View style={[styles.dot, { backgroundColor: colors.success }]} />}
+                          {hasPayment && <View style={[styles.dot, { backgroundColor: '#3B82F6' }]} />}
+                        </View>
+                      </TouchableOpacity>
+                    );
+                  })}
+                </View>
+
+                {/* Color Legend Bar */}
+                <View style={styles.legendContainer}>
+                  <View style={styles.legendItem}>
+                    <View style={[styles.legendDot, { backgroundColor: colors.success }]} />
+                    <Text style={styles.legendText}>Paid</Text>
+                  </View>
+                  <View style={styles.legendItem}>
+                    <View style={[styles.legendDot, { backgroundColor: colors.warning }]} />
+                    <Text style={styles.legendText}>Due Soon</Text>
+                  </View>
+                  <View style={styles.legendItem}>
+                    <View style={[styles.legendDot, { backgroundColor: colors.danger }]} />
+                    <Text style={styles.legendText}>Overdue</Text>
+                  </View>
+                  <View style={styles.legendItem}>
+                    <View style={[styles.legendDot, { backgroundColor: '#3B82F6' }]} />
+                    <Text style={styles.legendText}>Received</Text>
+                  </View>
+                </View>
+              </Card>
+            </View>
+
+            {/* Right Column: Selected Date Activity */}
+            <View style={styles.desktopRightCol}>
+              <View style={styles.activitySection}>
+                <View style={styles.activityHeader}>
+                  <View>
+                    <Text style={styles.activityTitle}>
+                      {format(selectedDate, 'EEEE, MMM dd, yyyy')}
+                    </Text>
+                    <Text style={styles.activitySubtitle}>
+                      {isToday(selectedDate) ? 'Today’s schedule' : 'Scheduled activity'}
+                    </Text>
+                  </View>
+                  <View style={styles.activityBadge}>
+                    <Text style={styles.activityBadgeText}>{totalDayActivity} Records</Text>
+                  </View>
+                </View>
+
+                {totalDayActivity === 0 ? (
+                  <Card variant="elevated" padding={20} style={styles.emptyActivityCard}>
+                    <EmptyState
+                      icon={<CalendarIcon size={28} color={colors.primary} />}
+                      title="No Activity On This Day"
+                      description="No invoice due dates or payment receipts fall on this selected date."
+                      actionTitle="+ Create Invoice"
+                      onAction={() => navigation.navigate('InvoiceCreate', {})}
+                    />
+                  </Card>
+                ) : (
+                  <>
+                    {/* Day Invoices */}
+                    {dayInvoices.map((inv) => {
+                      const avatarTheme = getAvatarTheme(inv.customerName || 'Customer');
+                      const initials = getInitials(inv.customerName || 'Customer');
+                      const isDueToday = inv.dueDate === selectedDateStr;
+
+                      return (
+                        <TouchableOpacity
+                          key={inv.id}
+                          activeOpacity={0.7}
+                          onPress={() => navigation.navigate('InvoiceDetail', { invoiceId: inv.id })}
+                          style={styles.cardWrapper}
+                        >
+                          <Card variant="elevated" padding={14} style={styles.activityCard}>
+                            <View style={styles.cardRow}>
+                              <View style={[styles.avatarCircle, { backgroundColor: avatarTheme.bg }]}>
+                                <Text style={[styles.avatarText, { color: avatarTheme.text }]}>{initials}</Text>
+                              </View>
+
+                              <View style={styles.cardLeft}>
+                                <View style={styles.invTitleRow}>
+                                  <Text numberOfLines={1} style={styles.invCustomer}>
+                                    {inv.customerName || 'Walk-in'}
+                                  </Text>
+                                </View>
+                                <View style={styles.metaRow}>
+                                  <Text style={styles.invNumber}>{inv.invoiceNumber}</Text>
+                                  <Text style={styles.dotSeparator}>•</Text>
+                                  <Text style={styles.dueStatusText}>
+                                    {isDueToday ? '⚡ Due Date' : '📄 Issue Date'}
+                                  </Text>
+                                </View>
+                              </View>
+
+                              <View style={styles.cardRight}>
+                                <Text style={styles.invAmount}>
+                                  {formatCurrency(inv.totalAmount, inv.currencySymbol)}
+                                </Text>
+                                <View style={styles.badgeWrapper}>
+                                  <Badge status={inv.status} size="sm" />
+                                </View>
+                                {inv.balanceDue > 0 && inv.status !== 'UNPAID' && (
+                                  <Text style={styles.balanceDueText}>
+                                    Due: {formatCurrency(inv.balanceDue, inv.currencySymbol)}
+                                  </Text>
+                                )}
+                              </View>
+                            </View>
+                          </Card>
+                        </TouchableOpacity>
+                      );
+                    })}
+
+                    {/* Day Payments */}
+                    {dayPayments.map((p) => {
+                      const avatarTheme = getAvatarTheme(p.customerName || 'Payment');
+                      const initials = getInitials(p.customerName || 'Payment');
+
+                      return (
+                        <TouchableOpacity
+                          key={p.id}
+                          activeOpacity={0.7}
+                          onPress={() => navigation.navigate('PaymentList')}
+                          style={styles.cardWrapper}
+                        >
+                          <Card variant="elevated" padding={14} style={styles.activityCard}>
+                            <View style={styles.cardRow}>
+                              <View style={[styles.avatarCircle, { backgroundColor: avatarTheme.bg }]}>
+                                <Text style={[styles.avatarText, { color: avatarTheme.text }]}>{initials}</Text>
+                              </View>
+
+                              <View style={styles.cardLeft}>
+                                <Text numberOfLines={1} style={styles.invCustomer}>
+                                  {p.customerName || 'Payment Received'}
+                                </Text>
+                                <View style={styles.metaRow}>
+                                  <Text style={styles.invNumber}>{p.paymentNumber}</Text>
+                                  {p.invoiceNumber && (
+                                    <>
+                                      <Text style={styles.dotSeparator}>•</Text>
+                                      <Text style={styles.dueStatusText}>#{p.invoiceNumber}</Text>
+                                    </>
+                                  )}
+                                </View>
+                              </View>
+
+                              <View style={styles.cardRight}>
+                                <Text style={[styles.invAmount, { color: colors.success }]}>
+                                  +{formatCurrency(p.amount, currencySymbol)}
+                                </Text>
+                                <View style={styles.methodBadge}>
+                                  <Text style={styles.methodText}>
+                                    {p.paymentMethod.replace(/_/g, ' ')}
+                                  </Text>
+                                </View>
+                              </View>
+                            </View>
+                          </Card>
+                        </TouchableOpacity>
+                      );
+                    })}
+                  </>
+                )}
+              </View>
+            </View>
+          </View>
+        ) : (
+          <>
+            {/* Calendar Month Card */}
+            <Card variant="elevated" padding={16} style={styles.calendarCard}>
+              {/* Navigation & Month Title */}
+              <View style={styles.monthHeader}>
+                <TouchableOpacity
+                  activeOpacity={0.7}
+                  onPress={() => setCurrentMonth(subMonths(currentMonth, 1))}
+                  style={styles.navArrow}
+                >
+                  <ChevronLeft size={20} color={colors.text} />
                 </TouchableOpacity>
-              );
-            })}
-          </View>
 
-          {/* Color Legend Bar */}
-          <View style={styles.legendContainer}>
-            <View style={styles.legendItem}>
-              <View style={[styles.legendDot, { backgroundColor: colors.success }]} />
-              <Text style={styles.legendText}>Paid</Text>
-            </View>
-            <View style={styles.legendItem}>
-              <View style={[styles.legendDot, { backgroundColor: colors.warning }]} />
-              <Text style={styles.legendText}>Due Soon</Text>
-            </View>
-            <View style={styles.legendItem}>
-              <View style={[styles.legendDot, { backgroundColor: colors.danger }]} />
-              <Text style={styles.legendText}>Overdue</Text>
-            </View>
-            <View style={styles.legendItem}>
-              <View style={[styles.legendDot, { backgroundColor: '#3B82F6' }]} />
-              <Text style={styles.legendText}>Received</Text>
-            </View>
-          </View>
-        </Card>
+                <View style={styles.monthTitleWrapper}>
+                  <Text style={styles.monthTitle}>
+                    {format(currentMonth, 'MMMM yyyy')}
+                  </Text>
+                </View>
 
-        {/* Selected Date Cashflow Activity */}
-        <View style={styles.activitySection}>
-          <View style={styles.activityHeader}>
-            <View>
-              <Text style={styles.activityTitle}>
-                {format(selectedDate, 'EEEE, MMM dd, yyyy')}
-              </Text>
-              <Text style={styles.activitySubtitle}>
-                {isToday(selectedDate) ? 'Today’s schedule' : 'Scheduled activity'}
-              </Text>
-            </View>
-            <View style={styles.activityBadge}>
-              <Text style={styles.activityBadgeText}>{totalDayActivity} Records</Text>
-            </View>
-          </View>
+                <TouchableOpacity
+                  activeOpacity={0.7}
+                  onPress={() => setCurrentMonth(addMonths(currentMonth, 1))}
+                  style={styles.navArrow}
+                >
+                  <ChevronRight size={20} color={colors.text} />
+                </TouchableOpacity>
+              </View>
 
-          {totalDayActivity === 0 ? (
-            <Card variant="elevated" padding={20} style={styles.emptyActivityCard}>
-              <EmptyState
-                icon={<CalendarIcon size={28} color={colors.primary} />}
-                title="No Activity On This Day"
-                description="No invoice due dates or payment receipts fall on this selected date."
-                actionTitle="+ Create Invoice"
-                onAction={() => navigation.navigate('InvoiceCreate', {})}
-              />
+              {/* Weekday Labels */}
+              <View style={styles.weekdaysRow}>
+                {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map((day) => (
+                  <Text key={day} style={styles.weekdayLabel}>
+                    {day}
+                  </Text>
+                ))}
+              </View>
+
+              {/* Days Grid */}
+              <View style={styles.daysGrid}>
+                {/* Blank filler cells for starting day offset */}
+                {Array.from({ length: startDayOfWeek }).map((_, index) => (
+                  <View key={`empty-${index}`} style={styles.dayCellEmpty} />
+                ))}
+
+                {/* Actual Month Days */}
+                {daysInMonth.map((day) => {
+                  const dayStr = format(day, 'yyyy-MM-dd');
+                  const isSelected = isSameDay(day, selectedDate);
+                  const isCurrentDay = isToday(day);
+
+                  // Check activity for this day
+                  const dueOnDay = invoices.filter((i) => i.dueDate === dayStr);
+                  const hasOverdue = dueOnDay.some(
+                    (i) => i.status === 'OVERDUE' || (i.status === 'UNPAID' && dayStr < todayStr)
+                  );
+                  const hasDue = dueOnDay.some(
+                    (i) => (i.status === 'UNPAID' || i.status === 'PARTIAL') && dayStr >= todayStr
+                  );
+                  const hasPaid = invoices.some((i) => i.issueDate === dayStr && i.status === 'PAID');
+                  const hasPayment = payments.some((p) => p.paymentDate === dayStr);
+
+                  return (
+                    <TouchableOpacity
+                      key={dayStr}
+                      activeOpacity={0.7}
+                      onPress={() => setSelectedDate(day)}
+                      style={[
+                        styles.dayCell,
+                        isSelected && styles.dayCellSelected,
+                        isCurrentDay && !isSelected && styles.dayCellToday,
+                      ]}
+                    >
+                      <Text
+                        style={[
+                          styles.dayText,
+                          isSelected && styles.dayTextSelected,
+                          isCurrentDay && !isSelected && styles.dayTextToday,
+                        ]}
+                      >
+                        {format(day, 'd')}
+                      </Text>
+
+                      {/* Multi-color Activity Dots */}
+                      <View style={styles.dotsRow}>
+                        {hasOverdue && <View style={[styles.dot, { backgroundColor: colors.danger }]} />}
+                        {hasDue && <View style={[styles.dot, { backgroundColor: colors.warning }]} />}
+                        {hasPaid && <View style={[styles.dot, { backgroundColor: colors.success }]} />}
+                        {hasPayment && <View style={[styles.dot, { backgroundColor: '#3B82F6' }]} />}
+                      </View>
+                    </TouchableOpacity>
+                  );
+                })}
+              </View>
+
+              {/* Color Legend Bar */}
+              <View style={styles.legendContainer}>
+                <View style={styles.legendItem}>
+                  <View style={[styles.legendDot, { backgroundColor: colors.success }]} />
+                  <Text style={styles.legendText}>Paid</Text>
+                </View>
+                <View style={styles.legendItem}>
+                  <View style={[styles.legendDot, { backgroundColor: colors.warning }]} />
+                  <Text style={styles.legendText}>Due Soon</Text>
+                </View>
+                <View style={styles.legendItem}>
+                  <View style={[styles.legendDot, { backgroundColor: colors.danger }]} />
+                  <Text style={styles.legendText}>Overdue</Text>
+                </View>
+                <View style={styles.legendItem}>
+                  <View style={[styles.legendDot, { backgroundColor: '#3B82F6' }]} />
+                  <Text style={styles.legendText}>Received</Text>
+                </View>
+              </View>
             </Card>
-          ) : (
-            <>
-              {/* Day Invoices */}
-              {dayInvoices.map((inv) => {
-                const avatarTheme = getAvatarTheme(inv.customerName || 'Customer');
-                const initials = getInitials(inv.customerName || 'Customer');
-                const isDueToday = inv.dueDate === selectedDateStr;
 
-                return (
-                  <TouchableOpacity
-                    key={inv.id}
-                    activeOpacity={0.7}
-                    onPress={() => navigation.navigate('InvoiceDetail', { invoiceId: inv.id })}
-                    style={styles.cardWrapper}
-                  >
-                    <Card variant="elevated" padding={14} style={styles.activityCard}>
-                      <View style={styles.cardRow}>
-                        <View style={[styles.avatarCircle, { backgroundColor: avatarTheme.bg }]}>
-                          <Text style={[styles.avatarText, { color: avatarTheme.text }]}>{initials}</Text>
-                        </View>
+            {/* Selected Date Cashflow Activity */}
+            <View style={styles.activitySection}>
+              <View style={styles.activityHeader}>
+                <View>
+                  <Text style={styles.activityTitle}>
+                    {format(selectedDate, 'EEEE, MMM dd, yyyy')}
+                  </Text>
+                  <Text style={styles.activitySubtitle}>
+                    {isToday(selectedDate) ? 'Today’s schedule' : 'Scheduled activity'}
+                  </Text>
+                </View>
+                <View style={styles.activityBadge}>
+                  <Text style={styles.activityBadgeText}>{totalDayActivity} Records</Text>
+                </View>
+              </View>
 
-                        <View style={styles.cardLeft}>
-                          <View style={styles.invTitleRow}>
-                            <Text numberOfLines={1} style={styles.invCustomer}>
-                              {inv.customerName || 'Walk-in'}
-                            </Text>
-                          </View>
-                          <View style={styles.metaRow}>
-                            <Text style={styles.invNumber}>{inv.invoiceNumber}</Text>
-                            <Text style={styles.dotSeparator}>•</Text>
-                            <Text style={styles.dueStatusText}>
-                              {isDueToday ? '⚡ Due Date' : '📄 Issue Date'}
-                            </Text>
-                          </View>
-                        </View>
+              {totalDayActivity === 0 ? (
+                <Card variant="elevated" padding={20} style={styles.emptyActivityCard}>
+                  <EmptyState
+                    icon={<CalendarIcon size={28} color={colors.primary} />}
+                    title="No Activity On This Day"
+                    description="No invoice due dates or payment receipts fall on this selected date."
+                    actionTitle="+ Create Invoice"
+                    onAction={() => navigation.navigate('InvoiceCreate', {})}
+                  />
+                </Card>
+              ) : (
+                <>
+                  {/* Day Invoices */}
+                  {dayInvoices.map((inv) => {
+                    const avatarTheme = getAvatarTheme(inv.customerName || 'Customer');
+                    const initials = getInitials(inv.customerName || 'Customer');
+                    const isDueToday = inv.dueDate === selectedDateStr;
 
-                        <View style={styles.cardRight}>
-                          <Text style={styles.invAmount}>
-                            {formatCurrency(inv.totalAmount, inv.currencySymbol)}
-                          </Text>
-                          <View style={styles.badgeWrapper}>
-                            <Badge status={inv.status} size="sm" />
-                          </View>
-                          {inv.balanceDue > 0 && inv.status !== 'UNPAID' && (
-                            <Text style={styles.balanceDueText}>
-                              Due: {formatCurrency(inv.balanceDue, inv.currencySymbol)}
-                            </Text>
-                          )}
-                        </View>
-                      </View>
-                    </Card>
-                  </TouchableOpacity>
-                );
-              })}
+                    return (
+                      <TouchableOpacity
+                        key={inv.id}
+                        activeOpacity={0.7}
+                        onPress={() => navigation.navigate('InvoiceDetail', { invoiceId: inv.id })}
+                        style={styles.cardWrapper}
+                      >
+                        <Card variant="elevated" padding={14} style={styles.activityCard}>
+                          <View style={styles.cardRow}>
+                            <View style={[styles.avatarCircle, { backgroundColor: avatarTheme.bg }]}>
+                              <Text style={[styles.avatarText, { color: avatarTheme.text }]}>{initials}</Text>
+                            </View>
 
-              {/* Day Payments */}
-              {dayPayments.map((p) => {
-                const avatarTheme = getAvatarTheme(p.customerName || 'Payment');
-                const initials = getInitials(p.customerName || 'Payment');
-
-                return (
-                  <TouchableOpacity
-                    key={p.id}
-                    activeOpacity={0.7}
-                    onPress={() => navigation.navigate('PaymentList')}
-                    style={styles.cardWrapper}
-                  >
-                    <Card variant="elevated" padding={14} style={styles.activityCard}>
-                      <View style={styles.cardRow}>
-                        <View style={[styles.avatarCircle, { backgroundColor: avatarTheme.bg }]}>
-                          <Text style={[styles.avatarText, { color: avatarTheme.text }]}>{initials}</Text>
-                        </View>
-
-                        <View style={styles.cardLeft}>
-                          <Text numberOfLines={1} style={styles.invCustomer}>
-                            {p.customerName || 'Payment Received'}
-                          </Text>
-                          <View style={styles.metaRow}>
-                            <Text style={styles.invNumber}>{p.paymentNumber}</Text>
-                            {p.invoiceNumber && (
-                              <>
+                            <View style={styles.cardLeft}>
+                              <View style={styles.invTitleRow}>
+                                <Text numberOfLines={1} style={styles.invCustomer}>
+                                  {inv.customerName || 'Walk-in'}
+                                </Text>
+                              </View>
+                              <View style={styles.metaRow}>
+                                <Text style={styles.invNumber}>{inv.invoiceNumber}</Text>
                                 <Text style={styles.dotSeparator}>•</Text>
-                                <Text style={styles.dueStatusText}>#{p.invoiceNumber}</Text>
-                              </>
-                            )}
-                          </View>
-                        </View>
+                                <Text style={styles.dueStatusText}>
+                                  {isDueToday ? '⚡ Due Date' : '📄 Issue Date'}
+                                </Text>
+                              </View>
+                            </View>
 
-                        <View style={styles.cardRight}>
-                          <Text style={[styles.invAmount, { color: colors.success }]}>
-                            +{formatCurrency(p.amount, currencySymbol)}
-                          </Text>
-                          <View style={styles.methodBadge}>
-                            <Text style={styles.methodText}>
-                              {p.paymentMethod.replace(/_/g, ' ')}
-                            </Text>
+                            <View style={styles.cardRight}>
+                              <Text style={styles.invAmount}>
+                                {formatCurrency(inv.totalAmount, inv.currencySymbol)}
+                              </Text>
+                              <View style={styles.badgeWrapper}>
+                                <Badge status={inv.status} size="sm" />
+                              </View>
+                              {inv.balanceDue > 0 && inv.status !== 'UNPAID' && (
+                                <Text style={styles.balanceDueText}>
+                                  Due: {formatCurrency(inv.balanceDue, inv.currencySymbol)}
+                                </Text>
+                              )}
+                            </View>
                           </View>
-                        </View>
-                      </View>
-                    </Card>
-                  </TouchableOpacity>
-                );
-              })}
-            </>
-          )}
-        </View>
+                        </Card>
+                      </TouchableOpacity>
+                    );
+                  })}
+
+                  {/* Day Payments */}
+                  {dayPayments.map((p) => {
+                    const avatarTheme = getAvatarTheme(p.customerName || 'Payment');
+                    const initials = getInitials(p.customerName || 'Payment');
+
+                    return (
+                      <TouchableOpacity
+                        key={p.id}
+                        activeOpacity={0.7}
+                        onPress={() => navigation.navigate('PaymentList')}
+                        style={styles.cardWrapper}
+                      >
+                        <Card variant="elevated" padding={14} style={styles.activityCard}>
+                          <View style={styles.cardRow}>
+                            <View style={[styles.avatarCircle, { backgroundColor: avatarTheme.bg }]}>
+                              <Text style={[styles.avatarText, { color: avatarTheme.text }]}>{initials}</Text>
+                            </View>
+
+                            <View style={styles.cardLeft}>
+                              <Text numberOfLines={1} style={styles.invCustomer}>
+                                {p.customerName || 'Payment Received'}
+                              </Text>
+                              <View style={styles.metaRow}>
+                                <Text style={styles.invNumber}>{p.paymentNumber}</Text>
+                                {p.invoiceNumber && (
+                                  <>
+                                    <Text style={styles.dotSeparator}>•</Text>
+                                    <Text style={styles.dueStatusText}>#{p.invoiceNumber}</Text>
+                                  </>
+                                )}
+                              </View>
+                            </View>
+
+                            <View style={styles.cardRight}>
+                              <Text style={[styles.invAmount, { color: colors.success }]}>
+                                +{formatCurrency(p.amount, currencySymbol)}
+                              </Text>
+                              <View style={styles.methodBadge}>
+                                <Text style={styles.methodText}>
+                                  {p.paymentMethod.replace(/_/g, ' ')}
+                                </Text>
+                              </View>
+                            </View>
+                          </View>
+                        </Card>
+                      </TouchableOpacity>
+                    );
+                  })}
+                </>
+              )}
+            </View>
+          </>
+        )}
       </ScrollView>
     </View>
   );
@@ -434,8 +696,22 @@ const styles = StyleSheet.create({
     color: colors.primaryDarker,
   },
   scrollContent: {
+    width: '100%',
+    alignSelf: 'center',
     paddingHorizontal: 16,
     paddingBottom: 36,
+  },
+  desktopColumns: {
+    flexDirection: 'row',
+    gap: 20,
+    alignItems: 'flex-start',
+    width: '100%',
+  },
+  desktopLeftCol: {
+    flex: 1.2,
+  },
+  desktopRightCol: {
+    flex: 1,
   },
   monthKpiBar: {
     flexDirection: 'row',

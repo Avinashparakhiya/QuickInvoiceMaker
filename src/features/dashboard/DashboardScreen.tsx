@@ -9,13 +9,16 @@ import {
 } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import {
-  TrendingUp,
-  Clock,
-  AlertTriangle,
   FileText,
   CheckCircle2,
   ChevronRight,
   AlertCircle,
+  AlertTriangle,
+  PlusCircle,
+  UserPlus,
+  CreditCard,
+  PackagePlus,
+  FileSpreadsheet,
 } from 'lucide-react-native';
 import { Header } from '../../components/common/Header';
 import { KPIStatCard } from '../../components/kpi/KPIStatCard';
@@ -29,9 +32,11 @@ import { typography } from '../../theme/typography';
 import { formatCurrency } from '../../utils/currency';
 import { formatDate, getDueStatusText } from '../../utils/dates';
 import { Invoice, InvoiceStatus } from '../../types';
+import { useResponsive } from '../../utils/useResponsive';
 
 export const DashboardScreen: React.FC = () => {
   const navigation = useNavigation<any>();
+  const { isWideScreen, isDesktop, contentMaxWidth, horizontalPadding } = useResponsive();
   const { activeOrg, initialize } = useOrgStore();
   const {
     kpiSummary,
@@ -112,16 +117,197 @@ export const DashboardScreen: React.FC = () => {
     }
   };
 
+  const renderDueSoonSection = () => {
+    if (dueSoonInvoices.length === 0) return null;
+    return (
+      <View style={styles.sectionContainer}>
+        <View style={styles.sectionHeaderRow}>
+          <Text style={styles.sectionTitle}>Upcoming Due Dates</Text>
+          <Text style={styles.badgeCount}>{dueSoonInvoices.length}</Text>
+        </View>
+
+        {dueSoonInvoices.map((inv: Invoice) => {
+          const dueInfo = getDueStatusText(inv.dueDate);
+          return (
+            <TouchableOpacity
+              key={inv.id}
+              activeOpacity={0.7}
+              onPress={() => navigation.navigate('InvoiceDetail', { invoiceId: inv.id })}
+              style={styles.invoiceCard}
+            >
+              <View style={[styles.invIconBox, { backgroundColor: '#FEE2E2' }]}>
+                <AlertCircle size={20} color="#EF4444" />
+              </View>
+
+              <View style={styles.invDetails}>
+                <Text numberOfLines={1} style={styles.invNumber}>
+                  {inv.invoiceNumber}
+                </Text>
+                <Text numberOfLines={1} style={styles.invCustomer}>
+                  {inv.customerName || 'Walk-in Customer'}
+                </Text>
+              </View>
+
+              <View style={styles.invRightAlign}>
+                <Text style={styles.invAmount}>
+                  {formatCurrency(inv.balanceDue, inv.currencySymbol)}
+                </Text>
+                <Text style={styles.invDueText}>{dueInfo.text}</Text>
+              </View>
+            </TouchableOpacity>
+          );
+        })}
+      </View>
+    );
+  };
+
+  const renderRecentInvoicesSection = () => (
+    <View style={styles.sectionContainer}>
+      <View style={styles.sectionHeaderRow}>
+        <Text style={styles.sectionTitle}>Recent Invoices</Text>
+        <TouchableOpacity
+          activeOpacity={0.7}
+          onPress={() => {
+            setFilterStatus('ALL');
+            navigation.navigate('TransactionsTab');
+          }}
+          style={styles.seeAllBtn}
+        >
+          <Text style={styles.seeAllText}>See All</Text>
+          <ChevronRight size={14} color={colors.primaryDark} />
+        </TouchableOpacity>
+      </View>
+
+      {recentInvoices.length === 0 ? (
+        <EmptyState
+          icon={<FileText size={28} color={colors.primaryDark} />}
+          title="No Invoices Yet"
+          description="Create your first invoice in under 60 seconds with 12+ professional templates."
+          actionTitle="+ Create Invoice"
+          onAction={() => navigation.navigate('InvoiceCreate', {})}
+        />
+      ) : (
+        recentInvoices.map((inv: Invoice) => {
+          const theme = getStatusItemTheme(inv.status);
+          const StatusIcon = theme.Icon;
+
+          return (
+            <TouchableOpacity
+              key={inv.id}
+              activeOpacity={0.7}
+              onPress={() => navigation.navigate('InvoiceDetail', { invoiceId: inv.id })}
+              style={styles.invoiceCard}
+            >
+              <View style={[styles.invIconBox, { backgroundColor: theme.iconBg }]}>
+                <StatusIcon size={20} color={theme.iconColor} />
+              </View>
+
+              <View style={styles.invDetails}>
+                <Text numberOfLines={1} style={styles.invNumber}>
+                  {inv.invoiceNumber}
+                </Text>
+                <Text numberOfLines={1} style={styles.invCustomer}>
+                  {inv.customerName || 'Walk-in Customer'}
+                </Text>
+              </View>
+
+              <View style={styles.invRightAlign}>
+                <Text style={styles.invAmount}>
+                  {formatCurrency(inv.totalAmount, inv.currencySymbol)}
+                </Text>
+                <Text style={[styles.invStatusLabel, { color: theme.statusColor }]}>
+                  {theme.statusText}
+                </Text>
+                <Text style={styles.invDateText}>
+                  {formatDate(inv.issueDate, 'dd MMM, yyyy')}
+                </Text>
+              </View>
+            </TouchableOpacity>
+          );
+        })
+      )}
+    </View>
+  );
+
+  const renderQuickActionsBar = () => {
+    if (!isWideScreen) return null;
+    return (
+      <View style={styles.quickActionsCard}>
+        <Text style={styles.quickActionsTitle}>Quick Actions</Text>
+        <View style={styles.quickActionsRow}>
+          <TouchableOpacity
+            style={styles.quickActionBtn}
+            activeOpacity={0.75}
+            onPress={() => navigation.navigate('InvoiceCreate', {})}
+          >
+            <View style={[styles.quickActionIconBox, { backgroundColor: '#DCFCE7' }]}>
+              <PlusCircle size={20} color="#16A34A" />
+            </View>
+            <Text style={styles.quickActionLabel}>+ Invoice</Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            style={styles.quickActionBtn}
+            activeOpacity={0.75}
+            onPress={() => navigation.navigate('EstimateCreate', {})}
+          >
+            <View style={[styles.quickActionIconBox, { backgroundColor: '#E0F2FE' }]}>
+              <FileSpreadsheet size={20} color="#0284C7" />
+            </View>
+            <Text style={styles.quickActionLabel}>+ Estimate</Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            style={styles.quickActionBtn}
+            activeOpacity={0.75}
+            onPress={() => navigation.navigate('RecordPayment', {})}
+          >
+            <View style={[styles.quickActionIconBox, { backgroundColor: '#FEF3C7' }]}>
+              <CreditCard size={20} color="#D97706" />
+            </View>
+            <Text style={styles.quickActionLabel}>+ Payment</Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            style={styles.quickActionBtn}
+            activeOpacity={0.75}
+            onPress={() => navigation.navigate('CustomerForm', {})}
+          >
+            <View style={[styles.quickActionIconBox, { backgroundColor: '#F3E8FF' }]}>
+              <UserPlus size={20} color="#9333EA" />
+            </View>
+            <Text style={styles.quickActionLabel}>+ Customer</Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            style={styles.quickActionBtn}
+            activeOpacity={0.75}
+            onPress={() => navigation.navigate('ItemForm', {})}
+          >
+            <View style={[styles.quickActionIconBox, { backgroundColor: '#F1F5F9' }]}>
+              <PackagePlus size={20} color="#475569" />
+            </View>
+            <Text style={styles.quickActionLabel}>+ Product</Text>
+          </TouchableOpacity>
+        </View>
+      </View>
+    );
+  };
+
   return (
     <View style={styles.container}>
       <Header
         activeOrg={activeOrg}
         onPressOrgSwitcher={() => setOrgSwitcherVisible(true)}
         onPressSettings={() => navigation.navigate('Settings')}
+        onPressQuickCreate={() => navigation.navigate('InvoiceCreate', {})}
       />
 
       <ScrollView
-        contentContainerStyle={styles.scrollContent}
+        contentContainerStyle={[
+          styles.scrollContent,
+          { maxWidth: contentMaxWidth, paddingHorizontal: horizontalPadding },
+        ]}
         showsVerticalScrollIndicator={false}
         refreshControl={
           <RefreshControl
@@ -132,159 +318,115 @@ export const DashboardScreen: React.FC = () => {
           />
         }
       >
-        {/* KPI Grid (2x2) */}
-        <View style={styles.kpiGrid}>
-          <View style={styles.kpiRow}>
+        {/* KPI Row (Responsive: 4 columns on wide screens, 2x2 on mobile) */}
+        {isWideScreen ? (
+          <View style={styles.kpiRowWide}>
             <KPIStatCard
               title="Total Sales"
               amount={kpiSummary?.totalSales || 0}
               currencySymbol={currencySymbol}
               tone="green"
+              style={styles.kpiCardWide}
               onPress={() => handleStatusPress('ALL')}
             />
-            <View style={styles.kpiGap} />
             <KPIStatCard
               title="Outstanding"
               amount={kpiSummary?.outstanding || 0}
               currencySymbol={currencySymbol}
               tone="amber"
+              style={styles.kpiCardWide}
               onPress={() => handleStatusPress('UNPAID')}
             />
-          </View>
-
-          <View style={styles.kpiRow}>
             <KPIStatCard
               title="Overdue"
               amount={kpiSummary?.overdue || 0}
               currencySymbol={currencySymbol}
               tone="red"
+              style={styles.kpiCardWide}
               onPress={() => handleStatusPress('OVERDUE')}
             />
-            <View style={styles.kpiGap} />
             <KPIStatCard
               title="Total Invoices"
               value={totalInvoicesCount}
               isCurrency={false}
               tone="slate"
+              style={styles.kpiCardWide}
               onPress={() => handleStatusPress('ALL')}
             />
           </View>
-        </View>
-
-        {/* Invoice Status Donut Chart */}
-        <InvoiceStatusDonut
-          kpiSummary={kpiSummary}
-          onSelectStatus={handleStatusPress}
-        />
-
-        {/* Due Soon Section */}
-        {dueSoonInvoices.length > 0 ? (
-          <View style={styles.sectionContainer}>
-            <View style={styles.sectionHeaderRow}>
-              <Text style={styles.sectionTitle}>Upcoming Due Dates</Text>
-              <Text style={styles.badgeCount}>{dueSoonInvoices.length}</Text>
+        ) : (
+          <View style={styles.kpiGrid}>
+            <View style={styles.kpiRow}>
+              <KPIStatCard
+                title="Total Sales"
+                amount={kpiSummary?.totalSales || 0}
+                currencySymbol={currencySymbol}
+                tone="green"
+                onPress={() => handleStatusPress('ALL')}
+              />
+              <View style={styles.kpiGap} />
+              <KPIStatCard
+                title="Outstanding"
+                amount={kpiSummary?.outstanding || 0}
+                currencySymbol={currencySymbol}
+                tone="amber"
+                onPress={() => handleStatusPress('UNPAID')}
+              />
             </View>
 
-            {dueSoonInvoices.map((inv: Invoice) => {
-              const dueInfo = getDueStatusText(inv.dueDate);
-              return (
-                <TouchableOpacity
-                  key={inv.id}
-                  activeOpacity={0.7}
-                  onPress={() => navigation.navigate('InvoiceDetail', { invoiceId: inv.id })}
-                  style={styles.invoiceCard}
-                >
-                  <View style={[styles.invIconBox, { backgroundColor: '#FEE2E2' }]}>
-                    <AlertCircle size={20} color="#EF4444" />
-                  </View>
-
-                  <View style={styles.invDetails}>
-                    <Text numberOfLines={1} style={styles.invNumber}>
-                      {inv.invoiceNumber}
-                    </Text>
-                    <Text numberOfLines={1} style={styles.invCustomer}>
-                      {inv.customerName || 'Walk-in Customer'}
-                    </Text>
-                  </View>
-
-                  <View style={styles.invRightAlign}>
-                    <Text style={styles.invAmount}>
-                      {formatCurrency(inv.balanceDue, inv.currencySymbol)}
-                    </Text>
-                    <Text style={styles.invDueText}>{dueInfo.text}</Text>
-                  </View>
-                </TouchableOpacity>
-              );
-            })}
+            <View style={styles.kpiRow}>
+              <KPIStatCard
+                title="Overdue"
+                amount={kpiSummary?.overdue || 0}
+                currencySymbol={currencySymbol}
+                tone="red"
+                onPress={() => handleStatusPress('OVERDUE')}
+              />
+              <View style={styles.kpiGap} />
+              <KPIStatCard
+                title="Total Invoices"
+                value={totalInvoicesCount}
+                isCurrency={false}
+                tone="slate"
+                onPress={() => handleStatusPress('ALL')}
+              />
+            </View>
           </View>
-        ) : null}
+        )}
 
-        {/* Recent Invoices Section */}
-        <View style={styles.sectionContainer}>
-          <View style={styles.sectionHeaderRow}>
-            <Text style={styles.sectionTitle}>Recent Invoices</Text>
-            <TouchableOpacity
-              activeOpacity={0.7}
-              onPress={() => {
-                setFilterStatus('ALL');
-                navigation.navigate('TransactionsTab');
-              }}
-              style={styles.seeAllBtn}
-            >
-              <Text style={styles.seeAllText}>See All</Text>
-              <ChevronRight size={14} color={colors.primaryDark} />
-            </TouchableOpacity>
+        {/* Content Layout: 2-Columns on Wide Screen, Single Stack on Mobile */}
+        {isWideScreen ? (
+          <View style={styles.desktopColumns}>
+            {/* Left Column: Quick Actions + Recent Invoices */}
+            <View style={styles.desktopLeftCol}>
+              {renderQuickActionsBar()}
+              {renderRecentInvoicesSection()}
+            </View>
+
+            {/* Right Column: Invoice Status Donut + Upcoming Due Dates */}
+            <View style={styles.desktopRightCol}>
+              <InvoiceStatusDonut
+                kpiSummary={kpiSummary}
+                onSelectStatus={handleStatusPress}
+              />
+              {renderDueSoonSection()}
+            </View>
           </View>
-
-          {recentInvoices.length === 0 ? (
-            <EmptyState
-              icon={<FileText size={28} color={colors.primaryDark} />}
-              title="No Invoices Yet"
-              description="Create your first invoice in under 60 seconds with 12+ professional templates."
-              actionTitle="+ Create Invoice"
-              onAction={() => navigation.navigate('InvoiceCreate', {})}
+        ) : (
+          <>
+            {/* Invoice Status Donut Chart */}
+            <InvoiceStatusDonut
+              kpiSummary={kpiSummary}
+              onSelectStatus={handleStatusPress}
             />
-          ) : (
-            recentInvoices.map((inv: Invoice) => {
-              const theme = getStatusItemTheme(inv.status);
-              const StatusIcon = theme.Icon;
 
-              return (
-                <TouchableOpacity
-                  key={inv.id}
-                  activeOpacity={0.7}
-                  onPress={() => navigation.navigate('InvoiceDetail', { invoiceId: inv.id })}
-                  style={styles.invoiceCard}
-                >
-                  <View style={[styles.invIconBox, { backgroundColor: theme.iconBg }]}>
-                    <StatusIcon size={20} color={theme.iconColor} />
-                  </View>
+            {/* Due Soon Section */}
+            {renderDueSoonSection()}
 
-                  <View style={styles.invDetails}>
-                    <Text numberOfLines={1} style={styles.invNumber}>
-                      {inv.invoiceNumber}
-                    </Text>
-                    <Text numberOfLines={1} style={styles.invCustomer}>
-                      {inv.customerName || 'Walk-in Customer'}
-                    </Text>
-                  </View>
-
-                  <View style={styles.invRightAlign}>
-                    <Text style={styles.invAmount}>
-                      {formatCurrency(inv.totalAmount, inv.currencySymbol)}
-                    </Text>
-                    <Text style={[styles.invStatusLabel, { color: theme.statusColor }]}>
-                      {theme.statusText}
-                    </Text>
-                    <Text style={styles.invDateText}>
-                      {formatDate(inv.issueDate, 'dd MMM, yyyy')}
-                    </Text>
-                  </View>
-                </TouchableOpacity>
-              );
-            })
-          )}
-        </View>
+            {/* Recent Invoices Section */}
+            {renderRecentInvoicesSection()}
+          </>
+        )}
       </ScrollView>
 
       {/* Organization Switcher Modal */}
@@ -303,9 +445,10 @@ const styles = StyleSheet.create({
     backgroundColor: colors.background,
   },
   scrollContent: {
-    paddingHorizontal: 16,
+    width: '100%',
+    alignSelf: 'center',
     paddingTop: 8,
-    paddingBottom: 32,
+    paddingBottom: 40,
   },
   kpiGrid: {
     marginBottom: 12,
@@ -317,8 +460,76 @@ const styles = StyleSheet.create({
   kpiGap: {
     width: 10,
   },
+  kpiRowWide: {
+    flexDirection: 'row',
+    gap: 12,
+    marginBottom: 16,
+    width: '100%',
+  },
+  kpiCardWide: {
+    flex: 1,
+  },
+  desktopColumns: {
+    flexDirection: 'row',
+    gap: 20,
+    alignItems: 'flex-start',
+    width: '100%',
+  },
+  desktopLeftCol: {
+    flex: 1.4,
+  },
+  desktopRightCol: {
+    flex: 1,
+  },
+  quickActionsCard: {
+    backgroundColor: '#FFFFFF',
+    borderRadius: 16,
+    padding: 14,
+    marginBottom: 16,
+    borderWidth: 1,
+    borderColor: '#D7E5DC',
+    shadowColor: '#000000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.03,
+    shadowRadius: 4,
+    elevation: 1,
+  },
+  quickActionsTitle: {
+    ...typography.captionRegular,
+    color: colors.textSecondary,
+    fontSize: 12,
+    fontWeight: '600',
+    marginBottom: 10,
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
+  },
+  quickActionsRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    gap: 8,
+  },
+  quickActionBtn: {
+    flex: 1,
+    alignItems: 'center',
+    paddingVertical: 6,
+    borderRadius: 10,
+  },
+  quickActionIconBox: {
+    width: 40,
+    height: 40,
+    borderRadius: 12,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 6,
+  },
+  quickActionLabel: {
+    fontSize: 11,
+    fontWeight: '600',
+    color: colors.text,
+  },
   sectionContainer: {
-    marginTop: 8,
+    marginTop: 4,
     marginBottom: 12,
   },
   sectionHeaderRow: {
@@ -362,7 +573,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 14,
     marginBottom: 10,
     borderWidth: 1,
-    borderColor: '#E2E8F0',
+    borderColor: '#D7E5DC',
     shadowColor: '#000000',
     shadowOffset: { width: 0, height: 1 },
     shadowOpacity: 0.03,

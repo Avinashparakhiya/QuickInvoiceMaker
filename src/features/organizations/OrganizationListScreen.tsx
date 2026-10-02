@@ -13,6 +13,7 @@ import { Header } from '../../components/common/Header';
 import { useOrgStore } from '../../store/useOrgStore';
 import { colors } from '../../theme/colors';
 import { typography } from '../../theme/typography';
+import { useResponsive } from '../../utils/useResponsive';
 import { Organization } from '../../types';
 
 const ORG_AVATAR_COLORS = [
@@ -26,6 +27,7 @@ const ORG_AVATAR_COLORS = [
 export const OrganizationListScreen: React.FC = () => {
   const navigation = useNavigation<any>();
   const { organizations, activeOrg, setActiveOrg, loadOrganizations } = useOrgStore();
+  const { contentMaxWidth } = useResponsive();
 
   useEffect(() => {
     loadOrganizations();
@@ -42,7 +44,7 @@ export const OrganizationListScreen: React.FC = () => {
       <FlatList
         data={organizations}
         keyExtractor={(item) => item.id}
-        contentContainerStyle={styles.listContent}
+        contentContainerStyle={[styles.listContent, { maxWidth: contentMaxWidth, alignSelf: 'center', width: '100%' }]}
         showsVerticalScrollIndicator={false}
         renderItem={({ item, index }) => {
           const isActive = activeOrg?.id === item.id;

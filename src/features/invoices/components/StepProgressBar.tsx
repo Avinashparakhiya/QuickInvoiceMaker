@@ -3,6 +3,7 @@ import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import { Check } from 'lucide-react-native';
 import { colors } from '../../../theme/colors';
 import { typography } from '../../../theme/typography';
+import { useResponsive } from '../../../utils/useResponsive';
 
 interface StepProgressBarProps {
   currentStep: number; // 0 = Customer, 1 = Items, 2 = Preview
@@ -13,6 +14,7 @@ export const StepProgressBar: React.FC<StepProgressBarProps> = ({
   currentStep,
   onStepPress,
 }) => {
+  const { contentMaxWidth } = useResponsive();
   const steps = [
     { index: 0, label: 'Customer' },
     { index: 1, label: 'Items' },
@@ -20,82 +22,90 @@ export const StepProgressBar: React.FC<StepProgressBarProps> = ({
   ];
 
   return (
-    <View style={styles.container}>
-      {steps.map((step, idx) => {
-        const isCompleted = currentStep > step.index;
-        const isActive = currentStep === step.index;
-        const isPending = currentStep < step.index;
+    <View style={styles.outerContainer}>
+      <View style={[styles.container, { maxWidth: contentMaxWidth }]}>
+        {steps.map((step, idx) => {
+          const isCompleted = currentStep > step.index;
+          const isActive = currentStep === step.index;
+          const isPending = currentStep < step.index;
 
-        return (
-          <React.Fragment key={step.index}>
-            <TouchableOpacity
-              activeOpacity={isCompleted ? 0.7 : 1}
-              onPress={() => isCompleted && onStepPress?.(step.index)}
-              style={[
-                styles.stepItem,
-                isActive && styles.stepItemActive,
-              ]}
-            >
-              <View
+          return (
+            <React.Fragment key={step.index}>
+              <TouchableOpacity
+                activeOpacity={isCompleted ? 0.7 : 1}
+                onPress={() => isCompleted && onStepPress?.(step.index)}
                 style={[
-                  styles.circle,
-                  isCompleted && styles.circleCompleted,
-                  isActive && styles.circleActive,
-                  isPending && styles.circlePending,
+                  styles.stepItem,
+                  isActive && styles.stepItemActive,
                 ]}
               >
-                {isCompleted ? (
-                  <Check size={12} color="#FFFFFF" strokeWidth={3} />
-                ) : (
-                  <Text
-                    style={[
-                      styles.circleNumber,
-                      isActive && styles.circleNumberActive,
-                      isPending && styles.circleNumberPending,
-                    ]}
-                  >
-                    {step.index + 1}
-                  </Text>
-                )}
-              </View>
+                <View
+                  style={[
+                    styles.circle,
+                    isCompleted && styles.circleCompleted,
+                    isActive && styles.circleActive,
+                    isPending && styles.circlePending,
+                  ]}
+                >
+                  {isCompleted ? (
+                    <Check size={12} color="#FFFFFF" strokeWidth={3} />
+                  ) : (
+                    <Text
+                      style={[
+                        styles.circleNumber,
+                        isActive && styles.circleNumberActive,
+                        isPending && styles.circleNumberPending,
+                      ]}
+                    >
+                      {step.index + 1}
+                    </Text>
+                  )}
+                </View>
 
-              <Text
-                style={[
-                  styles.stepLabel,
-                  isCompleted && styles.stepLabelCompleted,
-                  isActive && styles.stepLabelActive,
-                  isPending && styles.stepLabelPending,
-                ]}
-              >
-                {step.label}
-              </Text>
-            </TouchableOpacity>
+                <Text
+                  style={[
+                    styles.stepLabel,
+                    isCompleted && styles.stepLabelCompleted,
+                    isActive && styles.stepLabelActive,
+                    isPending && styles.stepLabelPending,
+                  ]}
+                >
+                  {step.label}
+                </Text>
+              </TouchableOpacity>
 
-            {idx < steps.length - 1 ? (
-              <View
-                style={[
-                  styles.line,
-                  currentStep > idx ? styles.lineCompleted : styles.linePending,
-                ]}
-              />
-            ) : null}
-          </React.Fragment>
-        );
-      })}
+              {idx < steps.length - 1 ? (
+                <View
+                  style={[
+                    styles.line,
+                    currentStep > idx ? styles.lineCompleted : styles.linePending,
+                  ]}
+                />
+              ) : null}
+            </React.Fragment>
+          );
+        })}
+      </View>
     </View>
   );
 };
 
 const styles = StyleSheet.create({
+  outerContainer: {
+    backgroundColor: '#FFFFFF',
+    borderBottomWidth: 1,
+    borderBottomColor: '#D7E5DC',
+    width: '100%',
+    alignItems: 'center',
+  },
   container: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
     paddingVertical: 14,
     paddingHorizontal: 16,
-    backgroundColor: '#FFFFFF',
-    borderBottomWidth: 1,
-    borderBottomColor: '#E2E8F0',
+    width: '100%',
+    maxWidth: 768,
   },
   stepItem: {
     flexDirection: 'row',

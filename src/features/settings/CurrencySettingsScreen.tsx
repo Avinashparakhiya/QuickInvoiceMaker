@@ -18,6 +18,7 @@ import { orgRepository } from '../../database/repositories/orgRepository';
 import { colors } from '../../theme/colors';
 import { typography } from '../../theme/typography';
 import { formatCurrency } from '../../utils/currency';
+import { useResponsive } from '../../utils/useResponsive';
 
 interface CurrencyOption {
   code: string;
@@ -47,6 +48,7 @@ const CURRENCY_LIST: CurrencyOption[] = [
 export const CurrencySettingsScreen: React.FC = () => {
   const navigation = useNavigation<any>();
   const { activeOrg, updateOrg } = useOrgStore();
+  const { contentMaxWidth } = useResponsive();
   const [search, setSearch] = useState('');
   const [selectedCode, setSelectedCode] = useState(activeOrg?.currencyCode || 'USD');
   const [selectedSymbol, setSelectedSymbol] = useState(activeOrg?.currencySymbol || '$');
@@ -92,7 +94,7 @@ export const CurrencySettingsScreen: React.FC = () => {
         onBack={() => navigation.goBack()}
       />
 
-      <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
+      <ScrollView contentContainerStyle={[styles.scrollContent, { maxWidth: contentMaxWidth, alignSelf: 'center', width: '100%' }]} showsVerticalScrollIndicator={false}>
         {/* Live Preview Card */}
         <Card variant="softGreen" padding={16} style={styles.previewCard}>
           <Text style={styles.previewLabel}>LIVE PREVIEW</Text>
@@ -155,7 +157,7 @@ export const CurrencySettingsScreen: React.FC = () => {
       </ScrollView>
 
       {/* Sticky Save CTA */}
-      <View style={styles.footer}>
+      <View style={[styles.footer, { maxWidth: Math.min(contentMaxWidth, 800), alignSelf: 'center', width: '100%' }]}>
         <Button
           title={`Save Currency (${selectedCode})`}
           onPress={handleSave}

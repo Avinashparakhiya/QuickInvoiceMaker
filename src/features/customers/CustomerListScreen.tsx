@@ -19,6 +19,7 @@ import { colors } from '../../theme/colors';
 import { typography } from '../../theme/typography';
 import { formatCurrency } from '../../utils/currency';
 import { Customer, Invoice } from '../../types';
+import { useResponsive } from '../../utils/useResponsive';
 
 const AVATAR_COLORS = [
   { bg: '#DCFCE7', text: '#15803D', border: '#86EFAC' },
@@ -30,6 +31,7 @@ const AVATAR_COLORS = [
 
 export const CustomerListScreen: React.FC = () => {
   const navigation = useNavigation<any>();
+  const { contentMaxWidth, isWideScreen } = useResponsive();
   const { activeOrg } = useOrgStore();
 
   const [customers, setCustomers] = useState<Customer[]>([]);
@@ -105,7 +107,7 @@ export const CustomerListScreen: React.FC = () => {
       />
 
       {/* Search Bar & Filter Chips */}
-      <View style={styles.searchSection}>
+      <View style={[styles.searchSection, { maxWidth: contentMaxWidth, alignSelf: 'center', width: '100%' }]}>
         <View style={styles.searchBox}>
           <Search size={18} color="#94A3B8" />
           <TextInput
@@ -154,7 +156,7 @@ export const CustomerListScreen: React.FC = () => {
       <FlatList
         data={filteredCustomers}
         keyExtractor={(item) => item.id}
-        contentContainerStyle={styles.listContent}
+        contentContainerStyle={[styles.listContent, { maxWidth: contentMaxWidth, alignSelf: 'center', width: '100%' }]}
         refreshControl={
           <RefreshControl
             refreshing={refreshing}

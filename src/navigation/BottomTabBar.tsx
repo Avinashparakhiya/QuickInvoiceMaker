@@ -8,7 +8,7 @@ import {
 } from 'react-native';
 import { BottomTabBarProps } from '@react-navigation/bottom-tabs';
 import {
-  LayoutDashboard,
+  Home,
   ReceiptText,
   Plus,
   Calendar,
@@ -16,12 +16,14 @@ import {
 } from 'lucide-react-native';
 import { colors } from '../theme/colors';
 import { QuickCreateModal } from '../components/common/QuickCreateModal';
+import { useResponsive } from '../utils/useResponsive';
 
 export const BottomTabBar: React.FC<BottomTabBarProps> = ({
   state,
   descriptors,
   navigation,
 }) => {
+  const { contentMaxWidth, isWideScreen } = useResponsive();
   const [quickCreateVisible, setQuickCreateVisible] = useState(false);
 
   const getTabIcon = (routeName: string, isFocused: boolean) => {
@@ -30,7 +32,7 @@ export const BottomTabBar: React.FC<BottomTabBarProps> = ({
 
     switch (routeName) {
       case 'DashboardTab':
-        return <LayoutDashboard size={iconSize} color={iconColor} strokeWidth={isFocused ? 2.2 : 1.8} />;
+        return <Home size={iconSize} color={iconColor} strokeWidth={isFocused ? 2.2 : 1.8} />;
       case 'TransactionsTab':
         return <ReceiptText size={iconSize} color={iconColor} strokeWidth={isFocused ? 2.2 : 1.8} />;
       case 'CalendarTab':
@@ -82,56 +84,58 @@ export const BottomTabBar: React.FC<BottomTabBarProps> = ({
 
   return (
     <>
-      <View style={styles.barContainer}>
-        {state.routes.map((route, index) => {
-          const isFocused = state.index === index;
-          const isCreateTab = route.name === 'CreateTab';
+      <View style={styles.bottomOuter}>
+        <View style={[styles.barContainer, { maxWidth: Math.min(contentMaxWidth, 800) }]}>
+          {state.routes.map((route, index) => {
+            const isFocused = state.index === index;
+            const isCreateTab = route.name === 'CreateTab';
 
-          if (isCreateTab) {
-            return (
-              <View key="create-button" style={styles.createButtonWrapper}>
-                <TouchableOpacity
-                  activeOpacity={0.85}
-                  onPress={() => setQuickCreateVisible(true)}
-                  style={styles.createButton}
-                >
-                  <Plus size={24} color="#FFFFFF" strokeWidth={3} />
-                </TouchableOpacity>
-              </View>
-            );
-          }
-
-          const onPress = () => {
-            const event = navigation.emit({
-              type: 'tabPress',
-              target: route.key,
-              canPreventDefault: true,
-            });
-
-            if (!isFocused && !event.defaultPrevented) {
-              navigation.navigate(route.name);
+            if (isCreateTab) {
+              return (
+                <View key="create-button" style={styles.createButtonWrapper}>
+                  <TouchableOpacity
+                    activeOpacity={0.85}
+                    onPress={() => setQuickCreateVisible(true)}
+                    style={styles.createButton}
+                  >
+                    <Plus size={24} color="#FFFFFF" strokeWidth={3} />
+                  </TouchableOpacity>
+                </View>
+              );
             }
-          };
 
-          return (
-            <TouchableOpacity
-              key={route.key}
-              activeOpacity={0.7}
-              onPress={onPress}
-              style={styles.tabItem}
-            >
-              {getTabIcon(route.name, isFocused)}
-              <Text
-                style={[
-                  styles.tabLabel,
-                  isFocused && styles.tabLabelActive,
-                ]}
+            const onPress = () => {
+              const event = navigation.emit({
+                type: 'tabPress',
+                target: route.key,
+                canPreventDefault: true,
+              });
+
+              if (!isFocused && !event.defaultPrevented) {
+                navigation.navigate(route.name);
+              }
+            };
+
+            return (
+              <TouchableOpacity
+                key={route.key}
+                activeOpacity={0.7}
+                onPress={onPress}
+                style={styles.tabItem}
               >
-                {getTabLabel(route.name)}
-              </Text>
-            </TouchableOpacity>
-          );
-        })}
+                {getTabIcon(route.name, isFocused)}
+                <Text
+                  style={[
+                    styles.tabLabel,
+                    isFocused && styles.tabLabelActive,
+                  ]}
+                >
+                  {getTabLabel(route.name)}
+                </Text>
+              </TouchableOpacity>
+            );
+          })}
+        </View>
       </View>
 
       <QuickCreateModal
@@ -144,21 +148,26 @@ export const BottomTabBar: React.FC<BottomTabBarProps> = ({
 };
 
 const styles = StyleSheet.create({
-  barContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-around',
+  bottomOuter: {
     backgroundColor: '#FFFFFF',
     borderTopWidth: 1,
-    borderTopColor: '#E2E8F0',
-    height: Platform.OS === 'ios' ? 84 : 64,
-    paddingBottom: Platform.OS === 'ios' ? 24 : 6,
-    paddingHorizontal: 4,
+    borderTopColor: '#D7E5DC',
+    width: '100%',
+    alignItems: 'center',
     shadowColor: '#000',
     shadowOffset: { width: 0, height: -2 },
     shadowOpacity: 0.04,
     shadowRadius: 8,
     elevation: 8,
+  },
+  barContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-around',
+    width: '100%',
+    height: Platform.OS === 'ios' ? 84 : 64,
+    paddingBottom: Platform.OS === 'ios' ? 24 : 6,
+    paddingHorizontal: 4,
   },
   tabItem: {
     flex: 1,
