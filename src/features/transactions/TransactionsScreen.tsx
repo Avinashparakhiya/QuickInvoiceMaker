@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useMemo } from 'react';
 import {
   View,
   Text,
@@ -17,7 +17,13 @@ import {
   Receipt,
   FileSpreadsheet,
   ArrowRight,
-  TrendingDown,
+  TrendingUp,
+  Clock,
+  AlertTriangle,
+  CheckCircle2,
+  X,
+  Filter,
+  DollarSign,
 } from 'lucide-react-native';
 import { Header } from '../../components/common/Header';
 import { Card } from '../../components/common/Card';
@@ -37,6 +43,33 @@ import { Invoice, Payment, Estimate, Expense } from '../../types';
 
 type TabType = 'INVOICES' | 'PAYMENTS' | 'ESTIMATES' | 'EXPENSES';
 
+const AVATAR_COLORS = [
+  { bg: '#DCFCE7', text: '#15803D' }, // Green
+  { bg: '#E0F2FE', text: '#0369A1' }, // Sky Blue
+  { bg: '#FEF3C7', text: '#B45309' }, // Amber
+  { bg: '#FEE2E2', text: '#B91C1C' }, // Rose
+  { bg: '#F3E8FF', text: '#7E22CE' }, // Purple
+  { bg: '#FFEDD5', text: '#C2410C' }, // Orange
+];
+
+const getAvatarTheme = (name: string) => {
+  let hash = 0;
+  for (let i = 0; i < name.length; i++) {
+    hash = name.charCodeAt(i) + ((hash << 5) - hash);
+  }
+  const index = Math.abs(hash) % AVATAR_COLORS.length;
+  return AVATAR_COLORS[index];
+};
+
+const getInitials = (name: string) => {
+  if (!name) return 'WK';
+  const parts = name.trim().split(/\s+/);
+  if (parts.length >= 2) {
+    return (parts[0][0] + parts[1][0]).toUpperCase();
+  }
+  return name.slice(0, 2).toUpperCase();
+};
+
 export const TransactionsScreen: React.FC = () => {
   const navigation = useNavigation<any>();
   const isFocused = useIsFocused();
@@ -55,6 +88,9 @@ export const TransactionsScreen: React.FC = () => {
   const [estimates, setEstimates] = useState<Estimate[]>([]);
   const [expenses, setExpenses] = useState<Expense[]>([]);
   const [refreshing, setRefreshing] = useState(false);
+  const [paymentMethodFilter, setPaymentMethodFilter] = useState('ALL');
+  const [estimateStatusFilter, setEstimateStatusFilter] = useState('ALL');
+  const [expenseCategoryFilter, setExpenseCategoryFilter] = useState('ALL');
 
   const loadAllData = async () => {
     if (!activeOrg) return;
@@ -80,6 +116,22 @@ export const TransactionsScreen: React.FC = () => {
     setRefreshing(false);
   };
 
+  const currencySymbol = activeOrg?.currencySymbol || '$';
+
+  // Financial summary metrics
+  const totalInvoiced = useMemo(() => {
+    return invoices.reduce((sum, inv) => sum + (inv.totalAmount || 0), 0);
+  }, [invoices]);
+
+  const totalCollected = useMemo(() => {
+    return payments.reduce((sum, p) => sum + (p.amount || 0), 0);
+  }, [payments]);
+
+  const totalOutstanding = useMemo(() => {
+    return invoices.reduce((sum, inv) => sum + (inv.balanceDue || 0), 0);
+  }, [invoices]);
+
+  // Invoice Filters
   const invoiceStatusFilters = [
     { label: 'All', value: 'ALL' },
     { label: 'Unpaid', value: 'UNPAID' },
@@ -89,35 +141,88 @@ export const TransactionsScreen: React.FC = () => {
     { label: 'Draft', value: 'DRAFT' },
   ];
 
-  const filteredPayments = payments.filter((p) => {
-    if (!searchQuery.trim()) return true;
-    const term = searchQuery.toLowerCase();
-    return (
-      p.paymentNumber.toLowerCase().includes(term) ||
-      p.customerName?.toLowerCase().includes(term) ||
-      p.invoiceNumber?.toLowerCase().includes(term) ||
-      p.referenceNumber?.toLowerCase().includes(term)
-    );
-  });
+  const filteredInvoices = useMemo(() => {
+    return invoices.filter((inv) => {
+      // Status filter
+      if (filterStatus !== 'ALL' && inv.status !== filterStatus) return false;
+      // Search term
+      if (!searchQuery.trim()) return true;
+      const term = searchQuery.toLowerCase();
+      return (
+        inv.invoiceNumber.toLowerCase().includes(term) ||
+        (inv.customerName && inv.customerName.toLowerCase().includes(term))
+      );
+    });
+  }, [invoices, filterStatus, searchQuery]);
 
-  const filteredEstimates = estimates.filter((e) => {
-    if (!searchQuery.trim()) return true;
-    const term = searchQuery.toLowerCase();
-    return (
-      e.estimateNumber.toLowerCase().includes(term) ||
-      (e.customerName && e.customerName.toLowerCase().includes(term))
-    );
-  });
+  // Payment Filters
+  const paymentMethods = [
+    { label: 'All', value: 'ALL' },
+    { label: 'Bank Transfer', value: 'BANK_TRANSFER' },
+    { label: 'UPI', value: 'UPI' },
+    { label: 'Cash', value: 'CASH' },
+    { label: 'Credit Card', value: 'CREDIT_CARD' },
+    { label: 'Cheque', value: 'CHEQUE' },
+  ];
 
-  const filteredExpenses = expenses.filter((exp) => {
-    if (!searchQuery.trim()) return true;
-    const term = searchQuery.toLowerCase();
-    return (
-      exp.category.toLowerCase().includes(term) ||
-      (exp.vendor && exp.vendor.toLowerCase().includes(term)) ||
-      (exp.description && exp.description.toLowerCase().includes(term))
-    );
-  });
+  const filteredPayments = useMemo(() => {
+    return payments.filter((p) => {
+      if (paymentMethodFilter !== 'ALL' && p.paymentMethod !== paymentMethodFilter) return false;
+      if (!searchQuery.trim()) return true;
+      const term = searchQuery.toLowerCase();
+      return (
+        p.paymentNumber.toLowerCase().includes(term) ||
+        (p.customerName && p.customerName.toLowerCase().includes(term)) ||
+        (p.invoiceNumber && p.invoiceNumber.toLowerCase().includes(term)) ||
+        (p.referenceNumber && p.referenceNumber.toLowerCase().includes(term))
+      );
+    });
+  }, [payments, paymentMethodFilter, searchQuery]);
+
+  // Estimate Filters
+  const estimateStatusFilters = [
+    { label: 'All', value: 'ALL' },
+    { label: 'Draft', value: 'DRAFT' },
+    { label: 'Sent', value: 'SENT' },
+    { label: 'Accepted', value: 'ACCEPTED' },
+    { label: 'Declined', value: 'DECLINED' },
+    { label: 'Converted', value: 'CONVERTED' },
+  ];
+
+  const filteredEstimates = useMemo(() => {
+    return estimates.filter((e) => {
+      if (estimateStatusFilter !== 'ALL' && e.status !== estimateStatusFilter) return false;
+      if (!searchQuery.trim()) return true;
+      const term = searchQuery.toLowerCase();
+      return (
+        e.estimateNumber.toLowerCase().includes(term) ||
+        (e.customerName && e.customerName.toLowerCase().includes(term))
+      );
+    });
+  }, [estimates, estimateStatusFilter, searchQuery]);
+
+  // Expense Filters
+  const expenseCategories = [
+    { label: 'All', value: 'ALL' },
+    { label: 'Office Supplies', value: 'Office Supplies' },
+    { label: 'Software / SaaS', value: 'Software / SaaS' },
+    { label: 'Travel & Food', value: 'Travel & Meals' },
+    { label: 'Utilities', value: 'Utilities' },
+    { label: 'Services', value: 'Professional Services' },
+  ];
+
+  const filteredExpenses = useMemo(() => {
+    return expenses.filter((exp) => {
+      if (expenseCategoryFilter !== 'ALL' && exp.category !== expenseCategoryFilter) return false;
+      if (!searchQuery.trim()) return true;
+      const term = searchQuery.toLowerCase();
+      return (
+        exp.category.toLowerCase().includes(term) ||
+        (exp.vendor && exp.vendor.toLowerCase().includes(term)) ||
+        (exp.description && exp.description.toLowerCase().includes(term))
+      );
+    });
+  }, [expenses, expenseCategoryFilter, searchQuery]);
 
   const handleFabPress = () => {
     switch (activeTab) {
@@ -136,267 +241,451 @@ export const TransactionsScreen: React.FC = () => {
     }
   };
 
-  const renderInvoiceItem = ({ item }: { item: Invoice }) => (
-    <Card
-      variant="elevated"
-      padding={14}
-      onPress={() => navigation.navigate('InvoiceDetail', { invoiceId: item.id })}
-      style={styles.card}
-    >
-      <View style={styles.cardRow}>
-        <View style={styles.cardLeft}>
-          <View style={styles.titleRow}>
-            <Text style={styles.invNumber}>{item.invoiceNumber}</Text>
-            <Badge status={item.status} size="sm" />
-          </View>
-          <Text numberOfLines={1} style={styles.customerName}>
-            {item.customerName || 'Walk-in Customer'}
-          </Text>
-          <Text style={styles.datesText}>
-            {formatDate(item.issueDate, 'MMM dd, yyyy')} • Due {formatDate(item.dueDate, 'MMM dd')}
-          </Text>
-        </View>
+  const renderInvoiceItem = ({ item }: { item: Invoice }) => {
+    const avatarTheme = getAvatarTheme(item.customerName || 'Walkin');
+    const initials = getInitials(item.customerName || 'Walkin');
 
-        <View style={styles.cardRight}>
-          <Text style={styles.totalAmount}>
-            {formatCurrency(item.totalAmount, item.currencySymbol)}
-          </Text>
-          {item.status === 'PARTIAL' ? (
-            <Text style={styles.balanceText}>
-              Due: {formatCurrency(item.balanceDue, item.currencySymbol)}
-            </Text>
-          ) : item.status === 'PAID' ? (
-            <Text style={styles.paidText}>Fully Settled</Text>
-          ) : null}
-        </View>
-      </View>
-    </Card>
-  );
-
-  const renderPaymentItem = ({ item }: { item: Payment }) => (
-    <Card
-      variant="elevated"
-      padding={14}
-      onPress={() => navigation.navigate('PaymentList')}
-      style={styles.card}
-    >
-      <View style={styles.cardRow}>
-        <View style={styles.cardLeft}>
-          <View style={styles.titleRow}>
-            <Text style={styles.invNumber}>{item.paymentNumber}</Text>
-            <View style={styles.methodBadge}>
-              <Text style={styles.methodText}>{item.paymentMethod.replace('_', ' ')}</Text>
+    return (
+      <TouchableOpacity
+        activeOpacity={0.7}
+        onPress={() => navigation.navigate('InvoiceDetail', { invoiceId: item.id })}
+        style={styles.cardContainer}
+      >
+        <Card variant="elevated" padding={14} style={styles.card}>
+          <View style={styles.cardRow}>
+            {/* Avatar Initials */}
+            <View style={[styles.avatarCircle, { backgroundColor: avatarTheme.bg }]}>
+              <Text style={[styles.avatarText, { color: avatarTheme.text }]}>{initials}</Text>
             </View>
-          </View>
-          <Text style={styles.customerName}>{item.customerName || 'Customer'}</Text>
-          <Text style={styles.datesText}>
-            {formatDate(item.paymentDate)}
-            {item.invoiceNumber ? ` • Invoice #${item.invoiceNumber}` : ''}
-          </Text>
-        </View>
 
-        <View style={styles.cardRight}>
-          <Text style={[styles.totalAmount, { color: colors.success }]}>
-            +{formatCurrency(item.amount, activeOrg?.currencySymbol || '$')}
-          </Text>
-        </View>
-      </View>
-    </Card>
-  );
-
-  const renderEstimateItem = ({ item }: { item: Estimate }) => (
-    <Card
-      variant="elevated"
-      padding={14}
-      onPress={() => navigation.navigate('EstimateDetail', { estimateId: item.id })}
-      style={styles.card}
-    >
-      <View style={styles.cardRow}>
-        <View style={styles.cardLeft}>
-          <View style={styles.titleRow}>
-            <Text style={styles.invNumber}>{item.estimateNumber}</Text>
-            <View style={styles.estimateBadge}>
-              <Text style={styles.estimateBadgeText}>{item.status}</Text>
-            </View>
-          </View>
-          <Text style={styles.customerName}>{item.customerName || 'Potential Client'}</Text>
-          <Text style={styles.datesText}>
-            Issued {formatDate(item.issueDate, 'MMM dd')} • Valid till {formatDate(item.expiryDate, 'MMM dd')}
-          </Text>
-        </View>
-
-        <View style={styles.cardRight}>
-          <Text style={styles.totalAmount}>
-            {formatCurrency(item.totalAmount, item.currencySymbol || activeOrg?.currencySymbol || '$')}
-          </Text>
-          {item.status !== 'CONVERTED' ? (
-            <Text style={styles.actionPromptText}>Tap to Convert</Text>
-          ) : (
-            <Text style={styles.paidText}>Converted</Text>
-          )}
-        </View>
-      </View>
-    </Card>
-  );
-
-  const renderExpenseItem = ({ item }: { item: Expense }) => (
-    <Card
-      variant="elevated"
-      padding={14}
-      onPress={() => navigation.navigate('ExpenseList')}
-      style={styles.card}
-    >
-      <View style={styles.cardRow}>
-        <View style={styles.cardLeft}>
-          <View style={styles.titleRow}>
-            <Text style={styles.invNumber}>{item.category}</Text>
-            {item.isBillable && (
-              <View style={styles.billableBadge}>
-                <Text style={styles.billableText}>Billable</Text>
+            {/* Middle info */}
+            <View style={styles.cardLeft}>
+              <View style={styles.titleRow}>
+                <Text numberOfLines={1} style={styles.customerName}>
+                  {item.customerName || 'Walk-in Customer'}
+                </Text>
               </View>
-            )}
+              <View style={styles.metaRow}>
+                <Text style={styles.invNumber}>{item.invoiceNumber}</Text>
+                <Text style={styles.dotSeparator}>•</Text>
+                <Text style={styles.datesText}>
+                  {formatDate(item.issueDate, 'MMM dd, yyyy')}
+                </Text>
+              </View>
+            </View>
+
+            {/* Right amount & status */}
+            <View style={styles.cardRight}>
+              <Text style={styles.totalAmount}>
+                {formatCurrency(item.totalAmount, item.currencySymbol)}
+              </Text>
+              <View style={styles.statusBadgeWrapper}>
+                <Badge status={item.status} size="sm" />
+              </View>
+              {item.balanceDue > 0 && item.status !== 'UNPAID' && (
+                <Text style={styles.balanceText}>
+                  Due: {formatCurrency(item.balanceDue, item.currencySymbol)}
+                </Text>
+              )}
+            </View>
           </View>
-          <Text style={styles.customerName}>{item.vendor || item.description || 'Expense'}</Text>
-          <Text style={styles.datesText}>{formatDate(item.expenseDate, 'MMM dd, yyyy')}</Text>
-        </View>
+        </Card>
+      </TouchableOpacity>
+    );
+  };
 
-        <View style={styles.cardRight}>
-          <Text style={[styles.totalAmount, { color: colors.danger }]}>
-            -{formatCurrency(item.amount, activeOrg?.currencySymbol || '$')}
-          </Text>
-        </View>
-      </View>
-    </Card>
-  );
+  const renderPaymentItem = ({ item }: { item: Payment }) => {
+    const avatarTheme = getAvatarTheme(item.customerName || 'Payment');
+    const initials = getInitials(item.customerName || 'Payment');
 
-  const getRecordCount = () => {
-    switch (activeTab) {
-      case 'INVOICES':
-        return invoices.length;
-      case 'PAYMENTS':
-        return filteredPayments.length;
-      case 'ESTIMATES':
-        return filteredEstimates.length;
-      case 'EXPENSES':
-        return filteredExpenses.length;
-    }
+    return (
+      <TouchableOpacity
+        activeOpacity={0.7}
+        onPress={() => navigation.navigate('PaymentList')}
+        style={styles.cardContainer}
+      >
+        <Card variant="elevated" padding={14} style={styles.card}>
+          <View style={styles.cardRow}>
+            {/* Avatar Circle */}
+            <View style={[styles.avatarCircle, { backgroundColor: avatarTheme.bg }]}>
+              <Text style={[styles.avatarText, { color: avatarTheme.text }]}>{initials}</Text>
+            </View>
+
+            {/* Middle Info */}
+            <View style={styles.cardLeft}>
+              <Text numberOfLines={1} style={styles.customerName}>
+                {item.customerName || 'Customer Payment'}
+              </Text>
+              <View style={styles.metaRow}>
+                <Text style={styles.invNumber}>{item.paymentNumber}</Text>
+                {item.invoiceNumber && (
+                  <>
+                    <Text style={styles.dotSeparator}>•</Text>
+                    <Text style={styles.datesText}>#{item.invoiceNumber}</Text>
+                  </>
+                )}
+                <Text style={styles.dotSeparator}>•</Text>
+                <Text style={styles.datesText}>{formatDate(item.paymentDate, 'MMM dd')}</Text>
+              </View>
+            </View>
+
+            {/* Right Side */}
+            <View style={styles.cardRight}>
+              <Text style={[styles.totalAmount, { color: colors.success }]}>
+                +{formatCurrency(item.amount, activeOrg?.currencySymbol || '$')}
+              </Text>
+              <View style={styles.methodBadge}>
+                <Text style={styles.methodText}>{item.paymentMethod.replace(/_/g, ' ')}</Text>
+              </View>
+            </View>
+          </View>
+        </Card>
+      </TouchableOpacity>
+    );
+  };
+
+  const renderEstimateItem = ({ item }: { item: Estimate }) => {
+    const avatarTheme = getAvatarTheme(item.customerName || 'Estimate');
+    const initials = getInitials(item.customerName || 'Estimate');
+
+    return (
+      <TouchableOpacity
+        activeOpacity={0.7}
+        onPress={() => navigation.navigate('EstimateDetail', { estimateId: item.id })}
+        style={styles.cardContainer}
+      >
+        <Card variant="elevated" padding={14} style={styles.card}>
+          <View style={styles.cardRow}>
+            <View style={[styles.avatarCircle, { backgroundColor: avatarTheme.bg }]}>
+              <Text style={[styles.avatarText, { color: avatarTheme.text }]}>{initials}</Text>
+            </View>
+
+            <View style={styles.cardLeft}>
+              <Text numberOfLines={1} style={styles.customerName}>
+                {item.customerName || 'Potential Client'}
+              </Text>
+              <View style={styles.metaRow}>
+                <Text style={styles.invNumber}>{item.estimateNumber}</Text>
+                <Text style={styles.dotSeparator}>•</Text>
+                <Text style={styles.datesText}>
+                  Valid till {formatDate(item.expiryDate, 'MMM dd')}
+                </Text>
+              </View>
+            </View>
+
+            <View style={styles.cardRight}>
+              <Text style={styles.totalAmount}>
+                {formatCurrency(item.totalAmount, item.currencySymbol || activeOrg?.currencySymbol || '$')}
+              </Text>
+              <View style={[
+                styles.estimateBadge,
+                item.status === 'ACCEPTED' ? { backgroundColor: '#DCFCE7' } :
+                item.status === 'CONVERTED' ? { backgroundColor: '#E0F2FE' } :
+                item.status === 'DECLINED' ? { backgroundColor: '#FEE2E2' } :
+                { backgroundColor: '#F1F5F9' }
+              ]}>
+                <Text style={[
+                  styles.estimateBadgeText,
+                  item.status === 'ACCEPTED' ? { color: '#15803D' } :
+                  item.status === 'CONVERTED' ? { color: '#0369A1' } :
+                  item.status === 'DECLINED' ? { color: '#B91C1C' } :
+                  { color: '#475569' }
+                ]}>
+                  {item.status}
+                </Text>
+              </View>
+            </View>
+          </View>
+        </Card>
+      </TouchableOpacity>
+    );
+  };
+
+  const renderExpenseItem = ({ item }: { item: Expense }) => {
+    const avatarTheme = getAvatarTheme(item.category || 'Expense');
+    const initials = getInitials(item.category || 'Expense');
+
+    return (
+      <TouchableOpacity
+        activeOpacity={0.7}
+        onPress={() => navigation.navigate('ExpenseList')}
+        style={styles.cardContainer}
+      >
+        <Card variant="elevated" padding={14} style={styles.card}>
+          <View style={styles.cardRow}>
+            <View style={[styles.avatarCircle, { backgroundColor: avatarTheme.bg }]}>
+              <Text style={[styles.avatarText, { color: avatarTheme.text }]}>{initials}</Text>
+            </View>
+
+            <View style={styles.cardLeft}>
+              <Text numberOfLines={1} style={styles.customerName}>
+                {item.vendor || item.description || item.category}
+              </Text>
+              <View style={styles.metaRow}>
+                <Text style={styles.invNumber}>{item.category}</Text>
+                <Text style={styles.dotSeparator}>•</Text>
+                <Text style={styles.datesText}>{formatDate(item.expenseDate, 'MMM dd, yyyy')}</Text>
+              </View>
+            </View>
+
+            <View style={styles.cardRight}>
+              <Text style={[styles.totalAmount, { color: colors.danger }]}>
+                -{formatCurrency(item.amount, activeOrg?.currencySymbol || '$')}
+              </Text>
+              {item.isBillable && (
+                <View style={styles.billableBadge}>
+                  <Text style={styles.billableText}>Billable</Text>
+                </View>
+              )}
+            </View>
+          </View>
+        </Card>
+      </TouchableOpacity>
+    );
   };
 
   return (
     <View style={styles.container}>
       <Header
         title="Transactions Hub"
-        subtitle={`${getRecordCount()} records`}
+        subtitle={activeOrg?.displayName || activeOrg?.name || 'Workspace'}
         rightAction={
           <TouchableOpacity
-            activeOpacity={0.7}
+            activeOpacity={0.8}
             onPress={handleFabPress}
             style={styles.addBtn}
           >
-            <Plus size={20} color="#FFFFFF" />
+            <Plus size={20} color="#FFFFFF" strokeWidth={2.5} />
           </TouchableOpacity>
         }
       />
 
-      {/* Main 4-Tab Switcher */}
+      {/* Top Financial Summary Metrics Strip */}
+      <View style={styles.summaryStrip}>
+        <View style={styles.summaryMetricItem}>
+          <Text style={styles.summaryMetricLabel}>Billed</Text>
+          <Text numberOfLines={1} style={styles.summaryMetricValue}>
+            {formatCurrency(totalInvoiced, currencySymbol)}
+          </Text>
+        </View>
+        <View style={styles.summaryDivider} />
+        <View style={styles.summaryMetricItem}>
+          <Text style={styles.summaryMetricLabel}>Collected</Text>
+          <Text numberOfLines={1} style={[styles.summaryMetricValue, { color: colors.success }]}>
+            {formatCurrency(totalCollected, currencySymbol)}
+          </Text>
+        </View>
+        <View style={styles.summaryDivider} />
+        <View style={styles.summaryMetricItem}>
+          <Text style={styles.summaryMetricLabel}>Outstanding</Text>
+          <Text numberOfLines={1} style={[styles.summaryMetricValue, { color: colors.warning }]}>
+            {formatCurrency(totalOutstanding, currencySymbol)}
+          </Text>
+        </View>
+      </View>
+
+      {/* Document Type Switcher Tabs */}
       <View style={styles.mainTabContainer}>
         <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.mainTabRow}>
           <TouchableOpacity
+            activeOpacity={0.7}
             onPress={() => setActiveTab('INVOICES')}
             style={[styles.mainTabBtn, activeTab === 'INVOICES' && styles.mainTabBtnActive]}
           >
             <FileText size={15} color={activeTab === 'INVOICES' ? colors.primaryDarker : colors.textSecondary} />
             <Text style={[styles.mainTabText, activeTab === 'INVOICES' && styles.mainTabTextActive]}>
-              Invoices ({invoices.length})
+              Invoices
             </Text>
+            <View style={[styles.tabCountPill, activeTab === 'INVOICES' && styles.tabCountPillActive]}>
+              <Text style={[styles.tabCountText, activeTab === 'INVOICES' && styles.tabCountTextActive]}>
+                {invoices.length}
+              </Text>
+            </View>
           </TouchableOpacity>
 
           <TouchableOpacity
+            activeOpacity={0.7}
             onPress={() => setActiveTab('PAYMENTS')}
             style={[styles.mainTabBtn, activeTab === 'PAYMENTS' && styles.mainTabBtnActive]}
           >
             <CreditCard size={15} color={activeTab === 'PAYMENTS' ? colors.primaryDarker : colors.textSecondary} />
             <Text style={[styles.mainTabText, activeTab === 'PAYMENTS' && styles.mainTabTextActive]}>
-              Payments ({payments.length})
+              Payments
             </Text>
+            <View style={[styles.tabCountPill, activeTab === 'PAYMENTS' && styles.tabCountPillActive]}>
+              <Text style={[styles.tabCountText, activeTab === 'PAYMENTS' && styles.tabCountTextActive]}>
+                {payments.length}
+              </Text>
+            </View>
           </TouchableOpacity>
 
           <TouchableOpacity
+            activeOpacity={0.7}
             onPress={() => setActiveTab('ESTIMATES')}
             style={[styles.mainTabBtn, activeTab === 'ESTIMATES' && styles.mainTabBtnActive]}
           >
             <FileSpreadsheet size={15} color={activeTab === 'ESTIMATES' ? colors.primaryDarker : colors.textSecondary} />
             <Text style={[styles.mainTabText, activeTab === 'ESTIMATES' && styles.mainTabTextActive]}>
-              Quotes ({estimates.length})
+              Quotes
             </Text>
+            <View style={[styles.tabCountPill, activeTab === 'ESTIMATES' && styles.tabCountPillActive]}>
+              <Text style={[styles.tabCountText, activeTab === 'ESTIMATES' && styles.tabCountTextActive]}>
+                {estimates.length}
+              </Text>
+            </View>
           </TouchableOpacity>
 
           <TouchableOpacity
+            activeOpacity={0.7}
             onPress={() => setActiveTab('EXPENSES')}
             style={[styles.mainTabBtn, activeTab === 'EXPENSES' && styles.mainTabBtnActive]}
           >
             <Receipt size={15} color={activeTab === 'EXPENSES' ? colors.primaryDarker : colors.textSecondary} />
             <Text style={[styles.mainTabText, activeTab === 'EXPENSES' && styles.mainTabTextActive]}>
-              Expenses ({expenses.length})
+              Expenses
             </Text>
+            <View style={[styles.tabCountPill, activeTab === 'EXPENSES' && styles.tabCountPillActive]}>
+              <Text style={[styles.tabCountText, activeTab === 'EXPENSES' && styles.tabCountTextActive]}>
+                {expenses.length}
+              </Text>
+            </View>
           </TouchableOpacity>
         </ScrollView>
       </View>
 
-      {/* Search Input */}
+      {/* Search Input Section */}
       <View style={styles.searchSection}>
         <Input
           placeholder={
             activeTab === 'INVOICES'
-              ? 'Search by invoice #, customer name...'
+              ? 'Search invoices, clients...'
               : activeTab === 'PAYMENTS'
-              ? 'Search receipt #, customer...'
+              ? 'Search receipts, clients...'
               : activeTab === 'ESTIMATES'
-              ? 'Search quote #, customer...'
-              : 'Search expense category, vendor...'
+              ? 'Search quotes, clients...'
+              : 'Search expenses, vendors...'
           }
           value={searchQuery}
           onChangeText={setSearchQuery}
           prefix={<Search size={18} color={colors.textSecondary} />}
+          suffix={
+            searchQuery ? (
+              <TouchableOpacity onPress={() => setSearchQuery('')}>
+                <X size={16} color={colors.textSecondary} />
+              </TouchableOpacity>
+            ) : undefined
+          }
           containerStyle={styles.searchInput}
         />
       </View>
 
-      {/* Status Filter Chips (Only for Invoices) */}
-      {activeTab === 'INVOICES' && (
-        <View style={styles.filtersSection}>
-          <FlatList
-            horizontal
-            showsHorizontalScrollIndicator={false}
-            data={invoiceStatusFilters}
-            keyExtractor={(item) => item.value}
-            contentContainerStyle={styles.filtersList}
-            renderItem={({ item }) => (
+      {/* Sub-Filter Chips */}
+      <View style={styles.filtersSection}>
+        {activeTab === 'INVOICES' && (
+          <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.filtersList}>
+            {invoiceStatusFilters.map((chip) => (
               <TouchableOpacity
-                onPress={() => setFilterStatus(item.value)}
+                key={chip.value}
+                activeOpacity={0.7}
+                onPress={() => setFilterStatus(chip.value)}
                 style={[
                   styles.filterChip,
-                  filterStatus === item.value && styles.filterChipActive,
+                  filterStatus === chip.value && styles.filterChipActive,
                 ]}
               >
                 <Text
                   style={[
                     styles.filterChipText,
-                    filterStatus === item.value && styles.filterChipTextActive,
+                    filterStatus === chip.value && styles.filterChipTextActive,
                   ]}
                 >
-                  {item.label}
+                  {chip.label}
                 </Text>
               </TouchableOpacity>
-            )}
-          />
-        </View>
-      )}
+            ))}
+          </ScrollView>
+        )}
 
-      {/* Active Tab List */}
+        {activeTab === 'PAYMENTS' && (
+          <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.filtersList}>
+            {paymentMethods.map((chip) => (
+              <TouchableOpacity
+                key={chip.value}
+                activeOpacity={0.7}
+                onPress={() => setPaymentMethodFilter(chip.value)}
+                style={[
+                  styles.filterChip,
+                  paymentMethodFilter === chip.value && styles.filterChipActive,
+                ]}
+              >
+                <Text
+                  style={[
+                    styles.filterChipText,
+                    paymentMethodFilter === chip.value && styles.filterChipTextActive,
+                  ]}
+                >
+                  {chip.label}
+                </Text>
+              </TouchableOpacity>
+            ))}
+          </ScrollView>
+        )}
+
+        {activeTab === 'ESTIMATES' && (
+          <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.filtersList}>
+            {estimateStatusFilters.map((chip) => (
+              <TouchableOpacity
+                key={chip.value}
+                activeOpacity={0.7}
+                onPress={() => setEstimateStatusFilter(chip.value)}
+                style={[
+                  styles.filterChip,
+                  estimateStatusFilter === chip.value && styles.filterChipActive,
+                ]}
+              >
+                <Text
+                  style={[
+                    styles.filterChipText,
+                    estimateStatusFilter === chip.value && styles.filterChipTextActive,
+                  ]}
+                >
+                  {chip.label}
+                </Text>
+              </TouchableOpacity>
+            ))}
+          </ScrollView>
+        )}
+
+        {activeTab === 'EXPENSES' && (
+          <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.filtersList}>
+            {expenseCategories.map((chip) => (
+              <TouchableOpacity
+                key={chip.value}
+                activeOpacity={0.7}
+                onPress={() => setExpenseCategoryFilter(chip.value)}
+                style={[
+                  styles.filterChip,
+                  expenseCategoryFilter === chip.value && styles.filterChipActive,
+                ]}
+              >
+                <Text
+                  style={[
+                    styles.filterChipText,
+                    expenseCategoryFilter === chip.value && styles.filterChipTextActive,
+                  ]}
+                >
+                  {chip.label}
+                </Text>
+              </TouchableOpacity>
+            ))}
+          </ScrollView>
+        )}
+      </View>
+
+      {/* Active Tab List Content */}
       {activeTab === 'INVOICES' && (
         <FlatList
-          data={invoices}
+          data={filteredInvoices}
           keyExtractor={(item) => item.id}
           renderItem={renderInvoiceItem}
           contentContainerStyle={styles.listContent}
@@ -411,9 +700,13 @@ export const TransactionsScreen: React.FC = () => {
           }
           ListEmptyComponent={
             <EmptyState
-              icon={<FileText size={44} color={colors.primary} />}
+              icon={<FileText size={32} color={colors.primary} />}
               title="No Invoices Found"
-              description="Create and send your first professional invoice."
+              description={
+                searchQuery || filterStatus !== 'ALL'
+                  ? 'No invoices match your current search or filter.'
+                  : 'Create and send your first invoice in seconds.'
+              }
               actionTitle="+ Create Invoice"
               onAction={() => navigation.navigate('InvoiceCreate', {})}
             />
@@ -438,9 +731,9 @@ export const TransactionsScreen: React.FC = () => {
           }
           ListEmptyComponent={
             <EmptyState
-              icon={<CreditCard size={44} color={colors.primary} />}
-              title="No Payments Recorded"
-              description="Record payments received from clients to track balances."
+              icon={<CreditCard size={32} color={colors.primary} />}
+              title="No Payments Found"
+              description="Record incoming payments to track real-time cashflow."
               actionTitle="+ Record Payment"
               onAction={() => navigation.navigate('RecordPayment', {})}
             />
@@ -465,9 +758,9 @@ export const TransactionsScreen: React.FC = () => {
           }
           ListEmptyComponent={
             <EmptyState
-              icon={<FileSpreadsheet size={44} color={colors.primary} />}
-              title="No Estimates Found"
-              description="Draft estimates and proposals to win more client contracts."
+              icon={<FileSpreadsheet size={32} color={colors.primary} />}
+              title="No Quotes Found"
+              description="Draft estimates and convert them directly to invoices upon client approval."
               actionTitle="+ Create Estimate"
               onAction={() => navigation.navigate('EstimateCreate', {})}
             />
@@ -492,9 +785,9 @@ export const TransactionsScreen: React.FC = () => {
           }
           ListEmptyComponent={
             <EmptyState
-              icon={<Receipt size={44} color={colors.primary} />}
+              icon={<Receipt size={32} color={colors.primary} />}
               title="No Expenses Logged"
-              description="Keep clean financial records by tracking business costs."
+              description="Log business expenses to maintain clean tax-ready books."
               actionTitle="+ Log Expense"
               onAction={() => navigation.navigate('ExpenseForm', {})}
             />
@@ -510,9 +803,62 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: colors.background,
   },
+  addBtn: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    backgroundColor: colors.primary,
+    alignItems: 'center',
+    justifyContent: 'center',
+    shadowColor: colors.primary,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.3,
+    shadowRadius: 4,
+    elevation: 3,
+  },
+  summaryStrip: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#FFFFFF',
+    marginHorizontal: 16,
+    marginTop: 10,
+    marginBottom: 4,
+    borderRadius: 14,
+    paddingVertical: 10,
+    paddingHorizontal: 14,
+    borderWidth: 1,
+    borderColor: '#D7E5DC',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.04,
+    shadowRadius: 3,
+    elevation: 1,
+  },
+  summaryMetricItem: {
+    flex: 1,
+    alignItems: 'center',
+  },
+  summaryMetricLabel: {
+    fontSize: 11,
+    color: colors.textSecondary,
+    fontWeight: '500',
+    marginBottom: 2,
+    textTransform: 'uppercase',
+    letterSpacing: 0.3,
+  },
+  summaryMetricValue: {
+    fontSize: 14,
+    fontWeight: '700',
+    color: colors.text,
+  },
+  summaryDivider: {
+    width: 1,
+    height: 24,
+    backgroundColor: '#E2E8F0',
+  },
   mainTabContainer: {
     paddingHorizontal: 16,
-    paddingTop: 12,
+    paddingTop: 10,
   },
   mainTabRow: {
     flexDirection: 'row',
@@ -523,14 +869,14 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     gap: 6,
     paddingVertical: 8,
-    paddingHorizontal: 14,
+    paddingHorizontal: 12,
     borderRadius: 12,
     backgroundColor: '#FFFFFF',
     borderWidth: 1,
-    borderColor: colors.borderLight,
+    borderColor: '#D7E5DC',
   },
   mainTabBtnActive: {
-    backgroundColor: colors.primarySubtle,
+    backgroundColor: '#DCFCE7',
     borderColor: colors.primary,
   },
   mainTabText: {
@@ -543,15 +889,32 @@ const styles = StyleSheet.create({
     color: colors.primaryDarker,
     fontWeight: '700',
   },
+  tabCountPill: {
+    backgroundColor: '#F1F5F9',
+    paddingHorizontal: 6,
+    paddingVertical: 1,
+    borderRadius: 10,
+  },
+  tabCountPillActive: {
+    backgroundColor: colors.primary,
+  },
+  tabCountText: {
+    fontSize: 11,
+    fontWeight: '700',
+    color: colors.textSecondary,
+  },
+  tabCountTextActive: {
+    color: '#FFFFFF',
+  },
   searchSection: {
     paddingHorizontal: 16,
     paddingTop: 10,
   },
   searchInput: {
-    marginBottom: 4,
+    marginBottom: 2,
   },
   filtersSection: {
-    paddingBottom: 4,
+    paddingVertical: 6,
   },
   filtersList: {
     paddingHorizontal: 16,
@@ -563,7 +926,7 @@ const styles = StyleSheet.create({
     borderRadius: 16,
     backgroundColor: '#FFFFFF',
     borderWidth: 1,
-    borderColor: colors.borderLight,
+    borderColor: '#D7E5DC',
   },
   filterChipActive: {
     backgroundColor: colors.primaryDarker,
@@ -573,22 +936,41 @@ const styles = StyleSheet.create({
     ...typography.caption,
     color: colors.textSecondary,
     fontSize: 12,
+    fontWeight: '500',
   },
   filterChipTextActive: {
     color: '#FFFFFF',
+    fontWeight: '700',
   },
   listContent: {
-    padding: 16,
-    paddingTop: 8,
+    paddingHorizontal: 16,
+    paddingTop: 4,
+    paddingBottom: 32,
     flexGrow: 1,
   },
-  card: {
+  cardContainer: {
     marginBottom: 10,
+  },
+  card: {
+    borderRadius: 14,
+    borderWidth: 1,
+    borderColor: '#D7E5DC',
   },
   cardRow: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
     alignItems: 'center',
+  },
+  avatarCircle: {
+    width: 42,
+    height: 42,
+    borderRadius: 21,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: 12,
+  },
+  avatarText: {
+    fontSize: 14,
+    fontWeight: '700',
   },
   cardLeft: {
     flex: 1,
@@ -597,22 +979,31 @@ const styles = StyleSheet.create({
   titleRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 8,
-    marginBottom: 4,
-  },
-  invNumber: {
-    ...typography.bodySemiBold,
-    color: colors.text,
+    marginBottom: 2,
   },
   customerName: {
-    ...typography.bodyMedium,
-    color: colors.textSecondary,
-    marginBottom: 4,
+    ...typography.bodySemiBold,
+    color: colors.text,
+    fontSize: 14,
+  },
+  metaRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    flexWrap: 'wrap',
+  },
+  invNumber: {
+    fontSize: 12,
+    fontWeight: '600',
+    color: colors.primaryDarker,
+  },
+  dotSeparator: {
+    marginHorizontal: 5,
+    color: '#94A3B8',
+    fontSize: 10,
   },
   datesText: {
-    ...typography.captionRegular,
-    color: colors.textMuted,
     fontSize: 12,
+    color: colors.textSecondary,
   },
   cardRight: {
     alignItems: 'flex-end',
@@ -621,24 +1012,16 @@ const styles = StyleSheet.create({
   totalAmount: {
     ...typography.h3,
     color: colors.text,
-    fontSize: 16,
+    fontSize: 15,
+    fontWeight: '700',
+  },
+  statusBadgeWrapper: {
+    marginTop: 4,
   },
   balanceText: {
-    ...typography.caption,
+    fontSize: 11,
     color: colors.danger,
     fontWeight: '600',
-    marginTop: 2,
-  },
-  paidText: {
-    ...typography.caption,
-    color: colors.success,
-    fontWeight: '600',
-    marginTop: 2,
-  },
-  actionPromptText: {
-    ...typography.caption,
-    color: colors.primaryDarker,
-    fontWeight: '700',
     marginTop: 2,
   },
   methodBadge: {
@@ -646,43 +1029,33 @@ const styles = StyleSheet.create({
     paddingHorizontal: 6,
     paddingVertical: 2,
     borderRadius: 6,
+    marginTop: 4,
   },
   methodText: {
-    ...typography.caption,
+    ...typography.micro,
     color: '#B45309',
     fontWeight: '700',
-    fontSize: 10,
   },
   estimateBadge: {
-    backgroundColor: '#E0F2FE',
     paddingHorizontal: 6,
     paddingVertical: 2,
     borderRadius: 6,
+    marginTop: 4,
   },
   estimateBadgeText: {
-    ...typography.caption,
-    color: '#0369A1',
+    ...typography.micro,
     fontWeight: '700',
-    fontSize: 10,
   },
   billableBadge: {
     backgroundColor: '#E0F2FE',
     paddingHorizontal: 6,
     paddingVertical: 2,
     borderRadius: 6,
+    marginTop: 4,
   },
   billableText: {
-    ...typography.caption,
+    ...typography.micro,
     color: '#0369A1',
     fontWeight: '700',
-    fontSize: 10,
-  },
-  addBtn: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
-    backgroundColor: colors.primary,
-    alignItems: 'center',
-    justifyContent: 'center',
   },
 });

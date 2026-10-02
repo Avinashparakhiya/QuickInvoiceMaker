@@ -17,9 +17,16 @@ import {
   Database,
   Info,
   ChevronRight,
+  Hash,
+  Bell,
+  Lock,
+  FileSpreadsheet,
+  Layers,
+  ArrowRight,
 } from 'lucide-react-native';
 import { Header } from '../../components/common/Header';
 import { Card } from '../../components/common/Card';
+import { Badge } from '../../components/common/Badge';
 import { useOrgStore } from '../../store/useOrgStore';
 import { colors } from '../../theme/colors';
 import { typography } from '../../theme/typography';
@@ -30,73 +37,106 @@ export const SettingsScreen: React.FC = () => {
 
   const settingSections = [
     {
-      title: 'Business Configuration',
+      title: 'Business & Organization',
       items: [
         {
           title: 'Organization Profiles',
-          subtitle: `Active: ${activeOrg?.displayName || activeOrg?.name || 'Default'}`,
-          icon: <Building2 size={20} color={colors.primaryDark} />,
-          iconBg: colors.primarySoft,
+          subtitle: `Active: ${activeOrg?.displayName || activeOrg?.name || 'Default Business'}`,
+          icon: <Building2 size={20} color={colors.primaryDarker} />,
+          iconBg: '#DCFCE7',
           onPress: () => navigation.navigate('OrganizationList'),
         },
         {
-          title: 'Bank & UPI QR Setup',
-          subtitle: activeOrg?.upiVpa ? `UPI: ${activeOrg.upiVpa}` : 'Configure payment destination',
-          icon: <QrCode size={20} color="#0369A1" />,
+          title: 'Edit Current Profile',
+          subtitle: 'Address, business contact, tax ID & email',
+          icon: <Layers size={20} color="#0369A1" />,
           iconBg: '#E0F2FE',
           onPress: () => navigation.navigate('OrganizationForm', { organizationId: activeOrg?.id }),
+        },
+      ],
+    },
+    {
+      title: 'Financial Configuration',
+      items: [
+        {
+          title: 'Currency & Formatting',
+          subtitle: `${activeOrg?.currencyCode || 'USD'} (${activeOrg?.currencySymbol || '$'}) • Standard format`,
+          icon: <DollarSign size={20} color="#15803D" />,
+          iconBg: '#DCFCE7',
+          onPress: () => navigation.navigate('CurrencySettings'),
         },
         {
           title: 'Tax & GST Settings',
-          subtitle: activeOrg?.taxId ? `Tax ID: ${activeOrg.taxId}` : 'Set default tax rates & GSTIN',
+          subtitle: activeOrg?.taxId
+            ? `Tax ID: ${activeOrg.taxId} • Mode: ${activeOrg.taxType || 'Exclusive'}`
+            : 'Configure tax calculations, GSTIN & VAT',
           icon: <Percent size={20} color="#B45309" />,
           iconBg: '#FEF3C7',
-          onPress: () => navigation.navigate('OrganizationForm', { organizationId: activeOrg?.id }),
+          onPress: () => navigation.navigate('TaxSettings'),
+        },
+        {
+          title: 'Bank & Receiving Payment Info',
+          subtitle: activeOrg?.bankName ? `${activeOrg.bankName} • UPI: ${activeOrg.upiVpa || 'Active'}` : 'Configure receiving bank details',
+          icon: <QrCode size={20} color="#0369A1" />,
+          iconBg: '#E0F2FE',
+          onPress: () => navigation.navigate('PaymentSettings'),
         },
       ],
     },
     {
-      title: 'Invoice Preferences',
+      title: 'Document & Invoice Defaults',
       items: [
+        {
+          title: 'Invoice Numbering & Terms',
+          subtitle: `Prefix: ${activeOrg?.invoicePrefix || 'INV-'} • Next: #${activeOrg?.invoiceNextNumber || '1001'}`,
+          icon: <Hash size={20} color="#7E22CE" />,
+          iconBg: '#F3E8FF',
+          onPress: () => navigation.navigate('InvoiceNumbering'),
+        },
         {
           title: 'Invoice Templates Gallery',
-          subtitle: `Active: ${activeOrg?.defaultTemplateId || 'classic_green'} (12 visual styles)`,
-          icon: <Palette size={20} color="#6D28D9" />,
-          iconBg: '#EDE9FE',
+          subtitle: `Active style: ${activeOrg?.defaultTemplateId || 'classic_green'} (12 styles available)`,
+          icon: <Palette size={20} color="#C2410C" />,
+          iconBg: '#FFEDD5',
           onPress: () => navigation.navigate('TemplateGallery', {}),
-        },
-        {
-          title: 'Currency & Numbering',
-          subtitle: `${activeOrg?.currencySymbol || '$'} (${activeOrg?.currencyCode || 'USD'}) • Prefix: ${activeOrg?.invoicePrefix || 'INV-'}`,
-          icon: <DollarSign size={20} color="#15803D" />,
-          iconBg: '#DCFCE7',
-          onPress: () => navigation.navigate('OrganizationForm', { organizationId: activeOrg?.id }),
         },
       ],
     },
     {
-      title: 'System, Backup & Security',
+      title: 'App Preferences & Security',
       items: [
         {
-          title: 'Backup & Data Export',
-          subtitle: 'JSON database export, restore & CSV spreadsheets',
-          icon: <Database size={20} color={colors.primaryDark} />,
-          iconBg: colors.primarySoft,
-          onPress: () => navigation.navigate('Backup'),
+          title: 'Notifications & Reminders',
+          subtitle: 'Due date alerts, overdue notices & summaries',
+          icon: <Bell size={20} color="#B45309" />,
+          iconBg: '#FEF3C7',
+          onPress: () => navigation.navigate('NotificationSettings'),
         },
         {
-          title: 'Data Privacy & Local Storage',
-          subtitle: '100% offline-first • All records stored securely on device',
-          icon: <ShieldCheck size={20} color="#0369A1" />,
+          title: 'Security & App Lock',
+          subtitle: 'Biometric / PIN passcode & local sandbox shield',
+          icon: <Lock size={20} color="#15803D" />,
+          iconBg: '#DCFCE7',
+          onPress: () => navigation.navigate('SecuritySettings'),
+        },
+        {
+          title: 'Backup & Data Export',
+          subtitle: 'Export CSV spreadsheets & full JSON database backup',
+          icon: <Database size={20} color="#0369A1" />,
           iconBg: '#E0F2FE',
           onPress: () => navigation.navigate('Backup'),
         },
+      ],
+    },
+    {
+      title: 'About & Information',
+      items: [
         {
           title: 'About Quick Invoice Maker',
-          subtitle: 'Version 1.0.0 • React Native Local-First Edition',
+          subtitle: 'Version 1.0.0 • Offline-first SQLite edition',
           icon: <Info size={20} color={colors.textSecondary} />,
-          iconBg: colors.gray100,
-          onPress: () => {},
+          iconBg: '#F1F5F9',
+          onPress: () => navigation.navigate('About'),
         },
       ],
     },
@@ -105,12 +145,40 @@ export const SettingsScreen: React.FC = () => {
   return (
     <View style={styles.container}>
       <Header
-        title="Settings"
+        title="Settings Hub"
+        subtitle="Configure workspaces, invoicing & security"
         showBack
         onBack={() => navigation.goBack()}
       />
 
       <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
+        {/* Active Workspace Banner Card */}
+        <Card variant="softGreen" padding={16} style={styles.workspaceCard}>
+          <View style={styles.workspaceRow}>
+            <View style={styles.orgAvatar}>
+              <Text style={styles.orgAvatarText}>
+                {(activeOrg?.displayName || activeOrg?.name || 'Q')[0].toUpperCase()}
+              </Text>
+            </View>
+            <View style={styles.workspaceInfo}>
+              <Text numberOfLines={1} style={styles.workspaceName}>
+                {activeOrg?.displayName || activeOrg?.name || 'Default Workspace'}
+              </Text>
+              <Text style={styles.workspaceSub}>
+                {activeOrg?.currencySymbol || '$'} {activeOrg?.currencyCode || 'USD'} • {activeOrg?.taxId ? `Tax: ${activeOrg.taxId}` : 'Tax ID Unset'}
+              </Text>
+            </View>
+            <TouchableOpacity
+              activeOpacity={0.8}
+              onPress={() => navigation.navigate('OrganizationList')}
+              style={styles.switchBtn}
+            >
+              <Text style={styles.switchBtnText}>Switch</Text>
+            </TouchableOpacity>
+          </View>
+        </Card>
+
+        {/* Grouped Settings Sections */}
         {settingSections.map((section) => (
           <View key={section.title} style={styles.sectionContainer}>
             <Text style={styles.sectionHeaderTitle}>{section.title}</Text>
@@ -151,11 +219,60 @@ const styles = StyleSheet.create({
     backgroundColor: colors.background,
   },
   scrollContent: {
-    paddingHorizontal: 16,
-    paddingBottom: 32,
+    padding: 16,
+    paddingBottom: 40,
+  },
+  workspaceCard: {
+    marginBottom: 8,
+    borderRadius: 16,
+  },
+  workspaceRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  orgAvatar: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    backgroundColor: colors.primary,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: 12,
+  },
+  orgAvatarText: {
+    fontSize: 18,
+    fontWeight: '800',
+    color: '#FFFFFF',
+  },
+  workspaceInfo: {
+    flex: 1,
+    paddingRight: 8,
+  },
+  workspaceName: {
+    fontSize: 15,
+    fontWeight: '700',
+    color: colors.text,
+  },
+  workspaceSub: {
+    fontSize: 12,
+    color: colors.textSecondary,
+    marginTop: 2,
+  },
+  switchBtn: {
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 12,
+    backgroundColor: '#FFFFFF',
+    borderWidth: 1,
+    borderColor: '#D7E5DC',
+  },
+  switchBtnText: {
+    fontSize: 12,
+    fontWeight: '700',
+    color: colors.primaryDarker,
   },
   sectionContainer: {
-    marginTop: 16,
+    marginTop: 14,
   },
   sectionHeaderTitle: {
     ...typography.caption,
@@ -168,6 +285,9 @@ const styles = StyleSheet.create({
   },
   sectionCard: {
     overflow: 'hidden',
+    borderRadius: 14,
+    borderWidth: 1,
+    borderColor: '#D7E5DC',
   },
   itemRow: {
     flexDirection: 'row',
@@ -177,7 +297,7 @@ const styles = StyleSheet.create({
   },
   itemBorder: {
     borderBottomWidth: 1,
-    borderBottomColor: colors.borderLight,
+    borderBottomColor: '#F1F5F9',
   },
   iconContainer: {
     width: 38,
@@ -194,10 +314,12 @@ const styles = StyleSheet.create({
   itemTitle: {
     ...typography.bodySemiBold,
     color: colors.text,
+    fontSize: 14,
   },
   itemSubtitle: {
     ...typography.captionRegular,
     color: colors.textSecondary,
+    fontSize: 12,
     marginTop: 2,
   },
 });

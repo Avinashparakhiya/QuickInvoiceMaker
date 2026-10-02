@@ -8,12 +8,20 @@ import {
   Platform,
   Alert,
   TouchableOpacity,
+  TextInput,
 } from 'react-native';
 import { useNavigation, useRoute } from '@react-navigation/native';
+import {
+  Package,
+  Briefcase,
+  DollarSign,
+  Percent,
+  Barcode,
+  Check,
+  AlignLeft,
+} from 'lucide-react-native';
 import { Header } from '../../components/common/Header';
-import { Input } from '../../components/common/Input';
 import { Button } from '../../components/common/Button';
-import { Card } from '../../components/common/Card';
 import { useOrgStore } from '../../store/useOrgStore';
 import { itemRepository } from '../../database/repositories/itemRepository';
 import { colors } from '../../theme/colors';
@@ -55,7 +63,7 @@ export const ItemFormScreen: React.FC = () => {
 
   const handleSave = async () => {
     if (!name.trim()) {
-      Alert.alert('Required Field', 'Please enter item/service name.');
+      Alert.alert('Required Field', 'Please enter item or service name.');
       return;
     }
     if (!activeOrg) {
@@ -70,10 +78,10 @@ export const ItemFormScreen: React.FC = () => {
 
       if (itemId) {
         await itemRepository.update(itemId, {
-          name,
-          sku,
-          description,
-          unit,
+          name: name.trim(),
+          sku: sku.trim() || undefined,
+          description: description.trim() || undefined,
+          unit: unit || 'pcs',
           rate: parsedRate,
           taxRate: parsedTax,
           category,
@@ -83,10 +91,10 @@ export const ItemFormScreen: React.FC = () => {
         await itemRepository.create({
           id: newId,
           organizationId: activeOrg.id,
-          name,
-          sku,
-          description,
-          unit,
+          name: name.trim(),
+          sku: sku.trim() || undefined,
+          description: description.trim() || undefined,
+          unit: unit || 'pcs',
           rate: parsedRate,
           taxRate: parsedTax,
           category,
@@ -101,7 +109,8 @@ export const ItemFormScreen: React.FC = () => {
     }
   };
 
-  const units = ['pcs', 'hrs', 'days', 'pkg', 'box', 'kg', 'm'];
+  const units = ['pcs', 'hrs', 'days', 'pkg', 'box', 'kg', 'm', 'service'];
+  const currencySymbol = activeOrg?.currencySymbol || '$';
 
   return (
     <KeyboardAvoidingView
@@ -109,108 +118,158 @@ export const ItemFormScreen: React.FC = () => {
       style={styles.container}
     >
       <Header
-        title={itemId ? 'Edit Item / Service' : 'New Item / Service'}
+        title={itemId ? 'Edit Item' : 'New Item / Service'}
         showBack
         onBack={() => navigation.goBack()}
       />
 
       <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
-        {/* Category Selector */}
+        {/* Category Toggle */}
         <View style={styles.catRow}>
           <TouchableOpacity
             activeOpacity={0.7}
             onPress={() => setCategory('SERVICE')}
             style={[styles.catBtn, category === 'SERVICE' && styles.catBtnActive]}
           >
+            <Briefcase size={18} color={category === 'SERVICE' ? '#15803D' : '#64748B'} />
             <Text style={[styles.catText, category === 'SERVICE' && styles.catTextActive]}>
               Service / Consulting
             </Text>
           </TouchableOpacity>
+
           <TouchableOpacity
             activeOpacity={0.7}
             onPress={() => setCategory('PRODUCT')}
             style={[styles.catBtn, category === 'PRODUCT' && styles.catBtnActive]}
           >
+            <Package size={18} color={category === 'PRODUCT' ? '#15803D' : '#64748B'} />
             <Text style={[styles.catText, category === 'PRODUCT' && styles.catTextActive]}>
               Physical Product
             </Text>
           </TouchableOpacity>
         </View>
 
-        <Card variant="elevated" padding={16} style={styles.card}>
-          <Input
-            label="Item / Service Name"
-            placeholder="e.g. Website Design or Hourly Consulting"
-            value={name}
-            onChangeText={setName}
-            required
-          />
-          <Input
-            label="SKU / Item Code (Optional)"
-            placeholder="e.g. SRV-01"
-            value={sku}
-            onChangeText={setSku}
-          />
-          <Input
-            label="Description"
-            placeholder="Detailed description for the invoice line..."
-            value={description}
-            onChangeText={setDescription}
-            multiline
-            numberOfLines={3}
-            inputStyle={{ minHeight: 60 }}
-          />
-        </Card>
+        {/* Card 1: Basic Information */}
+        <View style={styles.formCard}>
+          <View style={styles.cardHeader}>
+            <View style={[styles.iconCircle, { backgroundColor: '#DCFCE7' }]}>
+              {category === 'SERVICE' ? (
+                <Briefcase size={16} color="#15803D" />
+              ) : (
+                <Package size={16} color="#15803D" />
+              )}
+            </View>
+            <Text style={styles.cardTitle}>Basic Information</Text>
+          </View>
 
-        <Card variant="elevated" padding={16} style={styles.card}>
-          <Text style={styles.sectionHeading}>Pricing & Tax</Text>
+          <View style={styles.inputGroup}>
+            <Text style={styles.inputLabel}>
+              {category === 'SERVICE' ? 'Service Name *' : 'Product Name *'}
+            </Text>
+            <TextInput
+              value={name}
+              onChangeText={setName}
+              placeholder={category === 'SERVICE' ? 'e.g. Website Development' : 'e.g. Wireless Mouse'}
+              placeholderTextColor="#94A3B8"
+              style={styles.textInput}
+            />
+          </View>
+
+          <View style={styles.inputGroup}>
+            <Text style={styles.inputLabel}>SKU / Code (Optional)</Text>
+            <TextInput
+              value={sku}
+              onChangeText={setSku}
+              placeholder="e.g. SRV-001 or PROD-99"
+              placeholderTextColor="#94A3B8"
+              style={styles.textInput}
+            />
+          </View>
+
+          <View style={styles.inputGroup}>
+            <Text style={styles.inputLabel}>Description (Optional)</Text>
+            <TextInput
+              value={description}
+              onChangeText={setDescription}
+              placeholder="Detailed item description for invoice line items..."
+              placeholderTextColor="#94A3B8"
+              multiline
+              numberOfLines={3}
+              style={[styles.textInput, { minHeight: 70, textAlignVertical: 'top' }]}
+            />
+          </View>
+        </View>
+
+        {/* Card 2: Pricing & Tax */}
+        <View style={styles.formCard}>
+          <View style={styles.cardHeader}>
+            <View style={[styles.iconCircle, { backgroundColor: '#FEF3C7' }]}>
+              <DollarSign size={16} color="#B45309" />
+            </View>
+            <Text style={styles.cardTitle}>Pricing & Tax</Text>
+          </View>
+
           <View style={styles.row}>
-            <View style={styles.col}>
-              <Input
-                label="Unit Price / Rate"
-                placeholder="0.00"
+            <View style={[styles.inputGroup, { flex: 1.2 }]}>
+              <Text style={styles.inputLabel}>Unit Price ({currencySymbol}) *</Text>
+              <TextInput
                 value={rate}
                 onChangeText={setRate}
+                placeholder="0.00"
+                placeholderTextColor="#94A3B8"
                 keyboardType="decimal-pad"
-                prefix={activeOrg?.currencySymbol || '$'}
-                required
+                style={styles.textInput}
               />
             </View>
-            <View style={styles.gap} />
-            <View style={styles.col}>
-              <Input
-                label="Default Tax Rate (%)"
-                placeholder="0"
+
+            <View style={[styles.inputGroup, { flex: 0.8, marginLeft: 10 }]}>
+              <Text style={styles.inputLabel}>Tax Rate (%)</Text>
+              <TextInput
                 value={taxRate}
                 onChangeText={setTaxRate}
+                placeholder="0"
+                placeholderTextColor="#94A3B8"
                 keyboardType="decimal-pad"
-                suffix="%"
+                style={styles.textInput}
               />
             </View>
           </View>
 
           <Text style={styles.unitLabel}>Unit of Measurement</Text>
-          <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.unitList}>
-            {units.map((u) => (
-              <TouchableOpacity
-                key={u}
-                onPress={() => setUnit(u)}
-                style={[styles.unitChip, unit === u && styles.unitChipActive]}
-              >
-                <Text style={[styles.unitChipText, unit === u && styles.unitChipTextActive]}>
-                  {u}
-                </Text>
-              </TouchableOpacity>
-            ))}
+          <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.unitList}>
+            {units.map((u) => {
+              const isSelected = unit === u;
+              return (
+                <TouchableOpacity
+                  key={u}
+                  activeOpacity={0.7}
+                  onPress={() => setUnit(u)}
+                  style={[
+                    styles.unitChip,
+                    isSelected && styles.unitChipSelected,
+                  ]}
+                >
+                  <Text
+                    style={[
+                      styles.unitChipText,
+                      isSelected && styles.unitChipTextSelected,
+                    ]}
+                  >
+                    {u}
+                  </Text>
+                </TouchableOpacity>
+              );
+            })}
           </ScrollView>
-        </Card>
+        </View>
 
+        {/* Save Button */}
         <Button
           title={itemId ? 'Update Item' : 'Save Item to Catalog'}
           onPress={handleSave}
           loading={loading}
+          icon={<Check size={18} color="#FFFFFF" strokeWidth={3} />}
           size="lg"
-          fullWidth
           style={styles.saveBtn}
         />
       </ScrollView>
@@ -234,74 +293,122 @@ const styles = StyleSheet.create({
   },
   catBtn: {
     flex: 1,
-    paddingVertical: 12,
+    flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    borderRadius: 12,
+    paddingVertical: 12,
+    borderRadius: 14,
     backgroundColor: '#FFFFFF',
     borderWidth: 1.5,
-    borderColor: colors.border,
+    borderColor: '#E2E8F0',
+    gap: 8,
   },
   catBtnActive: {
-    backgroundColor: colors.primarySoft,
+    backgroundColor: '#DCFCE7',
     borderColor: colors.primary,
   },
   catText: {
     ...typography.bodyMedium,
     color: colors.textSecondary,
     fontWeight: '600',
+    fontSize: 13,
   },
   catTextActive: {
-    color: colors.primaryDarker,
+    color: '#15803D',
     fontWeight: '700',
   },
-  card: {
+  formCard: {
+    backgroundColor: '#FFFFFF',
+    borderRadius: 16,
+    padding: 16,
     marginBottom: 14,
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
+    shadowColor: '#000000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.03,
+    shadowRadius: 6,
+    elevation: 1,
   },
-  sectionHeading: {
+  cardHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 14,
+    gap: 10,
+  },
+  iconCircle: {
+    width: 32,
+    height: 32,
+    borderRadius: 8,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  cardTitle: {
     ...typography.h3,
     color: colors.text,
+    fontSize: 15,
+    fontWeight: '700',
+  },
+  inputGroup: {
     marginBottom: 12,
+  },
+  inputLabel: {
+    ...typography.captionRegular,
+    color: colors.textSecondary,
+    fontWeight: '600',
+    marginBottom: 6,
+    fontSize: 13,
+  },
+  textInput: {
+    backgroundColor: '#FFFFFF',
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
+    borderRadius: 12,
+    paddingHorizontal: 14,
+    paddingVertical: 10,
+    fontSize: 14,
+    color: colors.text,
   },
   row: {
     flexDirection: 'row',
-  },
-  col: {
-    flex: 1,
-  },
-  gap: {
-    width: 12,
+    alignItems: 'center',
   },
   unitLabel: {
-    ...typography.caption,
+    ...typography.captionRegular,
     color: colors.textSecondary,
     fontWeight: '600',
     marginTop: 4,
     marginBottom: 8,
+    fontSize: 13,
   },
   unitList: {
-    flexDirection: 'row',
+    gap: 8,
+    paddingBottom: 4,
   },
   unitChip: {
     paddingVertical: 6,
     paddingHorizontal: 14,
     borderRadius: 16,
-    backgroundColor: colors.gray100,
-    marginRight: 8,
+    backgroundColor: '#F1F5F9',
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
   },
-  unitChipActive: {
+  unitChipSelected: {
     backgroundColor: colors.primary,
+    borderColor: colors.primary,
   },
   unitChipText: {
     ...typography.caption,
     color: colors.textSecondary,
     fontWeight: '600',
   },
-  unitChipTextActive: {
+  unitChipTextSelected: {
     color: '#FFFFFF',
+    fontWeight: '700',
   },
   saveBtn: {
-    marginTop: 8,
+    width: '100%',
+    marginTop: 4,
     marginBottom: 24,
   },
 });

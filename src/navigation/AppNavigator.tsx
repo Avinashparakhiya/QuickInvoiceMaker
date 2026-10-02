@@ -16,6 +16,13 @@ import { PaymentListScreen } from '../features/payments/PaymentListScreen';
 import { CreditNoteFormScreen } from '../features/payments/CreditNoteFormScreen';
 import { SettingsScreen } from '../features/settings/SettingsScreen';
 import { BackupScreen } from '../features/settings/BackupScreen';
+import { CurrencySettingsScreen } from '../features/settings/CurrencySettingsScreen';
+import { TaxSettingsScreen } from '../features/settings/TaxSettingsScreen';
+import { InvoiceNumberingScreen } from '../features/settings/InvoiceNumberingScreen';
+import { PaymentSettingsScreen } from '../features/settings/PaymentSettingsScreen';
+import { NotificationSettingsScreen } from '../features/settings/NotificationSettingsScreen';
+import { SecuritySettingsScreen } from '../features/settings/SecuritySettingsScreen';
+import { AboutScreen } from '../features/settings/AboutScreen';
 import { EstimateListScreen } from '../features/estimates/EstimateListScreen';
 import { EstimateDetailScreen } from '../features/estimates/EstimateDetailScreen';
 import { EstimateCreateScreen } from '../features/estimates/EstimateCreateScreen';
@@ -75,6 +82,13 @@ export const AppNavigator: React.FC = () => {
       />
       <Stack.Screen name="Settings" component={SettingsScreen} />
       <Stack.Screen name="Backup" component={BackupScreen} />
+      <Stack.Screen name="CurrencySettings" component={CurrencySettingsScreen} />
+      <Stack.Screen name="TaxSettings" component={TaxSettingsScreen} />
+      <Stack.Screen name="InvoiceNumbering" component={InvoiceNumberingScreen} />
+      <Stack.Screen name="PaymentSettings" component={PaymentSettingsScreen} />
+      <Stack.Screen name="NotificationSettings" component={NotificationSettingsScreen} />
+      <Stack.Screen name="SecuritySettings" component={SecuritySettingsScreen} />
+      <Stack.Screen name="About" component={AboutScreen} />
       
       {/* Estimates & Quotes */}
       <Stack.Screen name="EstimateList" component={EstimateListScreen} />

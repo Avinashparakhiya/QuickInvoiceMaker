@@ -26,6 +26,13 @@ export type RootStackParamList = {
   OrganizationForm: { organizationId?: string };
   Settings: undefined;
   Backup: undefined;
+  CurrencySettings: undefined;
+  TaxSettings: undefined;
+  InvoiceNumbering: undefined;
+  PaymentSettings: undefined;
+  NotificationSettings: undefined;
+  SecuritySettings: undefined;
+  About: undefined;
   EstimateList: undefined;
   EstimateCreate: { estimateId?: string };
   EstimateDetail: { estimateId: string };

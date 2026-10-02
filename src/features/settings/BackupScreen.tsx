@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
@@ -35,7 +35,9 @@ import { useSettingsStore } from '../../store/useSettingsStore';
 import { invoiceRepository } from '../../database/repositories/invoiceRepository';
 import { paymentRepository } from '../../database/repositories/paymentRepository';
 import { customerRepository } from '../../database/repositories/customerRepository';
+import { itemRepository } from '../../database/repositories/itemRepository';
 import { expenseRepository } from '../../database/repositories/expenseRepository';
+import { orgRepository } from '../../database/repositories/orgRepository';
 import {
   exportDatabaseToJson,
   restoreDatabaseFromJson,
@@ -64,6 +66,38 @@ export const BackupScreen: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const [restoreModalVisible, setRestoreModalVisible] = useState(false);
   const [restoreJsonInput, setRestoreJsonInput] = useState('');
+  const [counts, setCounts] = useState({
+    invoices: 0,
+    customers: 0,
+    items: 0,
+    payments: 0,
+    orgs: 0,
+  });
+
+  useEffect(() => {
+    const loadCounts = async () => {
+      if (!activeOrg) return;
+      try {
+        const [invs, custs, itms, pms, orgs] = await Promise.all([
+          invoiceRepository.getAll({ orgId: activeOrg.id }),
+          customerRepository.getByOrg(activeOrg.id),
+          itemRepository.getByOrg(activeOrg.id),
+          paymentRepository.getByOrg(activeOrg.id),
+          orgRepository.getAll(),
+        ]);
+        setCounts({
+          invoices: invs.length,
+          customers: custs.length,
+          items: itms.length,
+          payments: pms.length,
+          orgs: orgs.length,
+        });
+      } catch (e) {
+        // ignore
+      }
+    };
+    loadCounts();
+  }, [activeOrg?.id]);
 
   const triggerWebDownload = (content: string, filename: string, mimeType: string) => {
     if (Platform.OS === 'web') {
@@ -253,6 +287,37 @@ export const BackupScreen: React.FC = () => {
               <Text style={styles.privacyBody}>
                 All clients, invoices, and financial records stay strictly in your device's sandbox. Zero vendor lock-in.
               </Text>
+            </View>
+          </View>
+        </Card>
+
+        {/* Data Statistics Card */}
+        <Card variant="elevated" padding={16} style={styles.card}>
+          <Text style={styles.sectionHeading}>Current Workspace Statistics</Text>
+          <Text style={styles.sectionDesc}>
+            Summary of all local records saved in SQLite for {activeOrg?.displayName || activeOrg?.name || 'Workspace'}.
+          </Text>
+
+          <View style={styles.statsGrid}>
+            <View style={styles.statBox}>
+              <Text style={[styles.statCount, { color: colors.primaryDarker }]}>{counts.invoices}</Text>
+              <Text style={styles.statLabel}>Invoices</Text>
+            </View>
+            <View style={styles.statBox}>
+              <Text style={[styles.statCount, { color: '#0369A1' }]}>{counts.customers}</Text>
+              <Text style={styles.statLabel}>Clients</Text>
+            </View>
+            <View style={styles.statBox}>
+              <Text style={[styles.statCount, { color: '#7E22CE' }]}>{counts.items}</Text>
+              <Text style={styles.statLabel}>Items</Text>
+            </View>
+            <View style={styles.statBox}>
+              <Text style={[styles.statCount, { color: '#15803D' }]}>{counts.payments}</Text>
+              <Text style={styles.statLabel}>Payments</Text>
+            </View>
+            <View style={styles.statBox}>
+              <Text style={[styles.statCount, { color: '#C2410C' }]}>{counts.orgs}</Text>
+              <Text style={styles.statLabel}>Profiles</Text>
             </View>
           </View>
         </Card>
@@ -448,6 +513,30 @@ const styles = StyleSheet.create({
     color: colors.textSecondary,
     marginBottom: 12,
     lineHeight: 18,
+  },
+  statsGrid: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginTop: 4,
+    marginBottom: 6,
+  },
+  statBox: {
+    flex: 1,
+    alignItems: 'center',
+    paddingVertical: 10,
+    borderRadius: 10,
+    backgroundColor: '#F8FAFC',
+    marginHorizontal: 2,
+  },
+  statCount: {
+    fontSize: 16,
+    fontWeight: '800',
+    marginBottom: 2,
+  },
+  statLabel: {
+    fontSize: 10,
+    fontWeight: '600',
+    color: colors.textSecondary,
   },
   btnRow: {
     flexDirection: 'row',

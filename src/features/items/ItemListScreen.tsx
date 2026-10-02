@@ -6,13 +6,19 @@ import {
   FlatList,
   TouchableOpacity,
   RefreshControl,
+  TextInput,
 } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
-import { Search, Plus, Package, Briefcase, ChevronRight } from 'lucide-react-native';
+import {
+  Search,
+  Plus,
+  Package,
+  Briefcase,
+  ChevronRight,
+  PackagePlus,
+  Sparkles,
+} from 'lucide-react-native';
 import { Header } from '../../components/common/Header';
-import { Card } from '../../components/common/Card';
-import { Input } from '../../components/common/Input';
-import { Badge } from '../../components/common/Badge';
 import { EmptyState } from '../../components/common/EmptyState';
 import { useOrgStore } from '../../store/useOrgStore';
 import { itemRepository } from '../../database/repositories/itemRepository';
@@ -57,44 +63,7 @@ export const ItemListScreen: React.FC = () => {
     setRefreshing(false);
   };
 
-  const symbol = activeOrg?.currencySymbol || '$';
-
-  const renderItem = ({ item }: { item: Item }) => (
-    <Card
-      variant="elevated"
-      padding={14}
-      onPress={() => navigation.navigate('ItemForm', { itemId: item.id })}
-      style={styles.card}
-    >
-      <View style={styles.cardRow}>
-        <View style={styles.iconBox}>
-          {item.category === 'SERVICE' ? (
-            <Briefcase size={20} color={colors.primaryDark} />
-          ) : (
-            <Package size={20} color="#0369A1" />
-          )}
-        </View>
-
-        <View style={styles.itemDetails}>
-          <Text style={styles.itemName}>{item.name}</Text>
-          {item.description ? (
-            <Text numberOfLines={1} style={styles.itemDesc}>{item.description}</Text>
-          ) : null}
-          <View style={styles.badgeRow}>
-            <Text style={styles.skuText}>{item.sku ? `SKU: ${item.sku}` : item.category}</Text>
-            {item.taxRate > 0 ? (
-              <Text style={styles.taxBadge}>Tax {item.taxRate}%</Text>
-            ) : null}
-          </View>
-        </View>
-
-        <View style={styles.priceContainer}>
-          <Text style={styles.priceText}>{formatCurrency(item.rate, symbol)}</Text>
-          <Text style={styles.unitText}>per {item.unit}</Text>
-        </View>
-      </View>
-    </Card>
-  );
+  const currencySymbol = activeOrg?.currencySymbol || '$';
 
   return (
     <View style={styles.container}>
@@ -107,45 +76,63 @@ export const ItemListScreen: React.FC = () => {
           <TouchableOpacity
             activeOpacity={0.7}
             onPress={() => navigation.navigate('ItemForm', {})}
-            style={styles.addBtn}
+            style={styles.headerAddBtn}
           >
-            <Plus size={20} color="#FFFFFF" />
+            <Plus size={20} color="#FFFFFF" strokeWidth={2.5} />
           </TouchableOpacity>
         }
       />
 
+      {/* Search Bar & Category Filter Chips */}
       <View style={styles.searchSection}>
-        <Input
-          placeholder="Search products & services..."
-          value={searchQuery}
-          onChangeText={setSearchQuery}
-          prefix={<Search size={18} color={colors.textSecondary} />}
-          containerStyle={{ marginBottom: 8 }}
-        />
+        <View style={styles.searchBox}>
+          <Search size={18} color="#94A3B8" />
+          <TextInput
+            value={searchQuery}
+            onChangeText={setSearchQuery}
+            placeholder="Search catalog items, SKU, description..."
+            placeholderTextColor="#94A3B8"
+            style={styles.searchInput}
+          />
+        </View>
 
-        {/* Category Filter Tabs */}
         <View style={styles.catTabRow}>
-          {(['ALL', 'SERVICE', 'PRODUCT'] as const).map((cat) => (
-            <TouchableOpacity
-              key={cat}
-              onPress={() => setFilterCategory(cat)}
-              style={[
-                styles.catTab,
-                filterCategory === cat && styles.catTabActive,
-              ]}
-            >
-              <Text style={[styles.catTabText, filterCategory === cat && styles.catTabTextActive]}>
-                {cat === 'ALL' ? 'All Catalog' : cat === 'SERVICE' ? 'Services' : 'Products'}
-              </Text>
-            </TouchableOpacity>
-          ))}
+          {(['ALL', 'SERVICE', 'PRODUCT'] as const).map((cat) => {
+            const isSelected = filterCategory === cat;
+            const label =
+              cat === 'ALL'
+                ? `All (${items.length})`
+                : cat === 'SERVICE'
+                ? 'Services'
+                : 'Products';
+
+            return (
+              <TouchableOpacity
+                key={cat}
+                activeOpacity={0.7}
+                onPress={() => setFilterCategory(cat)}
+                style={[
+                  styles.catTab,
+                  isSelected && styles.catTabActive,
+                ]}
+              >
+                <Text
+                  style={[
+                    styles.catTabText,
+                    isSelected && styles.catTabTextActive,
+                  ]}
+                >
+                  {label}
+                </Text>
+              </TouchableOpacity>
+            );
+          })}
         </View>
       </View>
 
       <FlatList
         data={items}
         keyExtractor={(item) => item.id}
-        renderItem={renderItem}
         contentContainerStyle={styles.listContent}
         refreshControl={
           <RefreshControl
@@ -154,11 +141,74 @@ export const ItemListScreen: React.FC = () => {
             tintColor={colors.primary}
           />
         }
+        renderItem={({ item }) => {
+          const isService = item.category === 'SERVICE';
+          const iconBg = isService ? '#DCFCE7' : '#E0F2FE';
+          const iconColor = isService ? '#15803D' : '#0369A1';
+
+          return (
+            <TouchableOpacity
+              activeOpacity={0.7}
+              onPress={() => navigation.navigate('ItemForm', { itemId: item.id })}
+              style={styles.itemCard}
+            >
+              <View style={[styles.iconBox, { backgroundColor: iconBg }]}>
+                {isService ? (
+                  <Briefcase size={20} color={iconColor} />
+                ) : (
+                  <Package size={20} color={iconColor} />
+                )}
+              </View>
+
+              <View style={styles.itemDetails}>
+                <Text numberOfLines={1} style={styles.itemName}>
+                  {item.name}
+                </Text>
+                {item.description ? (
+                  <Text numberOfLines={1} style={styles.itemDesc}>
+                    {item.description}
+                  </Text>
+                ) : null}
+                <View style={styles.badgeRow}>
+                  <View style={styles.skuBadge}>
+                    <Text style={styles.skuText}>
+                      {item.sku ? `SKU: ${item.sku}` : isService ? 'Service' : 'Product'}
+                    </Text>
+                  </View>
+                  {item.taxRate > 0 ? (
+                    <View style={styles.taxBadge}>
+                      <Text style={styles.taxBadgeText}>Tax {item.taxRate}%</Text>
+                    </View>
+                  ) : null}
+                </View>
+              </View>
+
+              <View style={styles.priceContainer}>
+                <Text style={styles.priceText}>
+                  {formatCurrency(item.rate, currencySymbol)}
+                </Text>
+                <Text style={styles.unitText}>per {item.unit || 'pcs'}</Text>
+              </View>
+            </TouchableOpacity>
+          );
+        }}
+        ListFooterComponent={
+          items.length > 0 ? (
+            <TouchableOpacity
+              activeOpacity={0.7}
+              onPress={() => navigation.navigate('ItemForm', {})}
+              style={styles.addItemBtn}
+            >
+              <PackagePlus size={18} color="#15803D" strokeWidth={2.5} />
+              <Text style={styles.addItemBtnText}>+ Add Item / Service</Text>
+            </TouchableOpacity>
+          ) : null
+        }
         ListEmptyComponent={
           <EmptyState
-            icon={<Package size={28} color={colors.primaryDark} />}
-            title="No Items Found"
-            description="Add products or services to easily populate line items when building invoices."
+            icon={<PackagePlus size={32} color="#15803D" />}
+            title="No Catalog Items Found"
+            description="Add products and services to quickly populate invoice line items in seconds."
             actionTitle="+ Add Item to Catalog"
             onAction={() => navigation.navigate('ItemForm', {})}
           />
@@ -173,35 +223,58 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: colors.background,
   },
-  addBtn: {
+  headerAddBtn: {
     width: 38,
     height: 38,
-    borderRadius: 19,
+    borderRadius: 12,
     backgroundColor: colors.primary,
     alignItems: 'center',
     justifyContent: 'center',
+    shadowColor: '#22C55E',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.3,
+    shadowRadius: 4,
+    elevation: 3,
   },
   searchSection: {
     paddingHorizontal: 16,
     paddingTop: 8,
+    paddingBottom: 6,
+  },
+  searchBox: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#FFFFFF',
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
+    borderRadius: 12,
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    marginBottom: 8,
+  },
+  searchInput: {
+    flex: 1,
+    marginLeft: 8,
+    fontSize: 14,
+    color: colors.text,
+    padding: 0,
   },
   catTabRow: {
     flexDirection: 'row',
-    marginBottom: 8,
     gap: 8,
   },
   catTab: {
     flex: 1,
-    paddingVertical: 8,
+    paddingVertical: 7,
     alignItems: 'center',
     justifyContent: 'center',
-    borderRadius: 10,
+    borderRadius: 12,
     backgroundColor: '#FFFFFF',
     borderWidth: 1,
-    borderColor: colors.border,
+    borderColor: '#E2E8F0',
   },
   catTabActive: {
-    backgroundColor: colors.primarySoft,
+    backgroundColor: colors.primary,
     borderColor: colors.primary,
   },
   catTabText: {
@@ -210,25 +283,34 @@ const styles = StyleSheet.create({
     fontWeight: '600',
   },
   catTabTextActive: {
-    color: colors.primaryDarker,
+    color: '#FFFFFF',
     fontWeight: '700',
   },
   listContent: {
     paddingHorizontal: 16,
-    paddingBottom: 24,
+    paddingTop: 6,
+    paddingBottom: 32,
   },
-  card: {
-    marginBottom: 10,
-  },
-  cardRow: {
+  itemCard: {
     flexDirection: 'row',
     alignItems: 'center',
+    backgroundColor: '#FFFFFF',
+    borderRadius: 14,
+    paddingVertical: 12,
+    paddingHorizontal: 14,
+    marginBottom: 10,
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
+    shadowColor: '#000000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.03,
+    shadowRadius: 4,
+    elevation: 1,
   },
   iconBox: {
-    width: 40,
-    height: 40,
+    width: 42,
+    height: 42,
     borderRadius: 12,
-    backgroundColor: colors.primarySoft,
     alignItems: 'center',
     justifyContent: 'center',
     marginRight: 12,
@@ -240,10 +322,13 @@ const styles = StyleSheet.create({
   itemName: {
     ...typography.bodySemiBold,
     color: colors.text,
+    fontSize: 15,
+    fontWeight: '700',
   },
   itemDesc: {
     ...typography.captionRegular,
     color: colors.textSecondary,
+    fontSize: 12,
     marginTop: 1,
   },
   badgeRow: {
@@ -252,18 +337,27 @@ const styles = StyleSheet.create({
     marginTop: 4,
     gap: 6,
   },
+  skuBadge: {
+    backgroundColor: '#F1F5F9',
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+    borderRadius: 6,
+  },
   skuText: {
     ...typography.micro,
-    color: colors.textMuted,
+    color: colors.textSecondary,
+    fontWeight: '600',
   },
   taxBadge: {
-    ...typography.micro,
-    color: colors.primaryDarker,
-    backgroundColor: colors.primarySoft,
+    backgroundColor: '#DCFCE7',
     paddingHorizontal: 6,
-    paddingVertical: 1,
+    paddingVertical: 2,
     borderRadius: 6,
-    fontWeight: '600',
+  },
+  taxBadgeText: {
+    ...typography.micro,
+    color: '#15803D',
+    fontWeight: '700',
   },
   priceContainer: {
     alignItems: 'flex-end',
@@ -272,9 +366,29 @@ const styles = StyleSheet.create({
     ...typography.bodySemiBold,
     color: colors.text,
     fontSize: 15,
+    fontWeight: '700',
   },
   unitText: {
     ...typography.micro,
     color: colors.textMuted,
+    marginTop: 2,
+  },
+  addItemBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: '#EAF8EF',
+    borderWidth: 1,
+    borderColor: '#86EFAC',
+    borderRadius: 14,
+    paddingVertical: 13,
+    marginTop: 6,
+    marginBottom: 16,
+    gap: 8,
+  },
+  addItemBtnText: {
+    ...typography.bodySemiBold,
+    color: '#15803D',
+    fontSize: 14,
   },
 });
