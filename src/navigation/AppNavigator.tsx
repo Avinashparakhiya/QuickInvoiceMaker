@@ -22,6 +22,7 @@ import { InvoiceNumberingScreen } from '../features/settings/InvoiceNumberingScr
 import { PaymentSettingsScreen } from '../features/settings/PaymentSettingsScreen';
 import { NotificationSettingsScreen } from '../features/settings/NotificationSettingsScreen';
 import { SecuritySettingsScreen } from '../features/settings/SecuritySettingsScreen';
+import { SignatureSettingsScreen } from '../features/settings/SignatureSettingsScreen';
 import { AboutScreen } from '../features/settings/AboutScreen';
 import { EstimateListScreen } from '../features/estimates/EstimateListScreen';
 import { EstimateDetailScreen } from '../features/estimates/EstimateDetailScreen';
@@ -88,6 +89,7 @@ export const AppNavigator: React.FC = () => {
       <Stack.Screen name="PaymentSettings" component={PaymentSettingsScreen} />
       <Stack.Screen name="NotificationSettings" component={NotificationSettingsScreen} />
       <Stack.Screen name="SecuritySettings" component={SecuritySettingsScreen} />
+      <Stack.Screen name="SignatureSettings" component={SignatureSettingsScreen} />
       <Stack.Screen name="About" component={AboutScreen} />
       
       {/* Estimates & Quotes */}

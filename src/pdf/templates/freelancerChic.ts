@@ -1,10 +1,12 @@
 import { Invoice, Organization } from '../../types';
 import { formatCurrency } from '../../utils/currency';
 import { formatDate } from '../../utils/dates';
+import { buildSignatureHtml } from './signatureHtml';
 
 export function renderFreelancerChicTemplate(invoice: Invoice, org: Organization): string {
   const items = invoice.items || [];
   const symbol = invoice.currencySymbol || '$';
+  const sigHtml = buildSignatureHtml(invoice, org, { lineColor: '#7C3AED', textColor: '#6D28D9' });
 
   const rows = items
     .map(
@@ -72,6 +74,8 @@ export function renderFreelancerChicTemplate(invoice: Invoice, org: Organization
             <span>Total</span><span>${formatCurrency(invoice.totalAmount, symbol)}</span>
           </div>
         </div>
+
+        ${sigHtml}
 
         <div style="margin-top: 24px; text-align: center; font-size: 12px; color: #7C3AED; font-style: italic;">
           "It's a pleasure working with you!"

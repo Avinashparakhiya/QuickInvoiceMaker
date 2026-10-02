@@ -1,10 +1,12 @@
 import { Invoice, Organization } from '../../types';
 import { formatCurrency } from '../../utils/currency';
 import { formatDate } from '../../utils/dates';
+import { buildSignatureHtml } from './signatureHtml';
 
 export function renderSimpleSageTemplate(invoice: Invoice, org: Organization): string {
   const items = invoice.items || [];
   const symbol = invoice.currencySymbol || '$';
+  const sigHtml = buildSignatureHtml(invoice, org, { lineColor: '#38A169', textColor: '#276749' });
 
   const rows = items
     .map(
@@ -69,6 +71,8 @@ export function renderSimpleSageTemplate(invoice: Invoice, org: Organization): s
           <span>Total Due:</span><span>${formatCurrency(invoice.totalAmount, symbol)}</span>
         </div>
       </div>
+
+      ${sigHtml}
     </body>
   </html>
   `;

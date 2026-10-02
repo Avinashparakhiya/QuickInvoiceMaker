@@ -38,7 +38,7 @@ export const orgRepository = {
         invoice_prefix, invoice_next_number, invoice_padding,
         estimate_prefix, estimate_next_number, default_payment_terms,
         default_template_id, bank_name, bank_account_no, bank_ifsc_swift,
-        bank_account_holder, upi_vpa, default_notes, default_terms,
+        bank_account_holder, upi_vpa, signatory_name, signatory_title, default_notes, default_terms,
         is_active, created_at, updated_at
       ) VALUES (
         ?, ?, ?, ?, ?, ?,
@@ -48,7 +48,7 @@ export const orgRepository = {
         ?, ?, ?,
         ?, ?, ?,
         ?, ?, ?, ?,
-        ?, ?, ?, ?,
+        ?, ?, ?, ?, ?,
         ?, ?, ?
       )`,
       [
@@ -85,6 +85,8 @@ export const orgRepository = {
         org.bankIfscSwift || null,
         org.bankAccountHolder || null,
         org.upiVpa || null,
+        org.signatoryName || null,
+        org.signatoryTitle || null,
         org.defaultNotes || null,
         org.defaultTerms || null,
         org.isActive ? 1 : 0,
@@ -131,6 +133,8 @@ export const orgRepository = {
     if (updates.bankIfscSwift !== undefined) { fields.push('bank_ifsc_swift = ?'); values.push(updates.bankIfscSwift); }
     if (updates.bankAccountHolder !== undefined) { fields.push('bank_account_holder = ?'); values.push(updates.bankAccountHolder); }
     if (updates.upiVpa !== undefined) { fields.push('upi_vpa = ?'); values.push(updates.upiVpa); }
+    if (updates.signatoryName !== undefined) { fields.push('signatory_name = ?'); values.push(updates.signatoryName); }
+    if (updates.signatoryTitle !== undefined) { fields.push('signatory_title = ?'); values.push(updates.signatoryTitle); }
     if (updates.defaultNotes !== undefined) { fields.push('default_notes = ?'); values.push(updates.defaultNotes); }
     if (updates.defaultTerms !== undefined) { fields.push('default_terms = ?'); values.push(updates.defaultTerms); }
 
@@ -186,6 +190,8 @@ function mapRowToOrg(row: any): Organization {
     bankIfscSwift: row.bank_ifsc_swift,
     bankAccountHolder: row.bank_account_holder,
     upiVpa: row.upi_vpa,
+    signatoryName: row.signatory_name,
+    signatoryTitle: row.signatory_title,
     defaultNotes: row.default_notes,
     defaultTerms: row.default_terms,
     isActive: Boolean(row.is_active),

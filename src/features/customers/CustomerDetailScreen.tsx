@@ -420,7 +420,7 @@ export const CustomerDetailScreen: React.FC = () => {
       </ScrollView>
 
       {/* Bottom Sticky Action Buttons */}
-      <View style={styles.bottomBar}>
+      <View style={[styles.bottomBar, { maxWidth: Math.min(contentMaxWidth, 800), alignSelf: 'center', width: '100%' }]}>
         <Button
           title="+ Create Invoice"
           onPress={() => navigation.navigate('InvoiceCreate', {})}

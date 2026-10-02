@@ -1,10 +1,12 @@
 import { Estimate, Organization } from '../types';
 import { formatCurrency } from '../utils/currency';
 import { formatDate } from '../utils/dates';
+import { buildSignatureHtml } from './templates/signatureHtml';
 
 export function buildEstimatePdfHtml(estimate: Estimate, org: Organization): string {
   const items = estimate.items || [];
   const symbol = estimate.currencySymbol || '$';
+  const sigHtml = buildSignatureHtml(estimate, org, { lineColor: '#0284C7', textColor: '#0369A1' });
 
   const rows = items
     .map(
@@ -100,6 +102,8 @@ export function buildEstimatePdfHtml(estimate: Estimate, org: Organization): str
       </div>`
           : ''
       }
+
+      ${sigHtml}
     </body>
   </html>
   `;

@@ -9,8 +9,11 @@ import {
   Alert,
   TouchableOpacity,
   TextInput,
+  Switch,
+  Image,
 } from 'react-native';
 import { useNavigation, useRoute } from '@react-navigation/native';
+import Svg, { SvgXml } from 'react-native-svg';
 import {
   Plus,
   Minus,
@@ -29,6 +32,8 @@ import {
   Printer,
   ChevronRight,
   Edit2,
+  PenTool,
+  Trash2,
 } from 'lucide-react-native';
 import * as Print from 'expo-print';
 import * as Sharing from 'expo-sharing';
@@ -40,6 +45,7 @@ import { StepProgressBar } from './components/StepProgressBar';
 import { AddItemModal } from './components/AddItemModal';
 import { QuickCustomerModal } from './components/QuickCustomerModal';
 import { InvoiceSuccessModal } from './components/InvoiceSuccessModal';
+import { SignaturePadModal } from '../../components/common/SignaturePadModal';
 import { useOrgStore } from '../../store/useOrgStore';
 import { useInvoiceStore } from '../../store/useInvoiceStore';
 import { customerRepository } from '../../database/repositories/customerRepository';
@@ -90,6 +96,13 @@ export const InvoiceCreateScreen: React.FC = () => {
   const [terms, setTerms] = useState('');
   const [loading, setLoading] = useState(false);
 
+  // Signature States
+  const [signatureEnabled, setSignatureEnabled] = useState(true);
+  const [signatureUri, setSignatureUri] = useState<string | undefined>(activeOrg?.signatureUri);
+  const [signatoryName, setSignatoryName] = useState(activeOrg?.signatoryName || activeOrg?.displayName || activeOrg?.name || '');
+  const [signatoryTitle, setSignatoryTitle] = useState(activeOrg?.signatoryTitle || 'Authorized Signatory');
+  const [padModalVisible, setPadModalVisible] = useState(false);
+
   // Line items
   const [lineItems, setLineItems] = useState<LineItemState[]>([]);
 
@@ -124,6 +137,9 @@ export const InvoiceCreateScreen: React.FC = () => {
     setTemplateId(activeOrg.defaultTemplateId || 'classic_green');
     setNotes(activeOrg.defaultNotes || 'Thank you for your business!');
     setTerms(activeOrg.defaultTerms || 'Payment due according to specified terms.');
+    setSignatureUri(activeOrg.signatureUri);
+    setSignatoryName(activeOrg.signatoryName || activeOrg.displayName || activeOrg.name || '');
+    setSignatoryTitle(activeOrg.signatoryTitle || 'Authorized Signatory');
 
     const cloneInvoice = route.params?.cloneInvoice as Invoice | undefined;
     if (cloneInvoice) {
@@ -311,7 +327,10 @@ export const InvoiceCreateScreen: React.FC = () => {
         notes,
         termsConditions: terms,
         upiQrEnabled: true,
-        signatureEnabled: true,
+        signatureEnabled,
+        signatureUri: signatureUri || undefined,
+        signatoryName: signatoryName || undefined,
+        signatoryTitle: signatoryTitle || undefined,
       };
 
       const created = await createInvoice(
@@ -373,7 +392,10 @@ export const InvoiceCreateScreen: React.FC = () => {
       notes,
       termsConditions: terms,
       upiQrEnabled: true,
-      signatureEnabled: true,
+      signatureEnabled,
+      signatureUri,
+      signatoryName,
+      signatoryTitle,
       items: lineItems as any,
     } as Invoice;
 
@@ -582,6 +604,104 @@ export const InvoiceCreateScreen: React.FC = () => {
                   </Text>
                   <Badge label="Active Profile" variant="paid" size="sm" />
                 </View>
+              </View>
+
+              {/* Digital Signature & Signatory Card */}
+              <View style={styles.signatureCard}>
+                <View style={styles.signatureCardHeader}>
+                  <View style={styles.signatureHeaderLeft}>
+                    <View style={styles.signatureIconBox}>
+                      <PenTool size={18} color="#15803D" />
+                    </View>
+                    <View>
+                      <Text style={styles.signatureTitle}>Digital Signature</Text>
+                      <Text style={styles.signatureSub}>Include vector signature on PDF</Text>
+                    </View>
+                  </View>
+                  <Switch
+                    value={signatureEnabled}
+                    onValueChange={setSignatureEnabled}
+                    trackColor={{ false: '#D7E5DC', true: '#86EFAC' }}
+                    thumbColor={signatureEnabled ? '#22C55E' : '#FFFFFF'}
+                  />
+                </View>
+
+                {signatureEnabled && (
+                  <View style={styles.signatureBody}>
+                    <View style={styles.signaturePreviewContainer}>
+                      {signatureUri ? (
+                        signatureUri.startsWith('data:image/svg+xml') ? (
+                          <View style={styles.signatureSvgWrapper}>
+                            <SvgXml
+                              xml={decodeURIComponent(signatureUri.replace('data:image/svg+xml;utf8,', ''))}
+                              width="100%"
+                              height={80}
+                            />
+                          </View>
+                        ) : (
+                          <Image
+                            source={{ uri: signatureUri }}
+                            style={styles.signatureImg}
+                            resizeMode="contain"
+                          />
+                        )
+                      ) : (
+                        <TouchableOpacity
+                          activeOpacity={0.7}
+                          onPress={() => setPadModalVisible(true)}
+                          style={styles.noSignatureBox}
+                        >
+                          <PenTool size={24} color="#15803D" />
+                          <Text style={styles.noSignatureText}>+ Tap to Draw Signature</Text>
+                        </TouchableOpacity>
+                      )}
+                    </View>
+
+                    {signatureUri && (
+                      <View style={styles.signatureActionRow}>
+                        <TouchableOpacity
+                          activeOpacity={0.7}
+                          onPress={() => setPadModalVisible(true)}
+                          style={styles.signActionBtn}
+                        >
+                          <PenTool size={14} color="#15803D" />
+                          <Text style={styles.signActionText}>Change Signature</Text>
+                        </TouchableOpacity>
+                        <TouchableOpacity
+                          activeOpacity={0.7}
+                          onPress={() => setSignatureUri(undefined)}
+                          style={styles.signRemoveBtn}
+                        >
+                          <Trash2 size={14} color="#EF4444" />
+                          <Text style={styles.signRemoveText}>Clear</Text>
+                        </TouchableOpacity>
+                      </View>
+                    )}
+
+                    <View style={styles.signatoryInputsRow}>
+                      <View style={[styles.fieldGroup, { flex: 1, marginRight: 8 }]}>
+                        <Text style={styles.fieldLabel}>Signatory Name</Text>
+                        <TextInput
+                          value={signatoryName}
+                          onChangeText={setSignatoryName}
+                          placeholder="e.g. John Doe"
+                          placeholderTextColor="#94A3B8"
+                          style={styles.textInput}
+                        />
+                      </View>
+                      <View style={[styles.fieldGroup, { flex: 1 }]}>
+                        <Text style={styles.fieldLabel}>Signatory Title</Text>
+                        <TextInput
+                          value={signatoryTitle}
+                          onChangeText={setSignatoryTitle}
+                          placeholder="e.g. Director"
+                          placeholderTextColor="#94A3B8"
+                          style={styles.textInput}
+                        />
+                      </View>
+                    </View>
+                  </View>
+                )}
               </View>
             </View>
 
@@ -894,6 +1014,33 @@ export const InvoiceCreateScreen: React.FC = () => {
                 <Text style={styles.docTermsTitle}>Terms & Conditions</Text>
                 <Text style={styles.docTermsText}>{notes}</Text>
               </View>
+
+              {/* Digital Signature Block in Preview */}
+              {signatureEnabled && (signatureUri || signatoryName) && (
+                <View style={styles.docSignatureBox}>
+                  {signatureUri && (
+                    signatureUri.startsWith('data:image/svg+xml') ? (
+                      <SvgXml
+                        xml={decodeURIComponent(signatureUri.replace('data:image/svg+xml;utf8,', ''))}
+                        width={120}
+                        height={45}
+                        style={{ alignSelf: 'flex-end', marginBottom: 4 }}
+                      />
+                    ) : (
+                      <Image
+                        source={{ uri: signatureUri }}
+                        style={styles.docSignatureImg}
+                        resizeMode="contain"
+                      />
+                    )
+                  )}
+                  <View style={styles.docSignatureLine} />
+                  <Text style={styles.docSignatoryName}>{signatoryName || 'Authorized Signatory'}</Text>
+                  {signatoryTitle ? (
+                    <Text style={styles.docSignatoryTitle}>{signatoryTitle}</Text>
+                  ) : null}
+                </View>
+              )}
             </View>
 
             {/* Bottom Actions Row */}
@@ -915,6 +1062,17 @@ export const InvoiceCreateScreen: React.FC = () => {
           </View>
         )}
       </ScrollView>
+
+      {/* Digital Signature Pad Modal */}
+      <SignaturePadModal
+        visible={padModalVisible}
+        onClose={() => setPadModalVisible(false)}
+        onSave={(dataUri) => {
+          setSignatureUri(dataUri);
+          setSignatureEnabled(true);
+        }}
+        initialSignature={signatureUri}
+      />
 
       {/* Quick Customer Picker / Creator Modal */}
       <QuickCustomerModal
@@ -1570,5 +1728,141 @@ const styles = StyleSheet.create({
     ...typography.micro,
     color: colors.textSecondary,
     lineHeight: 14,
+  },
+  signatureCard: {
+    backgroundColor: '#FFFFFF',
+    borderRadius: 14,
+    borderWidth: 1,
+    borderColor: '#D7E5DC',
+    padding: 16,
+    marginTop: 14,
+  },
+  signatureCardHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  signatureHeaderLeft: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+  },
+  signatureIconBox: {
+    width: 36,
+    height: 36,
+    borderRadius: 10,
+    backgroundColor: '#EAF8EF',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  signatureTitle: {
+    ...typography.captionSemiBold,
+    color: colors.text,
+    fontSize: 14,
+  },
+  signatureSub: {
+    ...typography.micro,
+    color: colors.textSecondary,
+    marginTop: 1,
+  },
+  signatureBody: {
+    marginTop: 14,
+    paddingTop: 12,
+    borderTopWidth: 1,
+    borderTopColor: '#F1F5F9',
+  },
+  signaturePreviewContainer: {
+    borderWidth: 1,
+    borderStyle: 'dashed',
+    borderColor: '#CBD5E1',
+    borderRadius: 12,
+    backgroundColor: '#F8FAFC',
+    overflow: 'hidden',
+    minHeight: 80,
+    justifyContent: 'center',
+  },
+  signatureSvgWrapper: {
+    padding: 10,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  signatureImg: {
+    width: '100%',
+    height: 80,
+  },
+  noSignatureBox: {
+    paddingVertical: 18,
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 6,
+  },
+  noSignatureText: {
+    ...typography.captionSemiBold,
+    color: '#15803D',
+    fontSize: 13,
+  },
+  signatureActionRow: {
+    flexDirection: 'row',
+    justifyContent: 'flex-end',
+    gap: 10,
+    marginTop: 8,
+  },
+  signActionBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 5,
+    paddingVertical: 5,
+    paddingHorizontal: 10,
+    backgroundColor: '#EAF8EF',
+    borderRadius: 8,
+  },
+  signActionText: {
+    ...typography.micro,
+    color: '#15803D',
+    fontWeight: '700',
+  },
+  signRemoveBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 5,
+    paddingVertical: 5,
+    paddingHorizontal: 10,
+    backgroundColor: '#FEF2F2',
+    borderRadius: 8,
+  },
+  signRemoveText: {
+    ...typography.micro,
+    color: '#EF4444',
+    fontWeight: '700',
+  },
+  signatoryInputsRow: {
+    flexDirection: 'row',
+    marginTop: 12,
+  },
+  docSignatureBox: {
+    alignItems: 'flex-end',
+    marginTop: 14,
+    paddingTop: 8,
+  },
+  docSignatureImg: {
+    width: 120,
+    height: 45,
+    marginBottom: 4,
+  },
+  docSignatureLine: {
+    width: 120,
+    height: 1.5,
+    backgroundColor: '#0F172A',
+    marginBottom: 4,
+  },
+  docSignatoryName: {
+    ...typography.micro,
+    color: colors.text,
+    fontWeight: '700',
+  },
+  docSignatoryTitle: {
+    ...typography.micro,
+    color: colors.textSecondary,
+    fontSize: 10,
   },
 });

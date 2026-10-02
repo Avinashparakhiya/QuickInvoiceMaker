@@ -89,6 +89,8 @@ export interface Organization {
   bankIfscSwift?: string;
   bankAccountHolder?: string;
   upiVpa?: string;
+  signatoryName?: string;
+  signatoryTitle?: string;
   defaultNotes?: string;
   defaultTerms?: string;
   isActive: boolean;
@@ -181,6 +183,9 @@ export interface Invoice {
   paymentInstructions?: string;
   upiQrEnabled: boolean;
   signatureEnabled: boolean;
+  signatureUri?: string;
+  signatoryName?: string;
+  signatoryTitle?: string;
   attachmentUris?: string[];
   items?: InvoiceItem[];
   payments?: Payment[];
@@ -223,6 +228,10 @@ export interface Estimate {
   convertedInvoiceId?: string;
   notes?: string;
   termsConditions?: string;
+  signatureEnabled?: boolean;
+  signatureUri?: string;
+  signatoryName?: string;
+  signatoryTitle?: string;
   items?: EstimateItem[];
   customer?: Customer;
   createdAt: string;

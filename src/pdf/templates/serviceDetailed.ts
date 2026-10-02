@@ -1,10 +1,12 @@
 import { Invoice, Organization } from '../../types';
 import { formatCurrency } from '../../utils/currency';
 import { formatDate } from '../../utils/dates';
+import { buildSignatureHtml } from './signatureHtml';
 
 export function renderServiceDetailedTemplate(invoice: Invoice, org: Organization): string {
   const items = invoice.items || [];
   const symbol = invoice.currencySymbol || '$';
+  const sigHtml = buildSignatureHtml(invoice, org, { lineColor: '#0284C7', textColor: '#0369A1' });
 
   const rows = items
     .map(
@@ -63,6 +65,8 @@ export function renderServiceDetailedTemplate(invoice: Invoice, org: Organizatio
           <span>Total</span><span>${formatCurrency(invoice.totalAmount, symbol)}</span>
         </div>
       </div>
+
+      ${sigHtml}
     </body>
   </html>
   `;

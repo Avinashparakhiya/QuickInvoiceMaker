@@ -23,6 +23,7 @@ import {
   FileSpreadsheet,
   Layers,
   ArrowRight,
+  PenTool,
 } from 'lucide-react-native';
 import { Header } from '../../components/common/Header';
 import { Card } from '../../components/common/Card';
@@ -101,6 +102,13 @@ export const SettingsScreen: React.FC = () => {
           icon: <Palette size={20} color="#C2410C" />,
           iconBg: '#FFEDD5',
           onPress: () => navigation.navigate('TemplateGallery', {}),
+        },
+        {
+          title: 'Digital Signature & Stamp',
+          subtitle: activeOrg?.signatureUri ? 'Handwritten signature configured' : 'Configure signature & company stamp',
+          icon: <PenTool size={20} color="#15803D" />,
+          iconBg: '#DCFCE7',
+          onPress: () => navigation.navigate('SignatureSettings'),
         },
       ],
     },

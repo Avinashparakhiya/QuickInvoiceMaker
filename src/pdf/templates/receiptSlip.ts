@@ -1,10 +1,12 @@
 import { Invoice, Organization } from '../../types';
 import { formatCurrency } from '../../utils/currency';
 import { formatDate } from '../../utils/dates';
+import { buildSignatureHtml } from './signatureHtml';
 
 export function renderReceiptSlipTemplate(invoice: Invoice, org: Organization): string {
   const items = invoice.items || [];
   const symbol = invoice.currencySymbol || '$';
+  const sigHtml = buildSignatureHtml(invoice, org, { align: 'center', lineColor: '#000', textColor: '#000' });
 
   const rows = items
     .map(
@@ -56,6 +58,7 @@ export function renderReceiptSlipTemplate(invoice: Invoice, org: Organization): 
       </div>
 
       <div class="dashed"></div>
+      ${sigHtml}
       <div class="center" style="font-size: 10px; margin-top: 8px;">
         THANK YOU FOR YOUR BUSINESS!<br/>
         PLEASE KEEP FOR YOUR RECORDS

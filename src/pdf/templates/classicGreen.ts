@@ -1,10 +1,12 @@
 import { Invoice, Organization } from '../../types';
 import { formatCurrency } from '../../utils/currency';
 import { formatDate } from '../../utils/dates';
+import { buildSignatureHtml } from './signatureHtml';
 
 export function renderClassicGreenTemplate(invoice: Invoice, org: Organization): string {
   const items = invoice.items || [];
   const symbol = invoice.currencySymbol || '$';
+  const sigHtml = buildSignatureHtml(invoice, org, { lineColor: '#22C55E', textColor: '#15803D' });
 
   const rows = items
     .map(
@@ -151,6 +153,8 @@ export function renderClassicGreenTemplate(invoice: Invoice, org: Organization):
       </div>`
           : ''
       }
+
+      ${sigHtml}
     </body>
   </html>
   `;

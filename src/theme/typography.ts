@@ -57,6 +57,11 @@ export const typography = {
     fontWeight: '500',
     lineHeight: 16,
   } as TextStyle,
+  captionSemiBold: {
+    fontSize: 12,
+    fontWeight: '600',
+    lineHeight: 16,
+  } as TextStyle,
   captionRegular: {
     fontSize: 12,
     fontWeight: '400',

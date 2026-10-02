@@ -107,14 +107,14 @@ export const invoiceRepository = {
         currency_code, currency_symbol, subtotal, discount_type, discount_value, discount_amount,
         tax_amount, shipping_charge, adjustment_amount, total_amount, paid_amount, balance_due,
         notes, terms_conditions, payment_instructions, upi_qr_enabled, signature_enabled,
-        attachment_uris, created_at, updated_at
+        signature_uri, signatory_name, signatory_title, attachment_uris, created_at, updated_at
       ) VALUES (
         ?, ?, ?, ?, ?,
         ?, ?, ?, ?, ?,
         ?, ?, ?, ?, ?, ?,
         ?, ?, ?, ?, ?, ?,
         ?, ?, ?, ?, ?,
-        ?, ?, ?
+        ?, ?, ?, ?, ?, ?
       )`,
       [
         invoice.id,
@@ -144,6 +144,9 @@ export const invoiceRepository = {
         invoice.paymentInstructions || null,
         invoice.upiQrEnabled !== false ? 1 : 0,
         invoice.signatureEnabled !== false ? 1 : 0,
+        invoice.signatureUri || null,
+        invoice.signatoryName || null,
+        invoice.signatoryTitle || null,
         invoice.attachmentUris ? JSON.stringify(invoice.attachmentUris) : null,
         nowIso,
         nowIso,
@@ -208,6 +211,9 @@ export const invoiceRepository = {
     if (invoice.paymentInstructions !== undefined) { fields.push('payment_instructions = ?'); values.push(invoice.paymentInstructions); }
     if (invoice.upiQrEnabled !== undefined) { fields.push('upi_qr_enabled = ?'); values.push(invoice.upiQrEnabled ? 1 : 0); }
     if (invoice.signatureEnabled !== undefined) { fields.push('signature_enabled = ?'); values.push(invoice.signatureEnabled ? 1 : 0); }
+    if (invoice.signatureUri !== undefined) { fields.push('signature_uri = ?'); values.push(invoice.signatureUri); }
+    if (invoice.signatoryName !== undefined) { fields.push('signatory_name = ?'); values.push(invoice.signatoryName); }
+    if (invoice.signatoryTitle !== undefined) { fields.push('signatory_title = ?'); values.push(invoice.signatoryTitle); }
 
     values.push(id);
     await executeSql(`UPDATE invoices SET ${fields.join(', ')} WHERE id = ?`, values);
@@ -384,6 +390,9 @@ function mapRowToInvoice(row: any): Invoice {
     paymentInstructions: row.payment_instructions,
     upiQrEnabled: Boolean(row.upi_qr_enabled),
     signatureEnabled: Boolean(row.signature_enabled),
+    signatureUri: row.signature_uri,
+    signatoryName: row.signatory_name,
+    signatoryTitle: row.signatory_title,
     attachmentUris,
     createdAt: row.created_at,
     updatedAt: row.updated_at,

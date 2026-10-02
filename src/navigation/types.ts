@@ -39,5 +39,6 @@ export type RootStackParamList = {
   ExpenseList: undefined;
   ExpenseForm: { expenseId?: string };
   TemplateGallery: { onSelectTemplate?: (templateId: any) => void; currentTemplateId?: string };
+  SignatureSettings: undefined;
   PdfViewer: { uri: string; title: string };
 };

@@ -1,10 +1,12 @@
 import { Invoice, Organization } from '../../types';
 import { formatCurrency } from '../../utils/currency';
 import { formatDate } from '../../utils/dates';
+import { buildSignatureHtml } from './signatureHtml';
 
 export function renderBusinessProTemplate(invoice: Invoice, org: Organization): string {
   const items = invoice.items || [];
   const symbol = invoice.currencySymbol || '$';
+  const sigHtml = buildSignatureHtml(invoice, org, { lineColor: '#0F172A', textColor: '#0F172A' });
 
   const rows = items
     .map(
@@ -84,6 +86,8 @@ export function renderBusinessProTemplate(invoice: Invoice, org: Organization): 
         ${invoice.taxAmount > 0 ? `<div class="tot-row"><span>Tax</span><span>${formatCurrency(invoice.taxAmount, symbol)}</span></div>` : ''}
         <div class="tot-grand"><span>Total</span><span>${formatCurrency(invoice.totalAmount, symbol)}</span></div>
       </div>
+
+      ${sigHtml}
     </body>
   </html>
   `;

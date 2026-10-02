@@ -1,10 +1,12 @@
 import { Invoice, Organization } from '../../types';
 import { formatCurrency } from '../../utils/currency';
 import { formatDate } from '../../utils/dates';
+import { buildSignatureHtml } from './signatureHtml';
 
 export function renderModernCardTemplate(invoice: Invoice, org: Organization): string {
   const items = invoice.items || [];
   const symbol = invoice.currencySymbol || '$';
+  const sigHtml = buildSignatureHtml(invoice, org, { lineColor: '#15803D', textColor: '#0F172A' });
 
   const rows = items
     .map(
@@ -72,6 +74,8 @@ export function renderModernCardTemplate(invoice: Invoice, org: Organization): s
             : ''
         }
       </div>
+
+      ${sigHtml}
     </body>
   </html>
   `;

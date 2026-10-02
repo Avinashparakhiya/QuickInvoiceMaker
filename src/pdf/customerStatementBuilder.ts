@@ -1,6 +1,7 @@
 import { Organization, Customer, Invoice, Payment } from '../types';
 import { formatCurrency } from '../utils/currency';
 import { formatDate } from '../utils/dates';
+import { buildSignatureHtml } from './templates/signatureHtml';
 
 export function buildCustomerStatementPdfHtml(
   org: Organization,
@@ -9,6 +10,7 @@ export function buildCustomerStatementPdfHtml(
   payments: Payment[]
 ): string {
   const symbol = org.currencySymbol || '$';
+  const sigHtml = buildSignatureHtml({ signatureEnabled: true }, org, { lineColor: '#16A34A', textColor: '#0F172A' });
   const totalBilled = invoices.reduce((sum, i) => sum + i.totalAmount, 0);
   const totalPaid = invoices.reduce((sum, i) => sum + i.paidAmount, 0);
   const balanceDue = invoices.reduce((sum, i) => sum + i.balanceDue, 0);
@@ -314,6 +316,8 @@ export function buildCustomerStatementPdfHtml(
       `
           : ''
       }
+
+      ${sigHtml}
 
       <div class="footer">
         Thank you for your business! If you have questions regarding this statement, please contact ${org.email || org.phone || org.name}.

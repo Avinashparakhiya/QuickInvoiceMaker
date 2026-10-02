@@ -1,10 +1,12 @@
 import { Invoice, Organization } from '../../types';
 import { formatCurrency } from '../../utils/currency';
 import { formatDate } from '../../utils/dates';
+import { buildSignatureHtml } from './signatureHtml';
 
 export function renderRetailCompactTemplate(invoice: Invoice, org: Organization): string {
   const items = invoice.items || [];
   const symbol = invoice.currencySymbol || '$';
+  const sigHtml = buildSignatureHtml(invoice, org, { align: 'center', lineColor: '#0F172A', textColor: '#0F172A' });
 
   const rows = items
     .map(
@@ -64,6 +66,7 @@ export function renderRetailCompactTemplate(invoice: Invoice, org: Organization)
           <span>TOTAL DUE:</span><span>${formatCurrency(invoice.totalAmount, symbol)}</span>
         </div>
       </div>
+      ${sigHtml}
       <div style="text-align: center; margin-top: 16px; font-size: 10px;">Thank you for your purchase!</div>
     </body>
   </html>

@@ -1,10 +1,12 @@
 import { Invoice, Organization } from '../../types';
 import { formatCurrency } from '../../utils/currency';
 import { formatDate } from '../../utils/dates';
+import { buildSignatureHtml } from './signatureHtml';
 
 export function renderBoldContrastTemplate(invoice: Invoice, org: Organization): string {
   const items = invoice.items || [];
   const symbol = invoice.currencySymbol || '$';
+  const sigHtml = buildSignatureHtml(invoice, org, { lineColor: '#000000', textColor: '#000000' });
 
   const rows = items
     .map(
@@ -68,6 +70,8 @@ export function renderBoldContrastTemplate(invoice: Invoice, org: Organization):
         <span style="font-size: 16px; font-weight: 900; text-transform: uppercase;">Total Amount Due</span>
         <span style="font-size: 32px; font-weight: 900;">${formatCurrency(invoice.totalAmount, symbol)}</span>
       </div>
+
+      ${sigHtml}
     </body>
   </html>
   `;

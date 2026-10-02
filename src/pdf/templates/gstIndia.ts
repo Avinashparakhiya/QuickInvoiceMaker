@@ -1,10 +1,12 @@
 import { Invoice, Organization } from '../../types';
 import { formatCurrency } from '../../utils/currency';
 import { formatDate } from '../../utils/dates';
+import { buildSignatureHtml } from './signatureHtml';
 
 export function renderGstIndiaTemplate(invoice: Invoice, org: Organization): string {
   const items = invoice.items || [];
   const symbol = invoice.currencySymbol || '₹';
+  const sigHtml = buildSignatureHtml(invoice, org, { lineColor: '#0F172A', textColor: '#0F172A' });
 
   // Compute CGST/SGST (50% each)
   const halfTax = (invoice.taxAmount || 0) / 2;
@@ -95,6 +97,8 @@ export function renderGstIndiaTemplate(invoice: Invoice, org: Organization): str
         <div class="tax-row"><span>SGST</span><span>${formatCurrency(halfTax, symbol)}</span></div>
         <div class="grand-row"><span>Total Invoice Value</span><span>${formatCurrency(invoice.totalAmount, symbol)}</span></div>
       </div>
+
+      ${sigHtml}
     </body>
   </html>
   `;

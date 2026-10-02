@@ -7,8 +7,10 @@ import {
   ScrollView,
   Alert,
   Share,
+  Image,
 } from 'react-native';
 import { useNavigation, useRoute } from '@react-navigation/native';
+import Svg, { SvgXml } from 'react-native-svg';
 import * as Print from 'expo-print';
 import * as Sharing from 'expo-sharing';
 import {
@@ -20,30 +22,38 @@ import {
   Building,
   FileText,
   Eye,
+  PenTool,
 } from 'lucide-react-native';
 import { Header } from '../../components/common/Header';
 import { Button } from '../../components/common/Button';
 import { Badge } from '../../components/common/Badge';
+import { SignaturePadModal } from '../../components/common/SignaturePadModal';
 import { useOrgStore } from '../../store/useOrgStore';
+import { useInvoiceStore } from '../../store/useInvoiceStore';
 import { buildInvoiceHtml } from '../../pdf/htmlBuilder';
 import { colors } from '../../theme/colors';
 import { typography } from '../../theme/typography';
 import { formatCurrency } from '../../utils/currency';
 import { formatDate } from '../../utils/dates';
+import { useResponsive } from '../../utils/useResponsive';
 import { Invoice, TemplateId } from '../../types';
 
 export const InvoicePreviewScreen: React.FC = () => {
   const navigation = useNavigation<any>();
   const route = useRoute<any>();
   const { activeOrg } = useOrgStore();
+  const { contentMaxWidth } = useResponsive();
 
-  const invoice: Invoice = route.params?.invoice;
+  const initialInvoice: Invoice = route.params?.invoice;
+  const { updateInvoice } = useInvoiceStore();
+  const [currentInvoice, setCurrentInvoice] = useState<Invoice>(initialInvoice);
+  const [padModalVisible, setPadModalVisible] = useState(false);
   const [selectedTemplate, setSelectedTemplate] = useState<TemplateId>(
-    invoice?.templateId || activeOrg?.defaultTemplateId || 'classic_green'
+    currentInvoice?.templateId || activeOrg?.defaultTemplateId || 'classic_green'
   );
   const [loading, setLoading] = useState(false);
 
-  if (!invoice || !activeOrg) {
+  if (!currentInvoice || !activeOrg) {
     return (
       <View style={styles.container}>
         <Header title="Invoice Preview" showBack onBack={() => navigation.goBack()} />
@@ -54,22 +64,39 @@ export const InvoicePreviewScreen: React.FC = () => {
     );
   }
 
-  const currencySymbol = invoice.currencySymbol || activeOrg.currencySymbol || '$';
+  const currencySymbol = currentInvoice.currencySymbol || activeOrg.currencySymbol || '$';
+
+  const handleSaveSignature = async (dataUri: string) => {
+    const updated = {
+      ...currentInvoice,
+      signatureUri: dataUri,
+      signatureEnabled: true,
+    };
+    setCurrentInvoice(updated);
+    if (updated.id && !updated.id.startsWith('temp')) {
+      try {
+        await updateInvoice(updated.id, {
+          signatureUri: dataUri,
+          signatureEnabled: true,
+        });
+      } catch {}
+    }
+  };
 
   const handleShare = async () => {
     setLoading(true);
     try {
-      const html = buildInvoiceHtml(invoice, activeOrg, selectedTemplate);
+      const html = buildInvoiceHtml(currentInvoice, activeOrg, selectedTemplate);
       const { uri } = await Print.printToFileAsync({ html });
       if (await Sharing.isAvailableAsync()) {
         await Sharing.shareAsync(uri, {
           UTI: '.pdf',
           mimeType: 'application/pdf',
-          dialogTitle: `Share Invoice ${invoice.invoiceNumber}`,
+          dialogTitle: `Share Invoice ${currentInvoice.invoiceNumber}`,
         });
       } else {
         await Share.share({
-          message: `Invoice ${invoice.invoiceNumber} for ${invoice.customerName} - Total: ${formatCurrency(invoice.totalAmount, currencySymbol)}`,
+          message: `Invoice ${currentInvoice.invoiceNumber} for ${currentInvoice.customerName} - Total: ${formatCurrency(currentInvoice.totalAmount, currencySymbol)}`,
         });
       }
     } catch (err: any) {
@@ -82,13 +109,13 @@ export const InvoicePreviewScreen: React.FC = () => {
   const handleDownloadPdf = async () => {
     setLoading(true);
     try {
-      const html = buildInvoiceHtml(invoice, activeOrg, selectedTemplate);
+      const html = buildInvoiceHtml(currentInvoice, activeOrg, selectedTemplate);
       const { uri } = await Print.printToFileAsync({ html });
       if (await Sharing.isAvailableAsync()) {
         await Sharing.shareAsync(uri, {
           UTI: '.pdf',
           mimeType: 'application/pdf',
-          dialogTitle: `Download Invoice ${invoice.invoiceNumber}`,
+          dialogTitle: `Download Invoice ${currentInvoice.invoiceNumber}`,
         });
       } else {
         Alert.alert('PDF Generated', `Saved to: ${uri}`);
@@ -102,7 +129,7 @@ export const InvoicePreviewScreen: React.FC = () => {
 
   const handlePrint = async () => {
     try {
-      const html = buildInvoiceHtml(invoice, activeOrg, selectedTemplate);
+      const html = buildInvoiceHtml(currentInvoice, activeOrg, selectedTemplate);
       await Print.printAsync({ html });
     } catch (err: any) {
       Alert.alert('Print Error', err.message || 'Failed to print invoice.');
@@ -148,7 +175,7 @@ export const InvoicePreviewScreen: React.FC = () => {
       />
 
       {/* Template Switcher Bar */}
-      <View style={styles.templateBar}>
+      <View style={[styles.templateBar, { maxWidth: contentMaxWidth, alignSelf: 'center', width: '100%' }]}>
         <Text style={styles.templateBarLabel}>Style:</Text>
         <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.templateScroll}>
           {templatesList.map((tpl) => {
@@ -178,7 +205,7 @@ export const InvoicePreviewScreen: React.FC = () => {
         </ScrollView>
       </View>
 
-      <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
+      <ScrollView contentContainerStyle={[styles.scrollContent, { maxWidth: contentMaxWidth, alignSelf: 'center', width: '100%' }]} showsVerticalScrollIndicator={false}>
         {/* A4 Realistic White Document Sheet */}
         <View style={styles.documentCard}>
           {/* Org Header */}
@@ -200,7 +227,7 @@ export const InvoicePreviewScreen: React.FC = () => {
 
             <View style={styles.invTitleBox}>
               <Text style={styles.invTitle}>INVOICE</Text>
-              <Text style={styles.invNumber}>{invoice.invoiceNumber}</Text>
+              <Text style={styles.invNumber}>{currentInvoice.invoiceNumber}</Text>
             </View>
           </View>
 
@@ -210,24 +237,24 @@ export const InvoicePreviewScreen: React.FC = () => {
           <View style={styles.metaRow}>
             <View style={styles.billToBox}>
               <Text style={styles.metaLabel}>Bill To:</Text>
-              <Text style={styles.custName}>{invoice.customerName || 'Walk-in Client'}</Text>
-              {invoice.customerEmail ? (
-                <Text style={styles.custSub}>{invoice.customerEmail}</Text>
+              <Text style={styles.custName}>{currentInvoice.customerName || 'Walk-in Client'}</Text>
+              {currentInvoice.customerEmail ? (
+                <Text style={styles.custSub}>{currentInvoice.customerEmail}</Text>
               ) : null}
             </View>
 
             <View style={styles.invoiceMetaBox}>
               <View style={styles.metaItem}>
                 <Text style={styles.metaLabel}>Invoice Date:</Text>
-                <Text style={styles.metaVal}>{formatDate(invoice.issueDate, 'dd MMM, yyyy')}</Text>
+                <Text style={styles.metaVal}>{formatDate(currentInvoice.issueDate, 'dd MMM, yyyy')}</Text>
               </View>
               <View style={styles.metaItem}>
                 <Text style={styles.metaLabel}>Due Date:</Text>
-                <Text style={styles.metaVal}>{formatDate(invoice.dueDate, 'dd MMM, yyyy')}</Text>
+                <Text style={styles.metaVal}>{formatDate(currentInvoice.dueDate, 'dd MMM, yyyy')}</Text>
               </View>
               <View style={styles.metaItem}>
                 <Text style={styles.metaLabel}>Status:</Text>
-                <Badge status={invoice.status || 'UNPAID'} size="sm" />
+                <Badge status={currentInvoice.status || 'UNPAID'} size="sm" />
               </View>
             </View>
           </View>
@@ -242,7 +269,7 @@ export const InvoicePreviewScreen: React.FC = () => {
           </View>
 
           {/* Items Rows */}
-          {(invoice.items || []).map((item, idx) => (
+          {(currentInvoice.items || []).map((item, idx) => (
             <View key={idx} style={styles.tableRow}>
               <Text style={[styles.td, { flex: 0.4, color: colors.textMuted }]}>{idx + 1}</Text>
               <Text style={[styles.td, { flex: 2.2, fontWeight: '500' }]}>{item.description}</Text>
@@ -262,29 +289,29 @@ export const InvoicePreviewScreen: React.FC = () => {
           <View style={styles.totalsContainer}>
             <View style={styles.totalRow}>
               <Text style={styles.totalLabel}>Subtotal:</Text>
-              <Text style={styles.totalVal}>{formatCurrency(invoice.subtotal, currencySymbol)}</Text>
+              <Text style={styles.totalVal}>{formatCurrency(currentInvoice.subtotal, currencySymbol)}</Text>
             </View>
 
-            {invoice.discountAmount > 0 ? (
+            {currentInvoice.discountAmount > 0 ? (
               <View style={styles.totalRow}>
                 <Text style={styles.totalLabel}>Discount:</Text>
                 <Text style={[styles.totalVal, { color: '#15803D' }]}>
-                  -{formatCurrency(invoice.discountAmount, currencySymbol)}
+                  -{formatCurrency(currentInvoice.discountAmount, currencySymbol)}
                 </Text>
               </View>
             ) : null}
 
-            {invoice.taxAmount > 0 ? (
+            {currentInvoice.taxAmount > 0 ? (
               <View style={styles.totalRow}>
                 <Text style={styles.totalLabel}>Tax:</Text>
-                <Text style={styles.totalVal}>+{formatCurrency(invoice.taxAmount, currencySymbol)}</Text>
+                <Text style={styles.totalVal}>+{formatCurrency(currentInvoice.taxAmount, currencySymbol)}</Text>
               </View>
             ) : null}
 
             <View style={styles.grandTotalRow}>
               <Text style={styles.grandTotalLabel}>Total:</Text>
               <Text style={styles.grandTotalVal}>
-                {formatCurrency(invoice.totalAmount, currencySymbol)}
+                {formatCurrency(currentInvoice.totalAmount, currencySymbol)}
               </Text>
             </View>
           </View>
@@ -293,14 +320,70 @@ export const InvoicePreviewScreen: React.FC = () => {
           <View style={styles.termsBox}>
             <Text style={styles.termsTitle}>Terms & Conditions</Text>
             <Text style={styles.termsText}>
-              {invoice.termsConditions || invoice.notes || 'Thank you for your business! Please settle the balance according to the agreed due date.'}
+              {currentInvoice.termsConditions || currentInvoice.notes || 'Thank you for your business! Please settle the balance according to the agreed due date.'}
             </Text>
           </View>
+
+          {/* Digital Signature Section */}
+          {currentInvoice.signatureEnabled !== false && (
+            <View style={styles.signatureSection}>
+              {(currentInvoice.signatureUri || activeOrg.signatureUri) ? (
+                <View style={styles.signatureDisplay}>
+                  {(currentInvoice.signatureUri || activeOrg.signatureUri)?.startsWith('data:image/svg+xml') ? (
+                    <SvgXml
+                      xml={decodeURIComponent((currentInvoice.signatureUri || activeOrg.signatureUri)!.replace('data:image/svg+xml;utf8,', ''))}
+                      width={130}
+                      height={50}
+                      style={{ alignSelf: 'flex-end', marginBottom: 4 }}
+                    />
+                  ) : (
+                    <Image
+                      source={{ uri: currentInvoice.signatureUri || activeOrg.signatureUri }}
+                      style={styles.signatureImg}
+                      resizeMode="contain"
+                    />
+                  )}
+                  <View style={styles.sigLine} />
+                  <Text style={styles.signatoryNameText}>
+                    {currentInvoice.signatoryName || activeOrg.signatoryName || 'Authorized Signatory'}
+                  </Text>
+                  <Text style={styles.signatoryTitleText}>
+                    {currentInvoice.signatoryTitle || activeOrg.signatoryTitle || (activeOrg.displayName || activeOrg.name)}
+                  </Text>
+                  <TouchableOpacity
+                    activeOpacity={0.7}
+                    onPress={() => setPadModalVisible(true)}
+                    style={styles.reSignBtn}
+                  >
+                    <PenTool size={12} color="#15803D" />
+                    <Text style={styles.reSignBtnText}>Change Signature</Text>
+                  </TouchableOpacity>
+                </View>
+              ) : (
+                <TouchableOpacity
+                  activeOpacity={0.7}
+                  onPress={() => setPadModalVisible(true)}
+                  style={styles.addSignaturePill}
+                >
+                  <PenTool size={14} color="#15803D" />
+                  <Text style={styles.addSignaturePillText}>+ Add Digital Signature to Invoice</Text>
+                </TouchableOpacity>
+              )}
+            </View>
+          )}
         </View>
       </ScrollView>
 
+      {/* Signature Modal */}
+      <SignaturePadModal
+        visible={padModalVisible}
+        onClose={() => setPadModalVisible(false)}
+        onSave={handleSaveSignature}
+        initialSignature={currentInvoice.signatureUri || activeOrg.signatureUri}
+      />
+
       {/* Bottom Sticky Action Bar */}
-      <View style={styles.bottomBar}>
+      <View style={[styles.bottomBar, { maxWidth: Math.min(contentMaxWidth, 800), alignSelf: 'center', width: '100%' }]}>
         <Button
           title="Download PDF"
           onPress={handleDownloadPdf}
@@ -603,5 +686,70 @@ const styles = StyleSheet.create({
   },
   shareBtn: {
     flex: 1,
+  },
+  signatureSection: {
+    marginTop: 20,
+    paddingTop: 14,
+    borderTopWidth: 1,
+    borderTopColor: '#F1F5F9',
+    alignItems: 'flex-end',
+  },
+  signatureDisplay: {
+    alignItems: 'flex-end',
+  },
+  signatureImg: {
+    width: 130,
+    height: 50,
+    marginBottom: 4,
+  },
+  sigLine: {
+    width: 140,
+    height: 1.5,
+    backgroundColor: '#0F172A',
+    marginBottom: 4,
+  },
+  signatoryNameText: {
+    ...typography.captionSemiBold,
+    color: colors.text,
+    fontSize: 12,
+  },
+  signatoryTitleText: {
+    ...typography.micro,
+    color: colors.textSecondary,
+    fontSize: 10,
+    marginTop: 1,
+  },
+  reSignBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    marginTop: 6,
+    paddingVertical: 3,
+    paddingHorizontal: 8,
+    backgroundColor: '#EAF8EF',
+    borderRadius: 6,
+  },
+  reSignBtnText: {
+    ...typography.micro,
+    color: '#15803D',
+    fontWeight: '700',
+    fontSize: 10,
+  },
+  addSignaturePill: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    paddingVertical: 8,
+    paddingHorizontal: 12,
+    borderWidth: 1,
+    borderStyle: 'dashed',
+    borderColor: '#22C55E',
+    backgroundColor: '#EAF8EF',
+    borderRadius: 20,
+  },
+  addSignaturePillText: {
+    ...typography.micro,
+    color: '#15803D',
+    fontWeight: '700',
   },
 });
