@@ -195,7 +195,7 @@ const styles = StyleSheet.create({
     marginBottom: 12,
     borderRadius: 14,
     borderWidth: 1,
-    borderColor: '#D7E5DC',
+    borderColor: colors.border,
   },
   switchRow: {
     flexDirection: 'row',
@@ -237,7 +237,7 @@ const styles = StyleSheet.create({
   },
   previewDivider: {
     height: 1,
-    backgroundColor: '#D7E5DC',
+    backgroundColor: colors.border,
     marginVertical: 8,
   },
   sectionTitle: {
@@ -270,7 +270,7 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     backgroundColor: '#FFFFFF',
     borderWidth: 1,
-    borderColor: '#D7E5DC',
+    borderColor: colors.border,
   },
   presetChipActive: {
     backgroundColor: colors.primaryDarker,

@@ -204,7 +204,7 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     marginTop: 10,
     borderWidth: 1,
-    borderColor: '#D7E5DC',
+    borderColor: colors.border,
   },
   versionText: {
     fontSize: 11,
@@ -215,7 +215,7 @@ const styles = StyleSheet.create({
     marginBottom: 12,
     borderRadius: 14,
     borderWidth: 1,
-    borderColor: '#D7E5DC',
+    borderColor: colors.border,
   },
   sectionTitle: {
     ...typography.bodySemiBold,
@@ -260,7 +260,7 @@ const styles = StyleSheet.create({
     overflow: 'hidden',
     marginBottom: 16,
     borderWidth: 1,
-    borderColor: '#D7E5DC',
+    borderColor: colors.border,
   },
   linkRow: {
     flexDirection: 'row',

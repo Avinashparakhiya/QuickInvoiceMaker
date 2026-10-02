@@ -1,6 +1,7 @@
 import React from 'react';
 import { View, Text, StyleSheet, Modal, TouchableOpacity, TouchableWithoutFeedback } from 'react-native';
 import { Check, X, ArrowDownUp } from 'lucide-react-native';
+import { colors } from '../../theme/colors';
 
 export type SortOptionKey =
   | 'NEWEST'
@@ -109,7 +110,7 @@ const styles = StyleSheet.create({
     paddingTop: 16,
     paddingBottom: 32,
     borderWidth: 1,
-    borderColor: '#D7E5DC',
+    borderColor: colors.border,
   },
   header: {
     flexDirection: 'row',

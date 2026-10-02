@@ -471,7 +471,7 @@ const styles = StyleSheet.create({
     borderRadius: 16,
     padding: 20,
     borderWidth: 1,
-    borderColor: '#D7E5DC',
+    borderColor: colors.border,
     shadowColor: '#000000',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.06,
@@ -726,7 +726,7 @@ const styles = StyleSheet.create({
     marginTop: 6,
     paddingVertical: 3,
     paddingHorizontal: 8,
-    backgroundColor: '#EAF8EF',
+    backgroundColor: colors.primarySubtle,
     borderRadius: 6,
   },
   reSignBtnText: {
@@ -744,7 +744,7 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderStyle: 'dashed',
     borderColor: '#22C55E',
-    backgroundColor: '#EAF8EF',
+    backgroundColor: colors.primarySubtle,
     borderRadius: 20,
   },
   addSignaturePillText: {

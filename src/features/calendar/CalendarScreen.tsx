@@ -250,7 +250,7 @@ export const CalendarScreen: React.FC = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#EAF8EF',
+    backgroundColor: colors.background,
   },
   todayButton: {
     paddingHorizontal: 14,
@@ -258,7 +258,7 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     backgroundColor: '#FFFFFF',
     borderWidth: 1,
-    borderColor: '#D7E5DC',
+    borderColor: colors.border,
     shadowColor: '#000000',
     shadowOffset: { width: 0, height: 1 },
     shadowOpacity: 0.03,

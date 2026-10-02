@@ -1,6 +1,7 @@
 import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import { CheckCircle2, FileText, AlertTriangle, AlertCircle } from 'lucide-react-native';
+import { colors } from '../../theme/colors';
 import { Invoice, InvoiceStatus } from '../../types';
 import { formatCurrency } from '../../utils/currency';
 import { formatDate } from '../../utils/dates';
@@ -102,7 +103,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 14,
     marginBottom: 10,
     borderWidth: 1,
-    borderColor: '#D7E5DC',
+    borderColor: colors.border,
     shadowColor: '#000000',
     shadowOffset: { width: 0, height: 1 },
     shadowOpacity: 0.03,

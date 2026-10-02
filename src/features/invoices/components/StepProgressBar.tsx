@@ -94,7 +94,7 @@ const styles = StyleSheet.create({
   outerContainer: {
     backgroundColor: '#FFFFFF',
     borderBottomWidth: 1,
-    borderBottomColor: '#D7E5DC',
+    borderBottomColor: colors.border,
     width: '100%',
     alignItems: 'center',
   },

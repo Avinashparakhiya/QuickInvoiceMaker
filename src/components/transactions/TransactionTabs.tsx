@@ -1,6 +1,7 @@
 import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, ScrollView } from 'react-native';
 import { FileText, CreditCard, FileSpreadsheet, Receipt } from 'lucide-react-native';
+import { colors } from '../../theme/colors';
 
 export type TransactionTabKey = 'INVOICES' | 'PAYMENTS' | 'QUOTES' | 'EXPENSES';
 
@@ -128,7 +129,7 @@ const styles = StyleSheet.create({
   },
   tabBtnInactive: {
     backgroundColor: '#FFFFFF',
-    borderColor: '#D7E5DC',
+    borderColor: colors.border,
   },
   tabLabel: {
     fontSize: 13,

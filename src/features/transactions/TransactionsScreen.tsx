@@ -446,13 +446,13 @@ export const TransactionsScreen: React.FC = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#EAF8EF',
+    backgroundColor: colors.background,
   },
   headerAddBtn: {
     width: 44,
     height: 44,
     borderRadius: 22,
-    backgroundColor: '#22C55E',
+    backgroundColor: colors.primary,
     alignItems: 'center',
     justifyContent: 'center',
     shadowColor: '#22C55E',
@@ -479,7 +479,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#FFFFFF',
     borderRadius: 12,
     borderWidth: 1,
-    borderColor: '#D7E5DC',
+    borderColor: colors.border,
     flexDirection: 'row',
     alignItems: 'center',
     paddingHorizontal: 12,
@@ -503,7 +503,7 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     backgroundColor: '#FFFFFF',
     borderWidth: 1,
-    borderColor: '#D7E5DC',
+    borderColor: colors.border,
     alignItems: 'center',
     justifyContent: 'center',
   },

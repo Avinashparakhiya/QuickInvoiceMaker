@@ -75,7 +75,7 @@ const styles = StyleSheet.create({
   csvButton: {
     backgroundColor: '#FFFFFF',
     borderWidth: 1,
-    borderColor: '#D7E5DC',
+    borderColor: '#E2E8F0',
   },
   csvButtonText: {
     fontSize: 13,

@@ -621,7 +621,7 @@ export const InvoiceCreateScreen: React.FC = () => {
                   <Switch
                     value={signatureEnabled}
                     onValueChange={setSignatureEnabled}
-                    trackColor={{ false: '#D7E5DC', true: '#86EFAC' }}
+                    trackColor={{ false: colors.border, true: '#86EFAC' }}
                     thumbColor={signatureEnabled ? '#22C55E' : '#FFFFFF'}
                   />
                 </View>
@@ -1438,9 +1438,9 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: '#EAF8EF',
+    backgroundColor: colors.primarySubtle,
     borderWidth: 1,
-    borderColor: '#86EFAC',
+    borderColor: colors.primaryLight,
     borderRadius: 14,
     paddingVertical: 12,
     marginBottom: 16,
@@ -1545,7 +1545,7 @@ const styles = StyleSheet.create({
     borderRadius: 14,
     padding: 18,
     borderWidth: 1,
-    borderColor: '#D7E5DC',
+    borderColor: colors.border,
     marginBottom: 20,
     shadowColor: '#000000',
     shadowOffset: { width: 0, height: 2 },
@@ -1733,7 +1733,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#FFFFFF',
     borderRadius: 14,
     borderWidth: 1,
-    borderColor: '#D7E5DC',
+    borderColor: colors.border,
     padding: 16,
     marginTop: 14,
   },
@@ -1751,7 +1751,7 @@ const styles = StyleSheet.create({
     width: 36,
     height: 36,
     borderRadius: 10,
-    backgroundColor: '#EAF8EF',
+    backgroundColor: colors.primarySubtle,
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -1813,7 +1813,7 @@ const styles = StyleSheet.create({
     gap: 5,
     paddingVertical: 5,
     paddingHorizontal: 10,
-    backgroundColor: '#EAF8EF',
+    backgroundColor: colors.primarySubtle,
     borderRadius: 8,
   },
   signActionText: {

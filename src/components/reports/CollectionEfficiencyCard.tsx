@@ -98,7 +98,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#FFFFFF',
     borderRadius: 14,
     borderWidth: 1,
-    borderColor: '#D7E5DC',
+    borderColor: '#E2E8F0',
     padding: 16,
     marginBottom: 12,
     shadowColor: '#000000',
@@ -188,6 +188,6 @@ const styles = StyleSheet.create({
   divider: {
     width: 1,
     height: 24,
-    backgroundColor: '#D7E5DC',
+    backgroundColor: '#E2E8F0',
   },
 });

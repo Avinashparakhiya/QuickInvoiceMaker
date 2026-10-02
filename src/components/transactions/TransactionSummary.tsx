@@ -1,5 +1,6 @@
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
+import { colors } from '../../theme/colors';
 import { formatCurrency } from '../../utils/currency';
 
 interface TransactionSummaryProps {
@@ -53,7 +54,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#FFFFFF',
     borderRadius: 14,
     borderWidth: 1,
-    borderColor: '#D7E5DC',
+    borderColor: colors.border,
     paddingVertical: 12,
     paddingHorizontal: 12,
     flexDirection: 'row',
@@ -97,6 +98,6 @@ const styles = StyleSheet.create({
   divider: {
     width: 1,
     height: 28,
-    backgroundColor: '#D7E5DC',
+    backgroundColor: colors.border,
   },
 });

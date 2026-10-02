@@ -151,7 +151,7 @@ const styles = StyleSheet.create({
   bottomOuter: {
     backgroundColor: '#FFFFFF',
     borderTopWidth: 1,
-    borderTopColor: '#D7E5DC',
+    borderTopColor: colors.border,
     width: '100%',
     alignItems: 'center',
     shadowColor: '#000',

@@ -260,7 +260,7 @@ export const SettingsScreen: React.FC = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#EAF8EF',
+    backgroundColor: colors.background,
   },
   scrollContent: {
     width: '100%',

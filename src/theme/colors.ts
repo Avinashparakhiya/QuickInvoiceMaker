@@ -8,15 +8,15 @@ export const colors = {
   primarySubtle: '#F0FDF4',
 
   // Background & Surfaces
-  background: '#EAF8EF', // Calm light green background
-  backgroundSecondary: '#F3FAF5',
+  background: '#FFFFFF', // Pure White Canvas Background
+  backgroundSecondary: '#F8FAFC',
   card: '#FFFFFF',
   cardPressed: '#F8FAFC',
   overlay: 'rgba(15, 23, 42, 0.45)',
 
   // Borders & Dividers
-  border: '#D7E5DC',
-  borderLight: '#E8F1EC',
+  border: '#E2E8F0',
+  borderLight: '#F1F5F9',
   borderFocus: '#22C55E',
 
   // Typography / Text Hierarchy (Slate)
@@ -28,32 +28,32 @@ export const colors = {
   // Status Badges & Lifecycle Colors
   status: {
     paid: {
-      text: '#16A34A',
+      text: '#15803D',
       bg: '#DCFCE7',
       border: '#BBF7D0',
     },
     unpaid: {
-      text: '#D97706',
+      text: '#B45309',
       bg: '#FEF3C7',
       border: '#FDE68A',
     },
     partial: {
-      text: '#0284C7',
+      text: '#0369A1',
       bg: '#E0F2FE',
       border: '#BAE6FD',
     },
     overdue: {
-      text: '#EF4444',
+      text: '#DC2626',
       bg: '#FEE2E2',
       border: '#FECACA',
     },
     draft: {
-      text: '#64748B',
+      text: '#475569',
       bg: '#F1F5F9',
       border: '#E2E8F0',
     },
     cancelled: {
-      text: '#94A3B8',
+      text: '#64748B',
       bg: '#F8FAFC',
       border: '#E2E8F0',
     },

@@ -193,9 +193,9 @@ const styles = StyleSheet.create({
     paddingVertical: 14,
     paddingHorizontal: 16,
     borderRadius: 14,
-    backgroundColor: '#EAF8EF',
+    backgroundColor: colors.primarySubtle,
     borderWidth: 1,
-    borderColor: '#86EFAC',
+    borderColor: colors.primaryLight,
     marginTop: 8,
   },
   addIcon: {

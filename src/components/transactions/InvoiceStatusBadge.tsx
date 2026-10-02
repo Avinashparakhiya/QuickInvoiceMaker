@@ -1,6 +1,7 @@
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import { InvoiceStatus } from '../../types';
+import { colors } from '../../theme/colors';
 
 interface InvoiceStatusBadgeProps {
   status: InvoiceStatus | string;
@@ -11,40 +12,46 @@ export const InvoiceStatusBadge: React.FC<InvoiceStatusBadgeProps> = ({ status }
     switch (status) {
       case 'PAID':
         return {
-          bg: '#DCFCE7',
-          color: '#16A34A',
+          bg: colors.status.paid.bg,
+          color: colors.status.paid.text,
+          border: colors.status.paid.border,
           label: 'Paid',
         };
       case 'PARTIAL':
       case 'PARTIALLY_PAID':
         return {
-          bg: '#E0F2FE',
-          color: '#0284C7',
+          bg: colors.status.partial.bg,
+          color: colors.status.partial.text,
+          border: colors.status.partial.border,
           label: 'Partially Paid',
         };
       case 'OVERDUE':
         return {
-          bg: '#FEE2E2',
-          color: '#EF4444',
+          bg: colors.status.overdue.bg,
+          color: colors.status.overdue.text,
+          border: colors.status.overdue.border,
           label: 'Overdue',
         };
       case 'DRAFT':
         return {
-          bg: '#F1F5F9',
-          color: '#64748B',
+          bg: colors.status.draft.bg,
+          color: colors.status.draft.text,
+          border: colors.status.draft.border,
           label: 'Draft',
         };
       case 'CANCELLED':
         return {
-          bg: '#F1F5F9',
-          color: '#94A3B8',
+          bg: colors.status.cancelled.bg,
+          color: colors.status.cancelled.text,
+          border: colors.status.cancelled.border,
           label: 'Cancelled',
         };
       case 'UNPAID':
       default:
         return {
-          bg: '#FEF3C7',
-          color: '#D97706',
+          bg: colors.status.unpaid.bg,
+          color: colors.status.unpaid.text,
+          border: colors.status.unpaid.border,
           label: 'Unpaid',
         };
     }
@@ -53,7 +60,7 @@ export const InvoiceStatusBadge: React.FC<InvoiceStatusBadgeProps> = ({ status }
   const config = getBadgeConfig();
 
   return (
-    <View style={[styles.badge, { backgroundColor: config.bg }]}>
+    <View style={[styles.badge, { backgroundColor: config.bg, borderColor: config.border }]}>
       <Text style={[styles.text, { color: config.color }]}>
         {config.label}
       </Text>
@@ -64,8 +71,9 @@ export const InvoiceStatusBadge: React.FC<InvoiceStatusBadgeProps> = ({ status }
 const styles = StyleSheet.create({
   badge: {
     paddingHorizontal: 8,
-    paddingVertical: 3,
+    paddingVertical: 2.5,
     borderRadius: 6,
+    borderWidth: 1,
     alignSelf: 'flex-end',
   },
   text: {

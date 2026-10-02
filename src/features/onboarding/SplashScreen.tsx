@@ -142,7 +142,7 @@ const styles = StyleSheet.create({
     width: 200,
     height: 200,
     borderRadius: 100,
-    backgroundColor: '#EAF8EF',
+    backgroundColor: colors.primarySubtle,
     opacity: 0.6,
   },
   bgShapeBottomLeft: {

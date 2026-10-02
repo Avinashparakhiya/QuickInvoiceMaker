@@ -187,7 +187,7 @@ const styles = StyleSheet.create({
     marginBottom: 12,
     borderRadius: 14,
     borderWidth: 1,
-    borderColor: '#D7E5DC',
+    borderColor: colors.border,
   },
   switchRow: {
     flexDirection: 'row',

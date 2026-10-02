@@ -208,7 +208,7 @@ const styles = StyleSheet.create({
     borderRadius: 14,
     overflow: 'hidden',
     borderWidth: 1,
-    borderColor: '#D7E5DC',
+    borderColor: colors.border,
   },
   currencyRow: {
     flexDirection: 'row',
