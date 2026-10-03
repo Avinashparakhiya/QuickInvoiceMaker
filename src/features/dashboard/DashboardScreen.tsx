@@ -23,7 +23,6 @@ import { Header } from '../../components/common/Header';
 import { KPIStatCard } from '../../components/kpi/KPIStatCard';
 import { CashflowOverviewCard } from '../../components/dashboard/CashflowOverviewCard';
 import { InvoiceStatusDonut } from '../../components/dashboard/InvoiceStatusDonut';
-import { CreateInvoiceHero } from '../../components/dashboard/CreateInvoiceHero';
 import { UpcomingInvoiceCard } from '../../components/dashboard/UpcomingInvoiceCard';
 import { InvoiceCard } from '../../components/dashboard/InvoiceCard';
 import { SectionHeader } from '../../components/common/SectionHeader';
@@ -248,12 +247,7 @@ export const DashboardScreen: React.FC = () => {
           />
         }
       >
-        {/* 2. Primary Action: Prominent Create Invoice Hero Banner */}
-        <CreateInvoiceHero
-          onPress={() => navigation.navigate('InvoiceCreate', {})}
-        />
-
-        {/* 3. Financial Summary (2x2 grid on mobile, 4 columns on desktop) */}
+        {/* Financial Summary (2x2 grid on mobile, 4 columns on desktop) */}
         {isWideScreen ? (
           <View style={styles.kpiRowWide}>
             <KPIStatCard
