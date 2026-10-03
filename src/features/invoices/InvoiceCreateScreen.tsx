@@ -41,6 +41,7 @@ import { Header } from '../../components/common/Header';
 import { Button } from '../../components/common/Button';
 import { Card } from '../../components/common/Card';
 import { Badge } from '../../components/common/Badge';
+import { AmbientBackground } from '../../components/common/ScreenBackground';
 import { StepProgressBar } from './components/StepProgressBar';
 import { AddItemModal } from './components/AddItemModal';
 import { QuickCustomerModal } from './components/QuickCustomerModal';
@@ -453,6 +454,7 @@ export const InvoiceCreateScreen: React.FC = () => {
 
   return (
     <View style={styles.container}>
+      <AmbientBackground />
       <Header
         title={getScreenTitle()}
         showBack

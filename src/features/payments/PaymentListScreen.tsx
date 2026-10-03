@@ -17,6 +17,7 @@ import { Card } from '../../components/common/Card';
 import { Input } from '../../components/common/Input';
 import { Badge } from '../../components/common/Badge';
 import { EmptyState } from '../../components/common/EmptyState';
+import { AmbientBackground } from '../../components/common/ScreenBackground';
 import { useOrgStore } from '../../store/useOrgStore';
 import { paymentRepository } from '../../database/repositories/paymentRepository';
 import { buildPaymentReceiptHtml } from '../../pdf/receiptBuilder';
@@ -124,6 +125,7 @@ export const PaymentListScreen: React.FC = () => {
 
   return (
     <View style={styles.container}>
+      <AmbientBackground />
       <Header
         title="Payment Records"
         subtitle={`${payments.length} transactions logged`}

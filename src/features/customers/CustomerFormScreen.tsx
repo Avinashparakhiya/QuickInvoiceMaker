@@ -22,6 +22,7 @@ import {
 } from 'lucide-react-native';
 import { Header } from '../../components/common/Header';
 import { Button } from '../../components/common/Button';
+import { AmbientBackground } from '../../components/common/ScreenBackground';
 import { useOrgStore } from '../../store/useOrgStore';
 import { customerRepository } from '../../database/repositories/customerRepository';
 import { colors } from '../../theme/colors';
@@ -128,6 +129,7 @@ export const CustomerFormScreen: React.FC = () => {
       behavior={Platform.OS === 'ios' ? 'padding' : undefined}
       style={styles.container}
     >
+      <AmbientBackground />
       <Header
         title={customerId ? 'Edit Customer' : 'New Customer'}
         showBack

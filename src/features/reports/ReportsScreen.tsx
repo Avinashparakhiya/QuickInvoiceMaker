@@ -13,6 +13,7 @@ import * as Print from 'expo-print';
 import * as Sharing from 'expo-sharing';
 import * as FileSystem from 'expo-file-system';
 import { Header } from '../../components/common/Header';
+import { AmbientBackground } from '../../components/common/ScreenBackground';
 import { DateRangeFilter, DateRangeType } from '../../components/reports/DateRangeFilter';
 import { ExportButtonsStrip } from '../../components/reports/ExportButtonsStrip';
 import { ReportKpiCards } from '../../components/reports/ReportKpiCards';
@@ -260,6 +261,7 @@ export const ReportsScreen: React.FC = () => {
 
   return (
     <View style={styles.container}>
+      <AmbientBackground />
       {/* 1. Header with Title, Org Name, and Notification Button */}
       <Header
         title="Reports & Analytics"

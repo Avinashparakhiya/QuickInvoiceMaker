@@ -7,6 +7,7 @@ import { NavigationContainer } from '@react-navigation/native';
 import { AppNavigator } from './src/navigation/AppNavigator';
 import { SplashScreen } from './src/features/onboarding/SplashScreen';
 import { OnboardingScreen } from './src/features/onboarding/OnboardingScreen';
+import { AmbientBackground } from './src/components/common/ScreenBackground';
 import { colors } from './src/theme/colors';
 
 const ONBOARDING_KEY = '@quick_invoice_onboarding_complete';
@@ -94,6 +95,7 @@ export default function App() {
     <SafeAreaProvider>
       <StatusBar style="dark" backgroundColor={colors.background} />
       <View style={styles.fullScreen}>
+        <AmbientBackground />
         {renderContent()}
       </View>
     </SafeAreaProvider>

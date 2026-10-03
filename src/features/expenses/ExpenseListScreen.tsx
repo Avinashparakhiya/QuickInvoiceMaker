@@ -29,6 +29,7 @@ import { Header } from '../../components/common/Header';
 import { Card } from '../../components/common/Card';
 import { Input } from '../../components/common/Input';
 import { EmptyState } from '../../components/common/EmptyState';
+import { AmbientBackground } from '../../components/common/ScreenBackground';
 import { useOrgStore } from '../../store/useOrgStore';
 import { useInvoiceStore } from '../../store/useInvoiceStore';
 import { expenseRepository } from '../../database/repositories/expenseRepository';
@@ -182,6 +183,7 @@ export const ExpenseListScreen: React.FC = () => {
 
   return (
     <View style={styles.container}>
+      <AmbientBackground />
       <Header
         title="Expenses & Costs"
         subtitle={`${filteredExpenses.length} tracked records`}

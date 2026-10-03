@@ -27,6 +27,7 @@ import {
 import { Header } from '../../components/common/Header';
 import { Button } from '../../components/common/Button';
 import { Badge } from '../../components/common/Badge';
+import { AmbientBackground } from '../../components/common/ScreenBackground';
 import { SignaturePadModal } from '../../components/common/SignaturePadModal';
 import { useOrgStore } from '../../store/useOrgStore';
 import { useInvoiceStore } from '../../store/useInvoiceStore';
@@ -56,6 +57,7 @@ export const InvoicePreviewScreen: React.FC = () => {
   if (!currentInvoice || !activeOrg) {
     return (
       <View style={styles.container}>
+        <AmbientBackground />
         <Header title="Invoice Preview" showBack onBack={() => navigation.goBack()} />
         <View style={styles.emptyCenter}>
           <Text style={styles.emptyText}>Invoice data not available.</Text>
@@ -147,6 +149,7 @@ export const InvoicePreviewScreen: React.FC = () => {
 
   return (
     <View style={styles.container}>
+      <AmbientBackground />
       <Header
         title="Invoice Preview"
         showBack

@@ -27,6 +27,7 @@ import { Input } from '../../components/common/Input';
 import { Button } from '../../components/common/Button';
 import { Card } from '../../components/common/Card';
 import { BottomSheet } from '../../components/common/BottomSheet';
+import { AmbientBackground } from '../../components/common/ScreenBackground';
 import { useOrgStore } from '../../store/useOrgStore';
 import { customerRepository } from '../../database/repositories/customerRepository';
 import { expenseRepository } from '../../database/repositories/expenseRepository';
@@ -116,6 +117,7 @@ export const ExpenseFormScreen: React.FC = () => {
       behavior={Platform.OS === 'ios' ? 'padding' : undefined}
       style={styles.container}
     >
+      <AmbientBackground />
       <Header title="Log Business Expense" showBack onBack={() => navigation.goBack()} />
 
       <ScrollView contentContainerStyle={[styles.scrollContent, { maxWidth: contentMaxWidth, alignSelf: 'center', width: '100%' }]} showsVerticalScrollIndicator={false}>

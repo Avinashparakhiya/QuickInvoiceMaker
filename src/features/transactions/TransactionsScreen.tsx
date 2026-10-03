@@ -28,6 +28,7 @@ import { PaymentListItem } from '../../components/transactions/PaymentListItem';
 import { QuoteListItem } from '../../components/transactions/QuoteListItem';
 import { SortBottomSheet, SortOptionKey } from '../../components/transactions/SortBottomSheet';
 import { EmptyState } from '../../components/common/EmptyState';
+import { AmbientBackground } from '../../components/common/ScreenBackground';
 import { useOrgStore } from '../../store/useOrgStore';
 import { useInvoiceStore } from '../../store/useInvoiceStore';
 import { paymentRepository } from '../../database/repositories/paymentRepository';
@@ -229,6 +230,7 @@ export const TransactionsScreen: React.FC = () => {
 
   return (
     <View style={styles.container}>
+      <AmbientBackground />
       {/* 1. Header with Transactions Hub title, Org name, and 44px round green + button */}
       <Header
         title="Transactions Hub"

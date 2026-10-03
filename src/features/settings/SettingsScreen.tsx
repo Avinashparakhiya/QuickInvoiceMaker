@@ -27,6 +27,7 @@ import { ActiveOrgBanner } from '../../components/settings/ActiveOrgBanner';
 import { SettingsSectionCard, SettingItem } from '../../components/settings/SettingsSectionCard';
 import { SettingsSearchBar } from '../../components/settings/SettingsSearchBar';
 import { OrgSwitcherModal } from '../../components/common/OrgSwitcherModal';
+import { AmbientBackground } from '../../components/common/ScreenBackground';
 import { useOrgStore } from '../../store/useOrgStore';
 import { colors } from '../../theme/colors';
 import { useResponsive } from '../../utils/useResponsive';
@@ -196,6 +197,7 @@ export const SettingsScreen: React.FC = () => {
 
   return (
     <View style={styles.container}>
+      <AmbientBackground />
       {/* 1. Header with Back button, title, subtitle, and notification button */}
       <Header
         title="Settings Hub"

@@ -10,6 +10,7 @@ import {
 import { useNavigation } from '@react-navigation/native';
 import { Plus, Check, ChevronRight, Edit3 } from 'lucide-react-native';
 import { Header } from '../../components/common/Header';
+import { AmbientBackground } from '../../components/common/ScreenBackground';
 import { useOrgStore } from '../../store/useOrgStore';
 import { colors } from '../../theme/colors';
 import { typography } from '../../theme/typography';
@@ -35,6 +36,7 @@ export const OrganizationListScreen: React.FC = () => {
 
   return (
     <View style={styles.container}>
+      <AmbientBackground />
       <Header
         title="Organization"
         showBack

@@ -26,6 +26,7 @@ import {
 import { Header } from '../../components/common/Header';
 import { Card } from '../../components/common/Card';
 import { Button } from '../../components/common/Button';
+import { AmbientBackground } from '../../components/common/ScreenBackground';
 import { useOrgStore } from '../../store/useOrgStore';
 import { estimateRepository } from '../../database/repositories/estimateRepository';
 import { buildEstimatePdfHtml } from '../../pdf/estimatePdfBuilder';
@@ -152,6 +153,7 @@ export const EstimateDetailScreen: React.FC = () => {
   if (!estimate) {
     return (
       <View style={styles.container}>
+        <AmbientBackground />
         <Header title="Estimate Details" showBack onBack={() => navigation.goBack()} />
         <View style={styles.loadingContainer}>
           <Text style={styles.loadingText}>Loading estimate...</Text>
@@ -164,6 +166,7 @@ export const EstimateDetailScreen: React.FC = () => {
 
   return (
     <View style={styles.container}>
+      <AmbientBackground />
       <Header
         title={estimate.estimateNumber}
         subtitle={`Issued ${formatDate(estimate.issueDate)}`}

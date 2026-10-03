@@ -12,6 +12,7 @@ import { useNavigation, useRoute } from '@react-navigation/native';
 import { Check, Palette, Sparkles, Sliders, Eye } from 'lucide-react-native';
 import { Header } from '../../components/common/Header';
 import { Button } from '../../components/common/Button';
+import { AmbientBackground } from '../../components/common/ScreenBackground';
 import { useOrgStore } from '../../store/useOrgStore';
 import { orgRepository } from '../../database/repositories/orgRepository';
 import { colors } from '../../theme/colors';
@@ -248,6 +249,7 @@ export const TemplateGalleryScreen: React.FC = () => {
 
   return (
     <View style={styles.container}>
+      <AmbientBackground />
       <Header
         title="Select Template"
         showBack

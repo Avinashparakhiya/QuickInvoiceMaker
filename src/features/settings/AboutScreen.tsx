@@ -21,6 +21,7 @@ import {
 } from 'lucide-react-native';
 import { Header } from '../../components/common/Header';
 import { Card } from '../../components/common/Card';
+import { AmbientBackground } from '../../components/common/ScreenBackground';
 import { colors } from '../../theme/colors';
 import { typography } from '../../theme/typography';
 import { useResponsive } from '../../utils/useResponsive';
@@ -37,6 +38,7 @@ export const AboutScreen: React.FC = () => {
 
   return (
     <View style={styles.container}>
+      <AmbientBackground />
       <Header
         title="About & Support"
         subtitle="Quick Invoice Maker v1.0.0"

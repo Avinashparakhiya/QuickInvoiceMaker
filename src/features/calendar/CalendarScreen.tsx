@@ -15,6 +15,7 @@ import { MonthCalendar } from '../../components/calendar/MonthCalendar';
 import { SelectedDateHeader } from '../../components/calendar/SelectedDateHeader';
 import { CalendarActivityCard } from '../../components/calendar/CalendarActivityCard';
 import { EmptyState } from '../../components/common/EmptyState';
+import { AmbientBackground } from '../../components/common/ScreenBackground';
 import { useOrgStore } from '../../store/useOrgStore';
 import { useInvoiceStore } from '../../store/useInvoiceStore';
 import { paymentRepository } from '../../database/repositories/paymentRepository';
@@ -97,6 +98,7 @@ export const CalendarScreen: React.FC = () => {
 
   return (
     <View style={styles.container}>
+      <AmbientBackground />
       {/* 1. Header with title, active org, and Today button */}
       <Header
         title="Cashflow Calendar"

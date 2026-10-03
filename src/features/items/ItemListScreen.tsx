@@ -20,6 +20,7 @@ import {
 } from 'lucide-react-native';
 import { Header } from '../../components/common/Header';
 import { EmptyState } from '../../components/common/EmptyState';
+import { AmbientBackground } from '../../components/common/ScreenBackground';
 import { useOrgStore } from '../../store/useOrgStore';
 import { itemRepository } from '../../database/repositories/itemRepository';
 import { colors } from '../../theme/colors';
@@ -69,6 +70,7 @@ export const ItemListScreen: React.FC = () => {
 
   return (
     <View style={styles.container}>
+      <AmbientBackground />
       <Header
         title="Products & Services"
         subtitle={`${items.length} items in catalog`}

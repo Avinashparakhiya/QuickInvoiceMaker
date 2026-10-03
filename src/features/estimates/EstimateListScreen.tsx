@@ -14,6 +14,7 @@ import { Header } from '../../components/common/Header';
 import { Card } from '../../components/common/Card';
 import { Input } from '../../components/common/Input';
 import { EmptyState } from '../../components/common/EmptyState';
+import { AmbientBackground } from '../../components/common/ScreenBackground';
 import { useOrgStore } from '../../store/useOrgStore';
 import { estimateRepository } from '../../database/repositories/estimateRepository';
 import { colors } from '../../theme/colors';
@@ -177,6 +178,7 @@ export const EstimateListScreen: React.FC = () => {
 
   return (
     <View style={styles.container}>
+      <AmbientBackground />
       <Header
         title="Estimates & Quotes"
         subtitle={`${filteredEstimates.length} quotes created`}

@@ -12,6 +12,7 @@ import { useNavigation } from '@react-navigation/native';
 import { Search, Plus, UserPlus, Phone, Mail, ChevronRight, FileText, CheckCircle } from 'lucide-react-native';
 import { Header } from '../../components/common/Header';
 import { EmptyState } from '../../components/common/EmptyState';
+import { AmbientBackground } from '../../components/common/ScreenBackground';
 import { useOrgStore } from '../../store/useOrgStore';
 import { customerRepository } from '../../database/repositories/customerRepository';
 import { invoiceRepository } from '../../database/repositories/invoiceRepository';
@@ -90,6 +91,7 @@ export const CustomerListScreen: React.FC = () => {
 
   return (
     <View style={styles.container}>
+      <AmbientBackground />
       <Header
         title="Customers"
         subtitle={`${customers.length} clients in ${activeOrg?.displayName || activeOrg?.name || 'Workspace'}`}

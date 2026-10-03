@@ -28,6 +28,7 @@ import { InvoiceCard } from '../../components/dashboard/InvoiceCard';
 import { SectionHeader } from '../../components/common/SectionHeader';
 import { OrgSwitcherModal } from '../../components/common/OrgSwitcherModal';
 import { EmptyState } from '../../components/common/EmptyState';
+import { AmbientBackground } from '../../components/common/ScreenBackground';
 import { useOrgStore } from '../../store/useOrgStore';
 import { useInvoiceStore } from '../../store/useInvoiceStore';
 import { colors } from '../../theme/colors';
@@ -223,6 +224,7 @@ export const DashboardScreen: React.FC = () => {
 
   return (
     <View style={styles.container}>
+      <AmbientBackground />
       {/* 1. Header with greeting, org name, notification & settings */}
       <Header
         activeOrg={activeOrg}

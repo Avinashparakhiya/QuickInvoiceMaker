@@ -13,6 +13,7 @@ import { Lock, ShieldCheck, Vibrate, Check, Smartphone } from 'lucide-react-nati
 import { Header } from '../../components/common/Header';
 import { Card } from '../../components/common/Card';
 import { Button } from '../../components/common/Button';
+import { AmbientBackground } from '../../components/common/ScreenBackground';
 import { useSettingsStore } from '../../store/useSettingsStore';
 import { colors } from '../../theme/colors';
 import { typography } from '../../theme/typography';
@@ -50,6 +51,7 @@ export const SecuritySettingsScreen: React.FC = () => {
 
   return (
     <View style={styles.container}>
+      <AmbientBackground />
       <Header
         title="Security & App Lock"
         subtitle="Protect sensitive billing & client data"

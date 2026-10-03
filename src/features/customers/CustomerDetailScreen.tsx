@@ -33,6 +33,7 @@ import { Header } from '../../components/common/Header';
 import { Button } from '../../components/common/Button';
 import { Badge } from '../../components/common/Badge';
 import { EmptyState } from '../../components/common/EmptyState';
+import { AmbientBackground } from '../../components/common/ScreenBackground';
 import { useOrgStore } from '../../store/useOrgStore';
 import { customerRepository } from '../../database/repositories/customerRepository';
 import { invoiceRepository } from '../../database/repositories/invoiceRepository';
@@ -116,6 +117,7 @@ export const CustomerDetailScreen: React.FC = () => {
   if (!customer) {
     return (
       <View style={styles.container}>
+        <AmbientBackground />
         <Header title="Customer Details" showBack onBack={() => navigation.goBack()} />
       </View>
     );
@@ -165,6 +167,7 @@ export const CustomerDetailScreen: React.FC = () => {
 
   return (
     <View style={styles.container}>
+      <AmbientBackground />
       <Header
         title={customer.name}
         showBack

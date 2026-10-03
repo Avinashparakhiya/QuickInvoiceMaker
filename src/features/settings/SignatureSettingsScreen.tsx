@@ -17,6 +17,7 @@ import { Card } from '../../components/common/Card';
 import { Input } from '../../components/common/Input';
 import { Button } from '../../components/common/Button';
 import { SignaturePadModal } from '../../components/common/SignaturePadModal';
+import { AmbientBackground } from '../../components/common/ScreenBackground';
 import { useOrgStore } from '../../store/useOrgStore';
 import { colors } from '../../theme/colors';
 import { typography } from '../../theme/typography';
@@ -99,6 +100,7 @@ export const SignatureSettingsScreen: React.FC = () => {
 
   return (
     <View style={styles.container}>
+      <AmbientBackground />
       <Header
         title="Digital Signature & Stamp"
         subtitle={`Workspace: ${activeOrg?.displayName || activeOrg?.name || 'Current'}`}

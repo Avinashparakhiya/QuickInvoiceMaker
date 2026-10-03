@@ -13,6 +13,7 @@ import { Header } from '../../components/common/Header';
 import { Card } from '../../components/common/Card';
 import { Input } from '../../components/common/Input';
 import { Button } from '../../components/common/Button';
+import { AmbientBackground } from '../../components/common/ScreenBackground';
 import { useOrgStore } from '../../store/useOrgStore';
 import { orgRepository } from '../../database/repositories/orgRepository';
 import { colors } from '../../theme/colors';
@@ -71,6 +72,7 @@ export const InvoiceNumberingScreen: React.FC = () => {
 
   return (
     <View style={styles.container}>
+      <AmbientBackground />
       <Header
         title="Invoice & Defaults"
         subtitle={`Workspace: ${activeOrg?.displayName || activeOrg?.name || 'Current'}`}

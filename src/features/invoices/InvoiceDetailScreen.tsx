@@ -27,6 +27,7 @@ import { Header } from '../../components/common/Header';
 import { Card } from '../../components/common/Card';
 import { Button } from '../../components/common/Button';
 import { Badge } from '../../components/common/Badge';
+import { AmbientBackground } from '../../components/common/ScreenBackground';
 import { useOrgStore } from '../../store/useOrgStore';
 import { useInvoiceStore } from '../../store/useInvoiceStore';
 import { invoiceRepository } from '../../database/repositories/invoiceRepository';
@@ -126,6 +127,7 @@ export const InvoiceDetailScreen: React.FC = () => {
   if (!invoice) {
     return (
       <View style={styles.container}>
+        <AmbientBackground />
         <Header title="Invoice Details" showBack onBack={() => navigation.goBack()} />
         <View style={styles.loadingContainer}>
           <Text style={styles.loadingText}>Loading invoice...</Text>
@@ -138,6 +140,7 @@ export const InvoiceDetailScreen: React.FC = () => {
 
   return (
     <View style={styles.container}>
+      <AmbientBackground />
       <Header
         title={invoice.invoiceNumber}
         subtitle={`Issued ${formatDate(invoice.issueDate)}`}

@@ -17,9 +17,11 @@ export const colors = {
   purpleSoft: '#F5F3FF',
 
   // Background & Surfaces
-  background: '#F8FAFC', // Crisp, modern canvas background
+  background: '#F8FAF9', // Crisp, modern canvas background with soft mint undertone
   backgroundSecondary: '#F1F5F9',
   backgroundMint: '#F0FDF4',
+  ambientMint: '#E6F9F0',
+  ambientMintSoft: '#EDFAF3',
   card: '#FFFFFF',
   cardSecondary: '#F8FAFC',
   cardPressed: '#F1F5F9',

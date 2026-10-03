@@ -13,6 +13,7 @@ import { Bell, Clock, AlertTriangle, CheckCircle2, TrendingUp, Check } from 'luc
 import { Header } from '../../components/common/Header';
 import { Card } from '../../components/common/Card';
 import { Button } from '../../components/common/Button';
+import { AmbientBackground } from '../../components/common/ScreenBackground';
 import { colors } from '../../theme/colors';
 import { typography } from '../../theme/typography';
 import { useResponsive } from '../../utils/useResponsive';
@@ -59,6 +60,7 @@ export const NotificationSettingsScreen: React.FC = () => {
 
   return (
     <View style={styles.container}>
+      <AmbientBackground />
       <Header
         title="Notifications & Alerts"
         subtitle="Configure due date reminders and alerts"

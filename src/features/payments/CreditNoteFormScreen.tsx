@@ -14,6 +14,7 @@ import { Header } from '../../components/common/Header';
 import { Input } from '../../components/common/Input';
 import { Button } from '../../components/common/Button';
 import { Card } from '../../components/common/Card';
+import { AmbientBackground } from '../../components/common/ScreenBackground';
 import { useOrgStore } from '../../store/useOrgStore';
 import { useInvoiceStore } from '../../store/useInvoiceStore';
 import { invoiceRepository } from '../../database/repositories/invoiceRepository';
@@ -96,6 +97,7 @@ export const CreditNoteFormScreen: React.FC = () => {
       behavior={Platform.OS === 'ios' ? 'padding' : undefined}
       style={styles.container}
     >
+      <AmbientBackground />
       <Header
         title="Issue Credit Note"
         subtitle="Reverse charges or process client refund"

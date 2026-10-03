@@ -30,6 +30,7 @@ import { Card } from '../../components/common/Card';
 import { Button } from '../../components/common/Button';
 import { Input } from '../../components/common/Input';
 import { BottomSheet } from '../../components/common/BottomSheet';
+import { AmbientBackground } from '../../components/common/ScreenBackground';
 import { useOrgStore } from '../../store/useOrgStore';
 import { useSettingsStore } from '../../store/useSettingsStore';
 import { invoiceRepository } from '../../database/repositories/invoiceRepository';
@@ -275,6 +276,7 @@ export const BackupScreen: React.FC = () => {
 
   return (
     <View style={styles.container}>
+      <AmbientBackground />
       <Header title="Backup & Security" showBack onBack={() => navigation.goBack()} />
 
       <ScrollView contentContainerStyle={[styles.scrollContent, { maxWidth: contentMaxWidth, alignSelf: 'center', width: '100%' }]} showsVerticalScrollIndicator={false}>

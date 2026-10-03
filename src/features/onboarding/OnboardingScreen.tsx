@@ -11,6 +11,7 @@ import {
   NativeScrollEvent,
 } from 'react-native';
 import { FileText, Building2, Zap, ArrowRight, ShieldCheck } from 'lucide-react-native';
+import { AmbientBackground } from '../../components/common/ScreenBackground';
 import { colors } from '../../theme/colors';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
@@ -104,6 +105,7 @@ export const OnboardingScreen: React.FC<OnboardingScreenProps> = ({
 
   return (
     <View style={styles.container}>
+      <AmbientBackground />
       {/* Top Bar with Skip */}
       <View style={styles.topBar}>
         <View style={styles.topBrand}>

@@ -13,6 +13,7 @@ import { Header } from '../../components/common/Header';
 import { Input } from '../../components/common/Input';
 import { Button } from '../../components/common/Button';
 import { Card } from '../../components/common/Card';
+import { AmbientBackground } from '../../components/common/ScreenBackground';
 import { useOrgStore } from '../../store/useOrgStore';
 import { orgRepository } from '../../database/repositories/orgRepository';
 import { colors } from '../../theme/colors';
@@ -155,6 +156,7 @@ export const OrganizationFormScreen: React.FC = () => {
       behavior={Platform.OS === 'ios' ? 'padding' : undefined}
       style={styles.container}
     >
+      <AmbientBackground />
       <Header
         title={organizationId ? 'Edit Business Profile' : 'New Business Profile'}
         showBack
