@@ -198,13 +198,12 @@ export const SettingsScreen: React.FC = () => {
   return (
     <View style={styles.container}>
       <AmbientBackground />
-      {/* 1. Header with Back button, title, subtitle, and notification button */}
+      {/* 1. Header with Back button, title, and subtitle */}
       <Header
         title="Settings Hub"
         subtitle="Configure workspaces, invoicing & security"
         showBack
         onBack={() => navigation.goBack()}
-        onPressNotifications={() => navigation.navigate('NotificationSettings')}
       />
 
       <ScrollView

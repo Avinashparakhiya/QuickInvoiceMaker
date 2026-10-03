@@ -231,19 +231,10 @@ export const TransactionsScreen: React.FC = () => {
   return (
     <View style={styles.container}>
       <AmbientBackground />
-      {/* 1. Header with Transactions Hub title, Org name, and 44px round green + button */}
+      {/* 1. Header with Transactions Hub title and Org name */}
       <Header
         title="Transactions Hub"
         subtitle={activeOrg?.displayName || activeOrg?.name || 'Workspace'}
-        rightAction={
-          <TouchableOpacity
-            activeOpacity={0.85}
-            onPress={handleCreateAction}
-            style={styles.headerAddBtn}
-          >
-            <Plus size={22} color="#FFFFFF" strokeWidth={3} />
-          </TouchableOpacity>
-        }
       />
 
       <View style={[styles.mainWrapper, { maxWidth: contentMaxWidth, paddingHorizontal: horizontalPadding }]}>

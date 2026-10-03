@@ -71,7 +71,7 @@ export const InvoiceCard: React.FC<InvoiceCardProps> = ({ invoice, onPress }) =>
     <TouchableOpacity
       activeOpacity={0.75}
       onPress={onPress}
-      style={styles.card}
+      style={[styles.card, { borderColor: config.statusBorder }]}
     >
       {/* Left Avatar Box */}
       <View style={[styles.avatarBox, { backgroundColor: config.iconBg }]}>

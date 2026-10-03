@@ -92,7 +92,7 @@ export const KPIStatCard: React.FC<KPIStatCardProps> = ({
     <TouchableOpacity
       activeOpacity={0.75}
       onPress={onPress}
-      style={[styles.card, style]}
+      style={[styles.card, { borderColor: config.borderColor }, style]}
     >
       <View style={[styles.topAccentBar, { backgroundColor: config.accent }]} />
       <View style={styles.cardContent}>
@@ -133,16 +133,15 @@ const styles = StyleSheet.create({
   card: {
     flex: 1,
     backgroundColor: '#FFFFFF',
-    borderRadius: 16,
+    borderRadius: 14,
     overflow: 'hidden',
     borderWidth: 1,
-    borderColor: 'rgba(226, 232, 240, 0.8)',
     shadowColor: '#0F172A',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.04,
-    shadowRadius: 6,
+    shadowRadius: 5,
     elevation: 2,
-    minHeight: 90,
+    minHeight: 74,
   },
   topAccentBar: {
     height: 3,
@@ -150,15 +149,15 @@ const styles = StyleSheet.create({
   },
   cardContent: {
     flex: 1,
-    paddingVertical: 12,
-    paddingHorizontal: 13,
+    paddingVertical: 9,
+    paddingHorizontal: 12,
     justifyContent: 'center',
   },
   topRow: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    marginBottom: 6,
+    marginBottom: 3,
   },
   title: {
     fontSize: 12,
@@ -167,25 +166,25 @@ const styles = StyleSheet.create({
     letterSpacing: -0.1,
   },
   iconBox: {
-    width: 26,
-    height: 26,
-    borderRadius: 8,
+    width: 24,
+    height: 24,
+    borderRadius: 7,
     alignItems: 'center',
     justifyContent: 'center',
   },
   amount: {
-    fontSize: 19,
+    fontSize: 18,
     fontWeight: '800',
     color: '#0F172A',
     letterSpacing: -0.4,
   },
   countPill: {
-    marginTop: 4,
+    marginTop: 3,
     alignSelf: 'flex-start',
     backgroundColor: '#F8FAFC',
-    paddingHorizontal: 6,
-    paddingVertical: 1.5,
-    borderRadius: 6,
+    paddingHorizontal: 5,
+    paddingVertical: 1,
+    borderRadius: 5,
   },
   countText: {
     fontSize: 10,

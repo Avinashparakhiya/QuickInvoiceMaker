@@ -29,7 +29,10 @@ export const UpcomingInvoiceCard: React.FC<UpcomingInvoiceCardProps> = ({
     <TouchableOpacity
       activeOpacity={0.75}
       onPress={onPress}
-      style={styles.card}
+      style={[
+        styles.card,
+        { borderColor: isOverdue ? '#FECDD3' : '#FDE68A' },
+      ]}
     >
       <View
         style={[

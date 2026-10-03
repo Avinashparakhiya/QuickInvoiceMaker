@@ -109,15 +109,15 @@ export const EstimateListScreen: React.FC = () => {
   const getStatusBadgeStyle = (status: Estimate['status']) => {
     switch (status) {
       case 'ACCEPTED':
-        return { bg: '#DCFCE7', text: '#15803D' };
+        return { bg: '#DCFCE7', text: '#15803D', border: '#A7F3D0' };
       case 'CONVERTED':
-        return { bg: '#E0F2FE', text: '#0369A1' };
+        return { bg: '#E0F2FE', text: '#0369A1', border: '#BAE6FD' };
       case 'SENT':
-        return { bg: '#FEF3C7', text: '#B45309' };
+        return { bg: '#FEF3C7', text: '#B45309', border: '#FDE68A' };
       case 'DECLINED':
-        return { bg: '#FEE2E2', text: '#B91C1C' };
+        return { bg: '#FEE2E2', text: '#B91C1C', border: '#FECDD3' };
       default:
-        return { bg: '#F1F5F9', text: '#475569' };
+        return { bg: '#F1F5F9', text: '#475569', border: '#E2E8F0' };
     }
   };
 
@@ -130,7 +130,7 @@ export const EstimateListScreen: React.FC = () => {
         variant="elevated"
         padding={14}
         onPress={() => navigation.navigate('EstimateDetail', { estimateId: item.id })}
-        style={styles.card}
+        style={[styles.card, { borderColor: badgeStyle.border }]}
       >
         <View style={styles.cardRow}>
           <View style={styles.cardLeft}>

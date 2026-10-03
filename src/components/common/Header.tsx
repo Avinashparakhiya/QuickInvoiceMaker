@@ -138,14 +138,16 @@ export const Header: React.FC<HeaderProps> = ({
                 </TouchableOpacity>
               ) : null}
 
-              <TouchableOpacity
-                activeOpacity={0.7}
-                onPress={onPressNotifications}
-                style={styles.iconButton}
-              >
-                <Bell size={18} color={colors.textSecondary} strokeWidth={2} />
-                <View style={styles.notificationDot} />
-              </TouchableOpacity>
+              {onPressNotifications ? (
+                <TouchableOpacity
+                  activeOpacity={0.7}
+                  onPress={onPressNotifications}
+                  style={styles.iconButton}
+                >
+                  <Bell size={18} color={colors.textSecondary} strokeWidth={2} />
+                  <View style={styles.notificationDot} />
+                </TouchableOpacity>
+              ) : null}
 
               {onPressSettings ? (
                 <TouchableOpacity

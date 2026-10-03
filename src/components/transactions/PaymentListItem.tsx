@@ -24,7 +24,7 @@ export const PaymentListItem: React.FC<PaymentListItemProps> = ({
     <TouchableOpacity
       activeOpacity={0.75}
       onPress={onPress}
-      style={styles.card}
+      style={[styles.card, { borderColor: '#A7F3D0' }]}
     >
       {/* Left: Green Payment Icon Circle */}
       <View style={styles.iconCircle}>

@@ -31,11 +31,21 @@ const getAvatarColor = (name: string) => {
 interface CustomerAvatarProps {
   name?: string;
   size?: number;
+  backgroundColor?: string;
+  textColor?: string;
 }
 
-export const CustomerAvatar: React.FC<CustomerAvatarProps> = ({ name = 'Walk-in', size = 42 }) => {
+export const CustomerAvatar: React.FC<CustomerAvatarProps> = ({
+  name = 'Walk-in',
+  size = 42,
+  backgroundColor,
+  textColor,
+}) => {
   const initials = getCustomerInitials(name);
   const colorTheme = getAvatarColor(name);
+
+  const finalBg = backgroundColor || colorTheme.bg;
+  const finalText = textColor || colorTheme.text;
 
   return (
     <View
@@ -44,12 +54,12 @@ export const CustomerAvatar: React.FC<CustomerAvatarProps> = ({ name = 'Walk-in'
         {
           width: size,
           height: size,
-          borderRadius: size / 2,
-          backgroundColor: colorTheme.bg,
+          borderRadius: 12,
+          backgroundColor: finalBg,
         },
       ]}
     >
-      <Text style={[styles.text, { color: colorTheme.text, fontSize: Math.max(12, size * 0.35) }]}>
+      <Text style={[styles.text, { color: finalText, fontSize: Math.max(12, size * 0.35) }]}>
         {initials}
       </Text>
     </View>

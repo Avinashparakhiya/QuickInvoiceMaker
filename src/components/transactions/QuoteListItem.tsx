@@ -40,11 +40,11 @@ export const QuoteListItem: React.FC<QuoteListItemProps> = ({
     <TouchableOpacity
       activeOpacity={0.75}
       onPress={onPress}
-      style={styles.card}
+      style={[styles.card, { borderColor: statusConfig.border }]}
     >
       {/* Left: Quote Icon Circle */}
-      <View style={styles.iconCircle}>
-        <FileSpreadsheet size={19} color="#4F46E5" strokeWidth={2.4} />
+      <View style={[styles.iconCircle, { backgroundColor: statusConfig.bg }]}>
+        <FileSpreadsheet size={19} color={statusConfig.color} strokeWidth={2.4} />
       </View>
 
       {/* Center: Customer + Quote Number + Valid Date */}

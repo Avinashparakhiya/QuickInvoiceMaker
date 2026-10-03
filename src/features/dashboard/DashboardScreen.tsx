@@ -225,12 +225,11 @@ export const DashboardScreen: React.FC = () => {
   return (
     <View style={styles.container}>
       <AmbientBackground />
-      {/* 1. Header with greeting, org name, notification & settings */}
+      {/* 1. Header with greeting, org name & settings */}
       <Header
         activeOrg={activeOrg}
         onPressOrgSwitcher={() => setOrgSwitcherVisible(true)}
         onPressSettings={() => navigation.navigate('Settings')}
-        onPressNotifications={() => navigation.navigate('NotificationSettings')}
         onPressQuickCreate={() => navigation.navigate('InvoiceCreate', {})}
       />
 
@@ -385,23 +384,23 @@ const styles = StyleSheet.create({
   scrollContent: {
     width: '100%',
     alignSelf: 'center',
-    paddingTop: 12,
+    paddingTop: 8,
     paddingBottom: 96,
   },
   kpiGrid: {
-    marginBottom: 4,
+    marginBottom: 2,
   },
   kpiRow: {
     flexDirection: 'row',
-    marginBottom: 10,
+    marginBottom: 8,
   },
   kpiGap: {
-    width: 10,
+    width: 8,
   },
   kpiRowWide: {
     flexDirection: 'row',
-    gap: 12,
-    marginBottom: 16,
+    gap: 10,
+    marginBottom: 12,
     width: '100%',
   },
   kpiCardWide: {

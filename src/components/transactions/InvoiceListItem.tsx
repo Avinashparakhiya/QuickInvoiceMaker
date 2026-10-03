@@ -15,14 +15,64 @@ export const InvoiceListItem: React.FC<InvoiceListItemProps> = ({ invoice, onPre
   const isOverdue = invoice.status === 'OVERDUE' || (invoice.balanceDue > 0 && getDueStatusText(invoice.dueDate).isOverdue);
   const isPartial = invoice.status === 'PARTIAL';
 
+  const getStatusConfig = () => {
+    if (isOverdue) {
+      return {
+        border: '#FECDD3',
+        avatarBg: '#FFF1F2',
+        avatarText: '#E11D48',
+      };
+    }
+    switch (invoice.status) {
+      case 'PAID':
+        return {
+          border: '#A7F3D0',
+          avatarBg: '#ECFDF5',
+          avatarText: '#047857',
+        };
+      case 'PARTIAL':
+        return {
+          border: '#BAE6FD',
+          avatarBg: '#F0F9FF',
+          avatarText: '#0284C7',
+        };
+      case 'DRAFT':
+        return {
+          border: '#E2E8F0',
+          avatarBg: '#F1F5F9',
+          avatarText: '#475569',
+        };
+      case 'CANCELLED':
+        return {
+          border: '#E2E8F0',
+          avatarBg: '#F8FAFC',
+          avatarText: '#64748B',
+        };
+      case 'UNPAID':
+      default:
+        return {
+          border: '#FDE68A',
+          avatarBg: '#FFFBEB',
+          avatarText: '#D97706',
+        };
+    }
+  };
+
+  const statusConfig = getStatusConfig();
+
   return (
     <TouchableOpacity
       activeOpacity={0.75}
       onPress={onPress}
-      style={styles.card}
+      style={[styles.card, { borderColor: statusConfig.border }]}
     >
       {/* Left: Customer Avatar */}
-      <CustomerAvatar name={invoice.customerName} size={42} />
+      <CustomerAvatar
+        name={invoice.customerName}
+        size={42}
+        backgroundColor={statusConfig.avatarBg}
+        textColor={statusConfig.avatarText}
+      />
 
       {/* Center: Customer Name + Invoice Number • Date */}
       <View style={styles.centerCol}>

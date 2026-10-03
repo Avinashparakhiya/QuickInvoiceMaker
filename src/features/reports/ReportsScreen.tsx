@@ -262,11 +262,10 @@ export const ReportsScreen: React.FC = () => {
   return (
     <View style={styles.container}>
       <AmbientBackground />
-      {/* 1. Header with Title, Org Name, and Notification Button */}
+      {/* 1. Header with Title and Org Name */}
       <Header
         title="Reports & Analytics"
         subtitle={activeOrg?.displayName || activeOrg?.name || 'Workspace'}
-        onPressNotifications={() => navigation.navigate('NotificationSettings')}
       />
 
       <ScrollView
