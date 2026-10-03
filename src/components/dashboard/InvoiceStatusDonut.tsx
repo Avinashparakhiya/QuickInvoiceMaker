@@ -23,17 +23,17 @@ export const InvoiceStatusDonut: React.FC<InvoiceStatusDonutProps> = ({
 
   // Donut geometry
   const size = 120;
-  const strokeWidth = 14;
+  const strokeWidth = 12;
   const radius = (size - strokeWidth) / 2;
   const circumference = 2 * Math.PI * radius;
   const center = size / 2;
 
   // Segments definition
   const segments = [
-    { key: 'PAID', count: paidCount, color: '#22C55E', label: 'Paid' },
-    { key: 'UNPAID', count: unpaidCount, color: '#F59E0B', label: 'Unpaid' },
-    { key: 'PARTIAL', count: partialCount, color: '#3B82F6', label: 'Partial' },
-    { key: 'OVERDUE', count: overdueCount, color: '#EF4444', label: 'Overdue' },
+    { key: 'PAID', count: paidCount, color: '#10B981', label: 'Paid', bg: '#ECFDF5' },
+    { key: 'UNPAID', count: unpaidCount, color: '#F59E0B', label: 'Unpaid', bg: '#FFFBEB' },
+    { key: 'PARTIAL', count: partialCount, color: '#0EA5E9', label: 'Partial', bg: '#F0F9FF' },
+    { key: 'OVERDUE', count: overdueCount, color: '#EF4444', label: 'Overdue', bg: '#FFF1F2' },
   ];
 
   // Calculate segment stroke dashes
@@ -55,10 +55,12 @@ export const InvoiceStatusDonut: React.FC<InvoiceStatusDonutProps> = ({
   return (
     <View style={styles.card}>
       <View style={styles.headerRow}>
-        <Text style={styles.cardTitle}>Invoice Status</Text>
-        <Text style={styles.totalBadge}>
-          {totalInvoices} {totalInvoices === 1 ? 'Invoice' : 'Invoices'}
-        </Text>
+        <Text style={styles.cardTitle}>Invoice Distribution</Text>
+        <View style={styles.totalBadge}>
+          <Text style={styles.totalBadgeText}>
+            {totalInvoices} {totalInvoices === 1 ? 'Total' : 'Total'}
+          </Text>
+        </View>
       </View>
 
       <View style={styles.contentRow}>
@@ -71,7 +73,7 @@ export const InvoiceStatusDonut: React.FC<InvoiceStatusDonutProps> = ({
                 cx={center}
                 cy={center}
                 r={radius}
-                stroke="#E2E8F0"
+                stroke="#F1F5F9"
                 strokeWidth={strokeWidth}
                 fill="none"
               />
@@ -103,22 +105,28 @@ export const InvoiceStatusDonut: React.FC<InvoiceStatusDonutProps> = ({
 
         {/* Legend Breakdown List */}
         <View style={styles.legendContainer}>
-          {segments.map((item) => (
-            <TouchableOpacity
-              key={item.key}
-              activeOpacity={0.7}
-              onPress={() => onSelectStatus?.(item.key)}
-              style={styles.legendRow}
-            >
-              <View style={styles.legendLeft}>
-                <View style={[styles.dot, { backgroundColor: item.color }]} />
-                <Text style={styles.legendLabel}>{item.label}</Text>
-              </View>
-              <Text style={[styles.legendCount, { color: colors.text }]}>
-                {item.count}
-              </Text>
-            </TouchableOpacity>
-          ))}
+          {segments.map((item) => {
+            const pct = totalInvoices > 0 ? Math.round((item.count / totalInvoices) * 100) : 0;
+            return (
+              <TouchableOpacity
+                key={item.key}
+                activeOpacity={0.72}
+                onPress={() => onSelectStatus?.(item.key)}
+                style={styles.legendRow}
+              >
+                <View style={styles.legendLeft}>
+                  <View style={[styles.dot, { backgroundColor: item.color }]} />
+                  <Text style={styles.legendLabel}>{item.label}</Text>
+                </View>
+                <View style={styles.legendRight}>
+                  <Text style={styles.legendPct}>{pct}%</Text>
+                  <Text style={styles.legendCount}>
+                    {item.count}
+                  </Text>
+                </View>
+              </TouchableOpacity>
+            );
+          })}
         </View>
       </View>
     </View>
@@ -128,15 +136,15 @@ export const InvoiceStatusDonut: React.FC<InvoiceStatusDonutProps> = ({
 const styles = StyleSheet.create({
   card: {
     backgroundColor: '#FFFFFF',
-    borderRadius: 16,
+    borderRadius: 18,
     padding: 16,
     marginBottom: 16,
     borderWidth: 1,
-    borderColor: colors.border,
-    shadowColor: '#000000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.03,
-    shadowRadius: 4,
+    borderColor: 'rgba(226, 232, 240, 0.8)',
+    shadowColor: '#0F172A',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.04,
+    shadowRadius: 8,
     elevation: 2,
   },
   headerRow: {
@@ -146,16 +154,21 @@ const styles = StyleSheet.create({
     marginBottom: 14,
   },
   cardTitle: {
-    ...typography.h3,
-    color: colors.text,
-    fontSize: 16,
+    color: '#0F172A',
+    fontSize: 14,
     fontWeight: '700',
+    letterSpacing: -0.2,
   },
   totalBadge: {
-    ...typography.caption,
-    color: colors.textSecondary,
-    fontSize: 12,
-    fontWeight: '500',
+    backgroundColor: '#F1F5F9',
+    paddingHorizontal: 8,
+    paddingVertical: 3,
+    borderRadius: 6,
+  },
+  totalBadgeText: {
+    color: '#64748B',
+    fontSize: 11,
+    fontWeight: '700',
   },
   contentRow: {
     flexDirection: 'row',
@@ -176,47 +189,60 @@ const styles = StyleSheet.create({
   },
   centerNumber: {
     fontSize: 22,
-    fontWeight: '700',
-    color: colors.text,
+    fontWeight: '800',
+    color: '#0F172A',
     lineHeight: 26,
+    letterSpacing: -0.4,
   },
   centerSubtext: {
     fontSize: 10,
-    fontWeight: '500',
-    color: colors.textSecondary,
+    fontWeight: '600',
+    color: '#64748B',
     marginTop: -1,
   },
   legendContainer: {
     flex: 1,
-    paddingLeft: 24,
+    paddingLeft: 20,
     justifyContent: 'center',
-    gap: 8,
+    gap: 7,
   },
   legendRow: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingVertical: 2,
+    paddingVertical: 4,
+    paddingHorizontal: 8,
+    borderRadius: 8,
+    backgroundColor: '#F8FAFC',
   },
   legendLeft: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 8,
+    gap: 7,
   },
   dot: {
-    width: 9,
-    height: 9,
-    borderRadius: 5,
+    width: 7,
+    height: 7,
+    borderRadius: 3.5,
   },
   legendLabel: {
-    ...typography.captionRegular,
-    color: colors.textSecondary,
-    fontSize: 13,
+    color: '#475569',
+    fontSize: 12,
+    fontWeight: '600',
+  },
+  legendRight: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+  },
+  legendPct: {
+    fontSize: 11,
+    color: '#94A3B8',
     fontWeight: '500',
   },
   legendCount: {
-    ...typography.bodySemiBold,
-    fontSize: 14,
-    fontWeight: '600',
+    fontSize: 13,
+    fontWeight: '800',
+    color: '#0F172A',
   },
 });

@@ -20,7 +20,10 @@ export const TransactionSummary: React.FC<TransactionSummaryProps> = ({
     <View style={styles.card}>
       {/* BILLED Column */}
       <View style={styles.metricItem}>
-        <Text style={styles.label}>BILLED</Text>
+        <View style={styles.labelRow}>
+          <View style={[styles.dot, { backgroundColor: '#64748B' }]} />
+          <Text style={styles.label}>Billed</Text>
+        </View>
         <Text numberOfLines={1} style={[styles.value, styles.billedValue]}>
           {formatCurrency(billed, currencySymbol)}
         </Text>
@@ -30,7 +33,10 @@ export const TransactionSummary: React.FC<TransactionSummaryProps> = ({
 
       {/* COLLECTED Column */}
       <View style={styles.metricItem}>
-        <Text style={styles.label}>COLLECTED</Text>
+        <View style={styles.labelRow}>
+          <View style={[styles.dot, { backgroundColor: '#10B981' }]} />
+          <Text style={styles.label}>Collected</Text>
+        </View>
         <Text numberOfLines={1} style={[styles.value, styles.collectedValue]}>
           {formatCurrency(collected, currencySymbol)}
         </Text>
@@ -40,7 +46,10 @@ export const TransactionSummary: React.FC<TransactionSummaryProps> = ({
 
       {/* OUTSTANDING Column */}
       <View style={styles.metricItem}>
-        <Text style={styles.label}>OUTSTANDING</Text>
+        <View style={styles.labelRow}>
+          <View style={[styles.dot, { backgroundColor: '#F59E0B' }]} />
+          <Text style={styles.label}>Pending</Text>
+        </View>
         <Text numberOfLines={1} style={[styles.value, styles.outstandingValue]}>
           {formatCurrency(outstanding, currencySymbol)}
         </Text>
@@ -52,20 +61,20 @@ export const TransactionSummary: React.FC<TransactionSummaryProps> = ({
 const styles = StyleSheet.create({
   card: {
     backgroundColor: '#FFFFFF',
-    borderRadius: 14,
+    borderRadius: 16,
     borderWidth: 1,
-    borderColor: colors.border,
-    paddingVertical: 12,
+    borderColor: 'rgba(226, 232, 240, 0.8)',
+    paddingVertical: 14,
     paddingHorizontal: 12,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    marginBottom: 12,
-    shadowColor: '#000000',
-    shadowOffset: { width: 0, height: 1 },
+    marginBottom: 14,
+    shadowColor: '#0F172A',
+    shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.03,
-    shadowRadius: 4,
-    elevation: 1,
+    shadowRadius: 6,
+    elevation: 2,
   },
   metricItem: {
     flex: 1,
@@ -73,16 +82,26 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     paddingHorizontal: 4,
   },
+  labelRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    marginBottom: 4,
+  },
+  dot: {
+    width: 6,
+    height: 6,
+    borderRadius: 3,
+  },
   label: {
     fontSize: 11,
     fontWeight: '600',
     color: '#64748B',
-    marginBottom: 4,
-    textTransform: 'uppercase',
-    letterSpacing: 0.4,
+    textTransform: 'capitalize',
+    letterSpacing: -0.1,
   },
   value: {
-    fontSize: 15,
+    fontSize: 16,
     fontWeight: '800',
     letterSpacing: -0.3,
   },
@@ -90,14 +109,15 @@ const styles = StyleSheet.create({
     color: '#0F172A',
   },
   collectedValue: {
-    color: '#22C55E',
+    color: '#047857',
   },
   outstandingValue: {
-    color: '#F59E0B',
+    color: '#B45309',
   },
   divider: {
     width: 1,
-    height: 28,
-    backgroundColor: colors.border,
+    height: 26,
+    backgroundColor: '#F1F5F9',
   },
 });
+

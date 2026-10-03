@@ -31,7 +31,7 @@ export const TransactionTabs: React.FC<TransactionTabsProps> = ({
   const tabs: TabItemConfig[] = [
     { key: 'INVOICES', label: 'Invoices', count: invoiceCount },
     { key: 'PAYMENTS', label: 'Payments', count: paymentCount },
-    { key: 'QUOTES', label: 'Quotes', count: quoteCount },
+    { key: 'QUOTES', label: 'Estimates', count: quoteCount },
   ];
 
   if (expenseCount !== undefined) {
@@ -39,8 +39,8 @@ export const TransactionTabs: React.FC<TransactionTabsProps> = ({
   }
 
   const getIcon = (key: TransactionTabKey, isActive: boolean) => {
-    const iconColor = isActive ? '#15803D' : '#64748B';
-    const iconSize = 16;
+    const iconColor = isActive ? '#047857' : '#64748B';
+    const iconSize = 15;
     switch (key) {
       case 'INVOICES':
         return <FileText size={iconSize} color={iconColor} strokeWidth={isActive ? 2.4 : 1.8} />;
@@ -65,7 +65,7 @@ export const TransactionTabs: React.FC<TransactionTabsProps> = ({
           return (
             <TouchableOpacity
               key={tab.key}
-              activeOpacity={0.75}
+              activeOpacity={0.78}
               onPress={() => onTabChange(tab.key)}
               style={[
                 styles.tabBtn,
@@ -118,25 +118,30 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     gap: 6,
     paddingVertical: 8,
-    paddingHorizontal: 12,
+    paddingHorizontal: 13,
     borderRadius: 12,
-    borderWidth: 1.5,
-    minHeight: 42,
+    borderWidth: 1,
+    minHeight: 40,
   },
   tabBtnActive: {
-    backgroundColor: '#DCFCE7',
-    borderColor: '#22C55E',
+    backgroundColor: '#ECFDF5',
+    borderColor: '#A7F3D0',
+    shadowColor: '#10B981',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.12,
+    shadowRadius: 4,
+    elevation: 2,
   },
   tabBtnInactive: {
     backgroundColor: '#FFFFFF',
-    borderColor: colors.border,
+    borderColor: 'rgba(226, 232, 240, 0.8)',
   },
   tabLabel: {
     fontSize: 13,
     letterSpacing: -0.1,
   },
   tabLabelActive: {
-    color: '#15803D',
+    color: '#047857',
     fontWeight: '700',
   },
   tabLabelInactive: {
@@ -145,21 +150,21 @@ const styles = StyleSheet.create({
   },
   countBadge: {
     paddingHorizontal: 6,
-    paddingVertical: 1.5,
+    paddingVertical: 1,
     borderRadius: 8,
     minWidth: 18,
     alignItems: 'center',
     justifyContent: 'center',
   },
   countBadgeActive: {
-    backgroundColor: '#22C55E',
+    backgroundColor: '#10B981',
   },
   countBadgeInactive: {
     backgroundColor: '#F1F5F9',
   },
   countText: {
-    fontSize: 11,
-    fontWeight: '700',
+    fontSize: 10,
+    fontWeight: '800',
   },
   countTextActive: {
     color: '#FFFFFF',

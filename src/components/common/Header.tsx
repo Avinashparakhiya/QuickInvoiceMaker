@@ -50,6 +50,15 @@ export const Header: React.FC<HeaderProps> = ({
 }) => {
   const { isWideScreen, isDesktop, contentMaxWidth } = useResponsive();
 
+  const getOrgInitials = (name?: string) => {
+    if (!name) return 'QI';
+    const words = name.trim().split(/\s+/);
+    if (words.length === 1) return words[0].substring(0, 2).toUpperCase();
+    return (words[0][0] + words[1][0]).toUpperCase();
+  };
+
+  const orgName = activeOrg?.displayName || activeOrg?.name || 'Quick Invoice';
+
   return (
     <SafeAreaView style={styles.safeArea}>
       <View style={[styles.container, { maxWidth: contentMaxWidth }]}>
@@ -59,20 +68,28 @@ export const Header: React.FC<HeaderProps> = ({
             onPress={onBack}
             style={styles.backButton}
           >
-            <ArrowLeft size={20} color={colors.text} />
+            <ArrowLeft size={18} color={colors.textPrimary} strokeWidth={2.2} />
           </TouchableOpacity>
         ) : activeOrg ? (
           <TouchableOpacity
-            activeOpacity={0.8}
+            activeOpacity={0.82}
             onPress={onPressOrgSwitcher}
             style={styles.orgHeaderContainer}
           >
-            <Text style={styles.greeting}>{getGreeting()}</Text>
-            <View style={styles.orgNameRow}>
-              <Text numberOfLines={1} style={styles.orgName}>
-                {activeOrg.displayName || activeOrg.name}
-              </Text>
-              <ChevronDown size={16} color={colors.textSecondary} style={styles.chevron} />
+            <View style={styles.orgAvatarBox}>
+              <Text style={styles.orgAvatarText}>{getOrgInitials(orgName)}</Text>
+              <View style={styles.orgActiveDot} />
+            </View>
+            <View style={styles.orgTextCol}>
+              <Text style={styles.greeting}>{getGreeting()}</Text>
+              <View style={styles.orgNameRow}>
+                <Text numberOfLines={1} style={styles.orgName}>
+                  {orgName}
+                </Text>
+                <View style={styles.chevronPill}>
+                  <ChevronDown size={14} color={colors.textSecondary} strokeWidth={2.2} />
+                </View>
+              </View>
             </View>
           </TouchableOpacity>
         ) : (
@@ -83,7 +100,7 @@ export const Header: React.FC<HeaderProps> = ({
         )}
 
         {showBack && title ? (
-          <View style={styles.centerTitleContainer}>
+          <View style={styles.centerTitleContainer} pointerEvents="none">
             <Text numberOfLines={1} style={styles.centerTitle}>
               {title}
             </Text>
@@ -117,7 +134,7 @@ export const Header: React.FC<HeaderProps> = ({
                   onPress={onPressSearch}
                   style={styles.iconButton}
                 >
-                  <Search size={19} color={colors.textSecondary} />
+                  <Search size={18} color={colors.textSecondary} strokeWidth={2} />
                 </TouchableOpacity>
               ) : null}
 
@@ -126,7 +143,7 @@ export const Header: React.FC<HeaderProps> = ({
                 onPress={onPressNotifications}
                 style={styles.iconButton}
               >
-                <Bell size={19} color={colors.textSecondary} />
+                <Bell size={18} color={colors.textSecondary} strokeWidth={2} />
                 <View style={styles.notificationDot} />
               </TouchableOpacity>
 
@@ -136,7 +153,7 @@ export const Header: React.FC<HeaderProps> = ({
                   onPress={onPressSettings}
                   style={styles.iconButton}
                 >
-                  <SettingsIcon size={19} color={colors.textSecondary} />
+                  <SettingsIcon size={18} color={colors.textSecondary} strokeWidth={2} />
                 </TouchableOpacity>
               ) : null}
             </View>
@@ -149,16 +166,18 @@ export const Header: React.FC<HeaderProps> = ({
 
 const styles = StyleSheet.create({
   safeArea: {
-    backgroundColor: colors.background,
+    backgroundColor: '#FFFFFF',
+    borderBottomWidth: 1,
+    borderBottomColor: 'rgba(226, 232, 240, 0.7)',
     paddingTop: Platform.OS === 'android' ? StatusBar.currentHeight : 0,
   },
   container: {
-    height: 64,
+    height: 66,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
     paddingHorizontal: 16,
-    backgroundColor: colors.background,
+    backgroundColor: '#FFFFFF',
     width: '100%',
     alignSelf: 'center',
   },
@@ -170,10 +189,10 @@ const styles = StyleSheet.create({
     paddingVertical: 9,
     borderRadius: 12,
     gap: 6,
-    shadowColor: '#22C55E',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.25,
-    shadowRadius: 6,
+    shadowColor: '#10B981',
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
     elevation: 3,
   },
   headerPrimaryBtnText: {
@@ -182,71 +201,109 @@ const styles = StyleSheet.create({
     fontSize: 13,
   },
   backButton: {
-    width: 40,
-    height: 40,
+    width: 38,
+    height: 38,
     borderRadius: 12,
-    backgroundColor: '#FFFFFF',
+    backgroundColor: '#F8FAFC',
     borderWidth: 1,
     borderColor: colors.border,
     alignItems: 'center',
     justifyContent: 'center',
-    shadowColor: '#000000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.03,
-    shadowRadius: 4,
-    elevation: 1,
   },
   orgHeaderContainer: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+  },
+  orgAvatarBox: {
+    width: 40,
+    height: 40,
+    borderRadius: 12,
+    backgroundColor: '#ECFDF5',
+    borderWidth: 1.5,
+    borderColor: '#A7F3D0',
+    alignItems: 'center',
+    justifyContent: 'center',
+    position: 'relative',
+  },
+  orgAvatarText: {
+    fontSize: 14,
+    fontWeight: '800',
+    color: '#059669',
+    letterSpacing: -0.2,
+  },
+  orgActiveDot: {
+    position: 'absolute',
+    bottom: -1,
+    right: -1,
+    width: 9,
+    height: 9,
+    borderRadius: 4.5,
+    backgroundColor: '#10B981',
+    borderWidth: 1.5,
+    borderColor: '#FFFFFF',
+  },
+  orgTextCol: {
     flex: 1,
     justifyContent: 'center',
   },
   greeting: {
-    fontSize: 13,
-    fontWeight: '500',
-    color: '#64748B',
-    marginBottom: 2,
-    letterSpacing: -0.1,
+    fontSize: 11,
+    fontWeight: '600',
+    color: colors.textMuted,
+    marginBottom: 1,
+    letterSpacing: 0.1,
+    textTransform: 'uppercase',
   },
   orgNameRow: {
     flexDirection: 'row',
     alignItems: 'center',
+    gap: 4,
   },
   orgName: {
     color: '#0F172A',
-    fontSize: 18,
+    fontSize: 16,
     fontWeight: '800',
-    maxWidth: 220,
-    letterSpacing: -0.4,
+    maxWidth: 200,
+    letterSpacing: -0.3,
   },
-  chevron: {
-    marginLeft: 5,
+  chevronPill: {
+    padding: 2,
+    borderRadius: 6,
+    backgroundColor: '#F1F5F9',
+    marginLeft: 2,
   },
   titleContainer: {
     flex: 1,
   },
   title: {
     ...typography.h2,
-    color: colors.text,
+    color: colors.textPrimary,
+    fontWeight: '800',
+    letterSpacing: -0.3,
   },
   subtitle: {
     ...typography.captionRegular,
     color: colors.textSecondary,
+    marginTop: 1,
   },
   centerTitleContainer: {
     position: 'absolute',
-    left: 64,
-    right: 64,
+    left: 60,
+    right: 60,
     alignItems: 'center',
   },
   centerTitle: {
-    ...typography.h3,
-    color: colors.text,
+    fontSize: 16,
+    color: colors.textPrimary,
     fontWeight: '700',
+    letterSpacing: -0.2,
   },
   centerSubtitle: {
-    ...typography.captionRegular,
-    color: colors.textSecondary,
     fontSize: 11,
+    color: colors.textSecondary,
+    marginTop: 1,
   },
   rightContainer: {
     flexDirection: 'row',
@@ -255,31 +312,26 @@ const styles = StyleSheet.create({
   rightIcons: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 10,
+    gap: 8,
   },
   iconButton: {
-    width: 44,
-    height: 44,
-    borderRadius: 22,
-    backgroundColor: '#FFFFFF',
+    width: 38,
+    height: 38,
+    borderRadius: 12,
+    backgroundColor: '#F8FAFC',
     borderWidth: 1,
     borderColor: colors.border,
     alignItems: 'center',
     justifyContent: 'center',
     position: 'relative',
-    shadowColor: '#000000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.04,
-    shadowRadius: 4,
-    elevation: 2,
   },
   notificationDot: {
     position: 'absolute',
-    top: 10,
-    right: 10,
-    width: 8,
-    height: 8,
-    borderRadius: 4,
+    top: 8,
+    right: 8,
+    width: 7,
+    height: 7,
+    borderRadius: 3.5,
     backgroundColor: '#EF4444',
     borderWidth: 1.5,
     borderColor: '#FFFFFF',

@@ -115,7 +115,7 @@ export const SplashScreen: React.FC<SplashScreenProps> = ({ onFinish }) => {
       {/* Bottom branding */}
       <Animated.View style={[styles.bottomBrand, { opacity: taglineOpacity }]}>
         <View style={styles.versionBadge}>
-          <Text style={styles.versionText}>v1.0</Text>
+          <Text style={styles.versionText}>v1.0 • Offline First</Text>
         </View>
       </Animated.View>
     </View>
@@ -125,7 +125,7 @@ export const SplashScreen: React.FC<SplashScreenProps> = ({ onFinish }) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#FFFFFF',
+    backgroundColor: '#F8FAFC',
     justifyContent: 'center',
     alignItems: 'center',
   },
@@ -139,31 +139,31 @@ const styles = StyleSheet.create({
     position: 'absolute',
     top: -60,
     right: -40,
-    width: 200,
-    height: 200,
-    borderRadius: 100,
-    backgroundColor: colors.primarySubtle,
-    opacity: 0.6,
+    width: 220,
+    height: 220,
+    borderRadius: 110,
+    backgroundColor: '#ECFDF5',
+    opacity: 0.8,
   },
   bgShapeBottomLeft: {
     position: 'absolute',
     bottom: -80,
     left: -50,
-    width: 250,
-    height: 250,
-    borderRadius: 125,
-    backgroundColor: '#DCFCE7',
-    opacity: 0.5,
+    width: 260,
+    height: 260,
+    borderRadius: 130,
+    backgroundColor: '#F0FDF4',
+    opacity: 0.8,
   },
   bgShapeCenter: {
     position: 'absolute',
     top: height * 0.15,
     left: -20,
-    width: 120,
-    height: 120,
-    borderRadius: 60,
-    backgroundColor: '#F0FDF4',
-    opacity: 0.7,
+    width: 140,
+    height: 140,
+    borderRadius: 70,
+    backgroundColor: '#ECFDF5',
+    opacity: 0.6,
   },
 
   // Icon
@@ -171,16 +171,21 @@ const styles = StyleSheet.create({
     marginBottom: 32,
   },
   iconDocument: {
-    width: 100,
-    height: 120,
-    backgroundColor: '#F0FDF4',
-    borderRadius: 16,
+    width: 104,
+    height: 124,
+    backgroundColor: '#FFFFFF',
+    borderRadius: 20,
     borderWidth: 2,
-    borderColor: '#DCFCE7',
-    padding: 16,
+    borderColor: '#A7F3D0',
+    padding: 18,
     justifyContent: 'center',
     alignItems: 'center',
     position: 'relative',
+    shadowColor: '#10B981',
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.15,
+    shadowRadius: 16,
+    elevation: 6,
   },
   iconDocumentInner: {
     width: '100%',
@@ -189,50 +194,47 @@ const styles = StyleSheet.create({
   iconLine1: {
     width: '80%',
     height: 6,
-    backgroundColor: '#BBF7D0',
+    backgroundColor: '#A7F3D0',
     borderRadius: 3,
     marginBottom: 10,
   },
   iconLine2: {
     width: '60%',
     height: 6,
-    backgroundColor: '#D1FAE5',
+    backgroundColor: '#E2E8F0',
     borderRadius: 3,
     marginBottom: 10,
   },
   iconLine3: {
     width: '70%',
     height: 6,
-    backgroundColor: '#D1FAE5',
+    backgroundColor: '#E2E8F0',
     borderRadius: 3,
   },
   checkCircle: {
     position: 'absolute',
     bottom: -8,
     right: -12,
-    width: 32,
-    height: 32,
-    borderRadius: 16,
-    backgroundColor: '#22C55E',
+    width: 34,
+    height: 34,
+    borderRadius: 17,
+    backgroundColor: '#10B981',
     alignItems: 'center',
     justifyContent: 'center',
     borderWidth: 3,
     borderColor: '#FFFFFF',
+    shadowColor: '#10B981',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.3,
+    shadowRadius: 4,
+    elevation: 3,
   },
   checkMark: {
     color: '#FFFFFF',
     fontSize: 16,
-    fontWeight: '700',
+    fontWeight: '800',
   },
 
-  // Text
-  appName: {
-    fontSize: 28,
-    fontWeight: '400',
-    color: '#0F172A',
-    textAlign: 'center',
-    letterSpacing: -0.5,
-  },
   appNameBold: {
     fontSize: 28,
     fontWeight: '800',
@@ -256,14 +258,17 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   versionBadge: {
-    backgroundColor: '#F0FDF4',
+    backgroundColor: '#ECFDF5',
+    borderWidth: 1,
+    borderColor: '#A7F3D0',
     paddingHorizontal: 12,
-    paddingVertical: 4,
+    paddingVertical: 5,
     borderRadius: 12,
   },
   versionText: {
     fontSize: 11,
-    fontWeight: '600',
-    color: '#22C55E',
+    fontWeight: '700',
+    color: '#047857',
   },
 });
+

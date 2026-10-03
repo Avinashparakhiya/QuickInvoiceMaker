@@ -22,13 +22,13 @@ export const PaymentListItem: React.FC<PaymentListItemProps> = ({
 
   return (
     <TouchableOpacity
-      activeOpacity={0.72}
+      activeOpacity={0.75}
       onPress={onPress}
       style={styles.card}
     >
       {/* Left: Green Payment Icon Circle */}
       <View style={styles.iconCircle}>
-        <ArrowDownLeft size={20} color="#15803D" strokeWidth={2.5} />
+        <ArrowDownLeft size={20} color="#059669" strokeWidth={2.4} />
       </View>
 
       {/* Center: Customer Name + Invoice Reference + Method • Date */}
@@ -40,7 +40,9 @@ export const PaymentListItem: React.FC<PaymentListItemProps> = ({
           {payment.invoiceNumber ? `Payment for #${payment.invoiceNumber}` : 'Direct Advance Payment'}
         </Text>
         <View style={styles.metaRow}>
-          <Text style={styles.methodText}>{formatMethod(payment.paymentMethod)}</Text>
+          <View style={styles.methodTag}>
+            <Text style={styles.methodText}>{formatMethod(payment.paymentMethod)}</Text>
+          </View>
           <Text style={styles.dotSeparator}>•</Text>
           <Text style={styles.dateText}>
             {formatDate(payment.paymentDate, 'dd MMM yyyy')}
@@ -54,6 +56,7 @@ export const PaymentListItem: React.FC<PaymentListItemProps> = ({
           +{formatCurrency(payment.amount, currencySymbol)}
         </Text>
         <View style={styles.statusPill}>
+          <View style={styles.statusDot} />
           <Text style={styles.statusPillText}>Received</Text>
         </View>
       </View>
@@ -64,25 +67,25 @@ export const PaymentListItem: React.FC<PaymentListItemProps> = ({
 const styles = StyleSheet.create({
   card: {
     backgroundColor: '#FFFFFF',
-    borderRadius: 14,
+    borderRadius: 16,
     borderWidth: 1,
-    borderColor: '#E2E8F0',
-    padding: 14,
+    borderColor: 'rgba(226, 232, 240, 0.8)',
+    padding: 13,
     marginBottom: 10,
     flexDirection: 'row',
     alignItems: 'center',
-    shadowColor: '#000000',
-    shadowOffset: { width: 0, height: 1 },
+    shadowColor: '#0F172A',
+    shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.03,
-    shadowRadius: 4,
-    elevation: 1,
+    shadowRadius: 6,
+    elevation: 2,
     minHeight: 74,
   },
   iconCircle: {
     width: 42,
     height: 42,
     borderRadius: 12,
-    backgroundColor: '#DCFCE7',
+    backgroundColor: '#ECFDF5',
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -93,7 +96,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   customerName: {
-    fontSize: 14,
+    fontSize: 15,
     fontWeight: '700',
     color: '#0F172A',
     marginBottom: 2,
@@ -108,45 +111,61 @@ const styles = StyleSheet.create({
   metaRow: {
     flexDirection: 'row',
     alignItems: 'center',
+    gap: 4,
   },
-  methodText: {
-    fontSize: 11,
-    fontWeight: '600',
-    color: '#15803D',
-    backgroundColor: '#DCFCE7',
+  methodTag: {
+    backgroundColor: '#F1F5F9',
     paddingHorizontal: 6,
     paddingVertical: 1.5,
-    borderRadius: 4,
+    borderRadius: 5,
+  },
+  methodText: {
+    fontSize: 10,
+    fontWeight: '700',
+    color: '#475569',
+    textTransform: 'uppercase',
   },
   dotSeparator: {
-    marginHorizontal: 5,
     fontSize: 10,
-    color: '#94A3B8',
+    color: '#CBD5E1',
   },
   dateText: {
     fontSize: 12,
     color: '#94A3B8',
+    fontWeight: '500',
   },
   rightCol: {
     alignItems: 'flex-end',
     justifyContent: 'center',
   },
   amount: {
-    fontSize: 16,
+    fontSize: 15,
     fontWeight: '800',
-    color: '#22C55E',
+    color: '#047857',
     letterSpacing: -0.3,
-    marginBottom: 4,
+    marginBottom: 3,
   },
   statusPill: {
-    backgroundColor: '#DCFCE7',
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    backgroundColor: '#ECFDF5',
+    borderColor: '#A7F3D0',
+    borderWidth: 1,
     paddingHorizontal: 7,
     paddingVertical: 2,
     borderRadius: 6,
   },
+  statusDot: {
+    width: 5,
+    height: 5,
+    borderRadius: 2.5,
+    backgroundColor: '#10B981',
+  },
   statusPillText: {
-    fontSize: 11,
+    fontSize: 10,
     fontWeight: '700',
-    color: '#15803D',
+    color: '#047857',
   },
 });
+

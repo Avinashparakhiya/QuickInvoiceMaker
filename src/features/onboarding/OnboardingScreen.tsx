@@ -10,7 +10,7 @@ import {
   NativeSyntheticEvent,
   NativeScrollEvent,
 } from 'react-native';
-import { FileText, Building2, Zap, ChevronRight } from 'lucide-react-native';
+import { FileText, Building2, Zap, ArrowRight, ShieldCheck } from 'lucide-react-native';
 import { colors } from '../../theme/colors';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
@@ -22,8 +22,8 @@ interface OnboardingScreenProps {
 interface OnboardingPage {
   id: string;
   icon: React.ReactNode;
-  bgColor: string;
   iconBgColor: string;
+  badge: string;
   title: string;
   titleHighlight: string;
   subtitle: string;
@@ -32,33 +32,33 @@ interface OnboardingPage {
 const pages: OnboardingPage[] = [
   {
     id: 'welcome',
-    icon: <FileText size={48} color="#22C55E" strokeWidth={1.5} />,
-    bgColor: '#FFFFFF',
-    iconBgColor: '#DCFCE7',
-    title: 'Create & Send Invoices',
-    titleHighlight: 'with Ease',
+    icon: <FileText size={44} color="#10B981" strokeWidth={1.8} />,
+    iconBgColor: '#ECFDF5',
+    badge: '⚡ ULTRA-FAST INVOICING',
+    title: 'Create & Share Invoices',
+    titleHighlight: 'in under 60 seconds',
     subtitle:
-      'Professional invoices in under 60 seconds. 12 beautiful templates, instant PDF generation, and one-tap sharing.',
+      'Craft stunning, client-ready PDF invoices with 12+ professional templates, automatic tax & discounts, and instant WhatsApp or Email dispatch.',
   },
   {
     id: 'organizations',
-    icon: <Building2 size={48} color="#22C55E" strokeWidth={1.5} />,
-    bgColor: '#FFFFFF',
-    iconBgColor: '#F0FDF4',
+    icon: <Building2 size={44} color="#10B981" strokeWidth={1.8} />,
+    iconBgColor: '#ECFDF5',
+    badge: '🏢 MULTI-ORGANIZATION',
     title: 'Manage Multiple',
-    titleHighlight: 'Businesses',
+    titleHighlight: 'Businesses & Brands',
     subtitle:
-      'Switch between organizations seamlessly. Each business gets its own customers, invoices, templates, and financial reports.',
+      'Seamlessly switch between unlimited business entities. Each organization maintains its own logo, currency, numbering sequences, and tax rules.',
   },
   {
     id: 'speed',
-    icon: <Zap size={48} color="#22C55E" strokeWidth={1.5} />,
-    bgColor: '#FFFFFF',
-    iconBgColor: '#DCFCE7',
-    title: 'Fast. Simple.',
-    titleHighlight: 'Professional.',
+    icon: <ShieldCheck size={44} color="#10B981" strokeWidth={1.8} />,
+    iconBgColor: '#ECFDF5',
+    badge: '🔒 100% PRIVATE & OFFLINE',
+    title: 'Complete Financial Peace',
+    titleHighlight: 'Without Cloud Lag',
     subtitle:
-      'Track payments, send reminders, export reports, and manage expenses — all offline, all on your device.',
+      'Your financial data stays securely on your device with high-performance SQLite storage. Track payments, credit notes, and export comprehensive audit reports.',
   },
 ];
 
@@ -104,6 +104,22 @@ export const OnboardingScreen: React.FC<OnboardingScreenProps> = ({
 
   return (
     <View style={styles.container}>
+      {/* Top Bar with Skip */}
+      <View style={styles.topBar}>
+        <View style={styles.topBrand}>
+          <Text style={styles.topBrandText}>Quick Invoice</Text>
+        </View>
+        {!isLastPage && (
+          <TouchableOpacity
+            activeOpacity={0.7}
+            onPress={onComplete}
+            style={styles.skipTopBtn}
+          >
+            <Text style={styles.skipTopText}>Skip</Text>
+          </TouchableOpacity>
+        )}
+      </View>
+
       {/* Carousel */}
       <ScrollView
         ref={scrollRef}
@@ -125,26 +141,22 @@ export const OnboardingScreen: React.FC<OnboardingScreenProps> = ({
                   </View>
                 </View>
               </View>
+            </View>
 
-              {/* Floating decorative elements */}
-              <View style={styles.floatingDoc1}>
-                <View style={styles.miniDocLine} />
-                <View style={[styles.miniDocLine, { width: 16 }]} />
-              </View>
-              <View style={styles.floatingDoc2}>
-                <View style={styles.miniDocLine} />
-                <View style={[styles.miniDocLine, { width: 12 }]} />
-                <View style={[styles.miniDocLine, { width: 18 }]} />
+            {/* Feature Badge */}
+            <View style={styles.badgeWrapper}>
+              <View style={styles.badgePill}>
+                <Text style={styles.badgePillText}>{page.badge}</Text>
               </View>
             </View>
 
             {/* Text content */}
             <View style={styles.textContent}>
               <Text style={styles.pageTitle}>
-                {page.title}{'\n'}
+                {page.title}{' '}
                 <Text style={styles.pageTitleHighlight}>{page.titleHighlight}</Text>
               </Text>
-              <Text style={styles.pageSubtitle}>Fast. Simple. Professional.</Text>
+              <Text style={styles.pageSubtitle}>{page.subtitle}</Text>
             </View>
           </View>
         ))}
@@ -157,11 +169,11 @@ export const OnboardingScreen: React.FC<OnboardingScreenProps> = ({
           {pages.map((_, i) => {
             const dotWidth = dotAnimations[i].interpolate({
               inputRange: [0, 1],
-              outputRange: [8, 24],
+              outputRange: [8, 26],
             });
             const dotOpacity = dotAnimations[i].interpolate({
               inputRange: [0, 1],
-              outputRange: [0.3, 1],
+              outputRange: [0.35, 1],
             });
             return (
               <Animated.View
@@ -181,20 +193,14 @@ export const OnboardingScreen: React.FC<OnboardingScreenProps> = ({
 
         {/* Action button */}
         <TouchableOpacity
-          activeOpacity={0.85}
-          onPress={onComplete}
+          activeOpacity={0.88}
+          onPress={handleNext}
           style={styles.nextButton}
         >
-          <Text style={styles.nextButtonText}>Get Started</Text>
-        </TouchableOpacity>
-
-        {/* Skip button below */}
-        <TouchableOpacity
-          activeOpacity={0.7}
-          onPress={onComplete}
-          style={styles.skipButtonBottom}
-        >
-          <Text style={styles.skipText}>Skip</Text>
+          <Text style={styles.nextButtonText}>
+            {isLastPage ? 'Get Started' : 'Continue'}
+          </Text>
+          <ArrowRight size={18} color="#FFFFFF" strokeWidth={2.4} style={{ marginLeft: 6 }} />
         </TouchableOpacity>
       </View>
     </View>
@@ -204,17 +210,35 @@ export const OnboardingScreen: React.FC<OnboardingScreenProps> = ({
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#FFFFFF',
+    backgroundColor: '#F8FAFC',
   },
-  skipButtonBottom: {
-    paddingVertical: 12,
-    paddingHorizontal: 20,
-    marginTop: 8,
+  topBar: {
+    height: 56,
+    flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: 24,
+    paddingTop: 10,
   },
-  skipText: {
-    fontSize: 14,
+  topBrand: {
+    backgroundColor: '#ECFDF5',
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: 8,
+  },
+  topBrandText: {
+    fontSize: 12,
+    fontWeight: '800',
+    color: '#047857',
+    letterSpacing: -0.2,
+  },
+  skipTopBtn: {
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 8,
+  },
+  skipTopText: {
+    fontSize: 13,
     fontWeight: '600',
     color: '#64748B',
   },
@@ -224,85 +248,64 @@ const styles = StyleSheet.create({
   page: {
     flex: 1,
     justifyContent: 'center',
-    paddingHorizontal: 32,
+    paddingHorizontal: 28,
   },
 
   // Illustration
   illustrationArea: {
     alignItems: 'center',
-    marginBottom: 48,
+    marginBottom: 28,
     position: 'relative',
   },
   bgCircleOuter: {
     width: 200,
     height: 200,
     borderRadius: 100,
-    backgroundColor: colors.primarySubtle,
+    backgroundColor: '#ECFDF5',
     alignItems: 'center',
     justifyContent: 'center',
   },
   bgCircleInner: {
-    width: 160,
-    height: 160,
-    borderRadius: 80,
+    width: 156,
+    height: 156,
+    borderRadius: 78,
     backgroundColor: '#F0FDF4',
     alignItems: 'center',
     justifyContent: 'center',
   },
   iconCircle: {
-    width: 110,
-    height: 110,
-    borderRadius: 55,
+    width: 108,
+    height: 108,
+    borderRadius: 54,
     alignItems: 'center',
     justifyContent: 'center',
     borderWidth: 2,
-    borderColor: '#BBF7D0',
+    borderColor: '#A7F3D0',
+    shadowColor: '#10B981',
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.18,
+    shadowRadius: 14,
+    elevation: 4,
   },
 
-  // Floating decorative mini documents
-  floatingDoc1: {
-    position: 'absolute',
-    top: 20,
-    right: 30,
-    width: 36,
-    height: 44,
-    backgroundColor: '#FFFFFF',
-    borderRadius: 8,
-    borderWidth: 1,
-    borderColor: colors.border,
-    padding: 8,
-    justifyContent: 'center',
-    gap: 6,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.06,
-    shadowRadius: 4,
-    elevation: 2,
+  // Badge
+  badgeWrapper: {
+    alignItems: 'center',
+    marginBottom: 12,
   },
-  floatingDoc2: {
-    position: 'absolute',
-    bottom: 10,
-    left: 20,
-    width: 40,
-    height: 50,
-    backgroundColor: '#FFFFFF',
-    borderRadius: 8,
+  badgePill: {
+    backgroundColor: '#ECFDF5',
     borderWidth: 1,
-    borderColor: colors.border,
-    padding: 8,
-    justifyContent: 'center',
-    gap: 5,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.06,
-    shadowRadius: 4,
-    elevation: 2,
+    borderColor: '#A7F3D0',
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: 8,
   },
-  miniDocLine: {
-    width: 20,
-    height: 3,
-    backgroundColor: '#DCFCE7',
-    borderRadius: 2,
+  badgePillText: {
+    fontSize: 10,
+    fontWeight: '800',
+    color: '#047857',
+    letterSpacing: 0.5,
   },
 
   // Text
@@ -311,19 +314,19 @@ const styles = StyleSheet.create({
     paddingHorizontal: 8,
   },
   pageTitle: {
-    fontSize: 28,
-    fontWeight: '700',
+    fontSize: 26,
+    fontWeight: '800',
     color: '#0F172A',
     textAlign: 'center',
-    lineHeight: 36,
-    marginBottom: 14,
+    lineHeight: 34,
+    marginBottom: 12,
     letterSpacing: -0.5,
   },
   pageTitleHighlight: {
-    color: '#22C55E',
+    color: '#059669',
   },
   pageSubtitle: {
-    fontSize: 15,
+    fontSize: 14,
     fontWeight: '400',
     color: '#64748B',
     textAlign: 'center',
@@ -333,7 +336,7 @@ const styles = StyleSheet.create({
 
   // Bottom controls
   bottomControls: {
-    paddingHorizontal: 32,
+    paddingHorizontal: 28,
     paddingBottom: 40,
     alignItems: 'center',
   },
@@ -342,23 +345,23 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     gap: 8,
-    marginBottom: 32,
+    marginBottom: 28,
   },
   dot: {
-    height: 8,
-    borderRadius: 4,
+    height: 7,
+    borderRadius: 3.5,
   },
   nextButton: {
     width: '100%',
-    height: 54,
-    backgroundColor: '#22C55E',
-    borderRadius: 14,
+    height: 52,
+    backgroundColor: '#10B981',
+    borderRadius: 16,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    shadowColor: '#22C55E',
+    shadowColor: '#10B981',
     shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.25,
+    shadowOpacity: 0.35,
     shadowRadius: 12,
     elevation: 6,
   },
@@ -366,6 +369,7 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '700',
     color: '#FFFFFF',
-    letterSpacing: 0.3,
+    letterSpacing: -0.1,
   },
 });
+

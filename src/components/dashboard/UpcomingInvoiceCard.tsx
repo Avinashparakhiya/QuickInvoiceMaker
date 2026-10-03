@@ -1,10 +1,10 @@
 import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
-import { AlertCircle, AlertTriangle } from 'lucide-react-native';
+import { AlertCircle, AlertTriangle, Clock } from 'lucide-react-native';
 import { colors } from '../../theme/colors';
 import { Invoice } from '../../types';
 import { formatCurrency } from '../../utils/currency';
-import { getDueStatusText } from '../../utils/dates';
+import { getDueStatusText, formatDate } from '../../utils/dates';
 
 interface UpcomingInvoiceCardProps {
   invoice: Invoice;
@@ -18,32 +18,48 @@ export const UpcomingInvoiceCard: React.FC<UpcomingInvoiceCardProps> = ({
   const dueInfo = getDueStatusText(invoice.dueDate);
   const isOverdue = dueInfo.isOverdue;
 
+  const getCustomerInitials = (name?: string) => {
+    if (!name) return 'WK';
+    const parts = name.trim().split(/\s+/);
+    if (parts.length === 1) return parts[0].substring(0, 2).toUpperCase();
+    return (parts[0][0] + parts[1][0]).toUpperCase();
+  };
+
   return (
     <TouchableOpacity
-      activeOpacity={0.72}
+      activeOpacity={0.75}
       onPress={onPress}
       style={styles.card}
     >
       <View
         style={[
           styles.iconBox,
-          { backgroundColor: isOverdue ? '#FEE2E2' : '#FEF3C7' },
+          { backgroundColor: isOverdue ? '#FFF1F2' : '#FFFBEB' },
         ]}
       >
-        {isOverdue ? (
-          <AlertCircle size={18} color="#EF4444" strokeWidth={2.2} />
-        ) : (
-          <AlertTriangle size={18} color="#F59E0B" strokeWidth={2.2} />
-        )}
+        <Text
+          style={[
+            styles.avatarText,
+            { color: isOverdue ? '#E11D48' : '#D97706' },
+          ]}
+        >
+          {getCustomerInitials(invoice.customerName)}
+        </Text>
       </View>
 
       <View style={styles.detailsCol}>
-        <Text numberOfLines={1} style={styles.invoiceNumber}>
-          {invoice.invoiceNumber}
-        </Text>
         <Text numberOfLines={1} style={styles.customerName}>
           {invoice.customerName || 'Walk-in Customer'}
         </Text>
+        <View style={styles.subRow}>
+          <Text numberOfLines={1} style={styles.invoiceNumber}>
+            {invoice.invoiceNumber}
+          </Text>
+          <Text style={styles.bulletDot}>•</Text>
+          <Text style={styles.dateText}>
+            Due {formatDate(invoice.dueDate, 'dd MMM')}
+          </Text>
+        </View>
       </View>
 
       <View style={styles.rightCol}>
@@ -53,13 +69,22 @@ export const UpcomingInvoiceCard: React.FC<UpcomingInvoiceCardProps> = ({
         <View
           style={[
             styles.dueBadge,
-            { backgroundColor: isOverdue ? '#FEE2E2' : '#FEF3C7' },
+            {
+              backgroundColor: isOverdue ? '#FFF1F2' : '#FFFBEB',
+              borderColor: isOverdue ? '#FECDD3' : '#FDE68A',
+            },
           ]}
         >
+          <View
+            style={[
+              styles.dueDot,
+              { backgroundColor: isOverdue ? '#EF4444' : '#F59E0B' },
+            ]}
+          />
           <Text
             style={[
               styles.dueBadgeText,
-              { color: isOverdue ? '#DC2626' : '#D97706' },
+              { color: isOverdue ? '#BE123C' : '#B45309' },
             ]}
           >
             {dueInfo.text}
@@ -75,43 +100,62 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     backgroundColor: '#FFFFFF',
-    borderRadius: 14,
+    borderRadius: 16,
     paddingVertical: 12,
     paddingHorizontal: 14,
     marginBottom: 10,
     borderWidth: 1,
-    borderColor: colors.border,
-    shadowColor: '#000000',
-    shadowOffset: { width: 0, height: 1 },
+    borderColor: 'rgba(226, 232, 240, 0.8)',
+    shadowColor: '#0F172A',
+    shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.03,
-    shadowRadius: 4,
-    elevation: 1,
-    minHeight: 68,
+    shadowRadius: 6,
+    elevation: 2,
+    minHeight: 70,
   },
   iconBox: {
-    width: 38,
-    height: 38,
-    borderRadius: 10,
+    width: 42,
+    height: 42,
+    borderRadius: 12,
     alignItems: 'center',
     justifyContent: 'center',
     marginRight: 12,
   },
-  detailsCol: {
-    flex: 1,
-    paddingRight: 8,
-    justifyContent: 'center',
-  },
-  invoiceNumber: {
+  avatarText: {
     fontSize: 14,
-    fontWeight: '700',
-    color: '#0F172A',
-    marginBottom: 2,
+    fontWeight: '800',
     letterSpacing: -0.2,
   },
+  detailsCol: {
+    flex: 1,
+    justifyContent: 'center',
+    marginRight: 8,
+  },
   customerName: {
+    fontSize: 15,
+    fontWeight: '700',
+    color: '#0F172A',
+    letterSpacing: -0.2,
+    marginBottom: 2,
+  },
+  subRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 5,
+  },
+  invoiceNumber: {
     fontSize: 12,
-    fontWeight: '500',
+    fontWeight: '600',
     color: '#64748B',
+  },
+  bulletDot: {
+    fontSize: 10,
+    color: '#CBD5E1',
+  },
+  dateText: {
+    fontSize: 12,
+    color: '#94A3B8',
+    fontWeight: '500',
   },
   rightCol: {
     alignItems: 'flex-end',
@@ -119,19 +163,29 @@ const styles = StyleSheet.create({
   },
   amount: {
     fontSize: 15,
-    fontWeight: '700',
+    fontWeight: '800',
     color: '#0F172A',
-    letterSpacing: -0.2,
+    letterSpacing: -0.3,
     marginBottom: 3,
   },
   dueBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
     paddingHorizontal: 7,
     paddingVertical: 2,
     borderRadius: 6,
+    borderWidth: 1,
+  },
+  dueDot: {
+    width: 5,
+    height: 5,
+    borderRadius: 2.5,
   },
   dueBadgeText: {
-    fontSize: 11,
+    fontSize: 10,
     fontWeight: '700',
-    letterSpacing: -0.1,
+    letterSpacing: 0.1,
   },
 });
+

@@ -1,5 +1,6 @@
 import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, ViewStyle } from 'react-native';
+import { TrendingUp, Clock, AlertCircle, FileText, CheckCircle2 } from 'lucide-react-native';
 import { colors } from '../../theme/colors';
 import { typography } from '../../theme/typography';
 import { formatCurrency } from '../../utils/currency';
@@ -33,31 +34,39 @@ export const KPIStatCard: React.FC<KPIStatCardProps> = ({
   style,
   onPress,
 }) => {
-  const getToneColors = () => {
+  const getToneConfig = () => {
     switch (tone) {
       case 'green':
         return {
-          accent: '#22C55E',
-          softBg: '#DCFCE7',
-          textColor: '#15803D',
+          accent: '#10B981',
+          softBg: '#ECFDF5',
+          textColor: '#047857',
+          borderColor: '#A7F3D0',
+          defaultIcon: <TrendingUp size={14} color="#059669" strokeWidth={2.4} />,
         };
       case 'amber':
         return {
           accent: '#F59E0B',
-          softBg: '#FEF3C7',
+          softBg: '#FFFBEB',
           textColor: '#B45309',
+          borderColor: '#FDE68A',
+          defaultIcon: <Clock size={14} color="#D97706" strokeWidth={2.4} />,
         };
       case 'red':
         return {
           accent: '#EF4444',
-          softBg: '#FEE2E2',
-          textColor: '#B91C1C',
+          softBg: '#FFF1F2',
+          textColor: '#BE123C',
+          borderColor: '#FECDD3',
+          defaultIcon: <AlertCircle size={14} color="#E11D48" strokeWidth={2.4} />,
         };
       case 'blue':
         return {
-          accent: '#3B82F6',
-          softBg: '#E0F2FE',
+          accent: '#0EA5E9',
+          softBg: '#F0F9FF',
           textColor: '#0369A1',
+          borderColor: '#BAE6FD',
+          defaultIcon: <CheckCircle2 size={14} color="#0284C7" strokeWidth={2.4} />,
         };
       case 'slate':
       default:
@@ -65,11 +74,13 @@ export const KPIStatCard: React.FC<KPIStatCardProps> = ({
           accent: '#64748B',
           softBg: '#F1F5F9',
           textColor: '#475569',
+          borderColor: '#E2E8F0',
+          defaultIcon: <FileText size={14} color="#64748B" strokeWidth={2.4} />,
         };
     }
   };
 
-  const toneConfig = getToneColors();
+  const config = getToneConfig();
 
   const displayValue = isCurrency && amount !== undefined
     ? formatCurrency(amount, currencySymbol, 'BEFORE', 2)
@@ -79,40 +90,39 @@ export const KPIStatCard: React.FC<KPIStatCardProps> = ({
 
   return (
     <TouchableOpacity
-      activeOpacity={0.7}
+      activeOpacity={0.75}
       onPress={onPress}
       style={[styles.card, style]}
     >
+      <View style={[styles.topAccentBar, { backgroundColor: config.accent }]} />
       <View style={styles.cardContent}>
         <View style={styles.topRow}>
-          <Text numberOfLines={1} style={[styles.title, tone === 'red' && { color: '#EF4444' }]}>
+          <Text numberOfLines={1} style={styles.title}>
             {title}
           </Text>
-          {icon ? (
-            <View style={[styles.iconBox, { backgroundColor: toneConfig.softBg }]}>
-              {icon}
-            </View>
-          ) : (
-            <View style={[styles.indicatorDot, { backgroundColor: toneConfig.accent }]} />
-          )}
+          <View style={[styles.iconBox, { backgroundColor: config.softBg }]}>
+            {icon || config.defaultIcon}
+          </View>
         </View>
 
         <Text
           numberOfLines={1}
           style={[
             styles.amount,
-            tone === 'green' && { color: '#15803D' },
-            tone === 'amber' && { color: '#D97706' },
-            tone === 'red' && { color: '#EF4444' },
+            tone === 'green' && { color: '#047857' },
+            tone === 'amber' && { color: '#B45309' },
+            tone === 'red' && { color: '#BE123C' },
           ]}
         >
           {displayValue}
         </Text>
 
         {count !== undefined && countLabel ? (
-          <Text numberOfLines={1} style={styles.countText}>
-            {count} {countLabel}
-          </Text>
+          <View style={styles.countPill}>
+            <Text numberOfLines={1} style={styles.countText}>
+              {count} {countLabel}
+            </Text>
+          </View>
         ) : null}
       </View>
     </TouchableOpacity>
@@ -126,18 +136,22 @@ const styles = StyleSheet.create({
     borderRadius: 16,
     overflow: 'hidden',
     borderWidth: 1,
-    borderColor: colors.border,
-    shadowColor: '#000000',
+    borderColor: 'rgba(226, 232, 240, 0.8)',
+    shadowColor: '#0F172A',
     shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.03,
-    shadowRadius: 8,
-    elevation: 1,
-    minHeight: 84,
+    shadowOpacity: 0.04,
+    shadowRadius: 6,
+    elevation: 2,
+    minHeight: 90,
+  },
+  topAccentBar: {
+    height: 3,
+    width: '100%',
   },
   cardContent: {
     flex: 1,
     paddingVertical: 12,
-    paddingHorizontal: 12,
+    paddingHorizontal: 13,
     justifyContent: 'center',
   },
   topRow: {
@@ -147,15 +161,10 @@ const styles = StyleSheet.create({
     marginBottom: 6,
   },
   title: {
-    ...typography.captionRegular,
-    color: colors.textSecondary,
     fontSize: 12,
-    fontWeight: '500',
-  },
-  indicatorDot: {
-    width: 8,
-    height: 8,
-    borderRadius: 4,
+    fontWeight: '600',
+    color: '#64748B',
+    letterSpacing: -0.1,
   },
   iconBox: {
     width: 26,
@@ -165,15 +174,23 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   amount: {
-    ...typography.h3,
-    color: colors.text,
-    fontSize: 18,
-    fontWeight: '700',
-    letterSpacing: -0.3,
+    fontSize: 19,
+    fontWeight: '800',
+    color: '#0F172A',
+    letterSpacing: -0.4,
+  },
+  countPill: {
+    marginTop: 4,
+    alignSelf: 'flex-start',
+    backgroundColor: '#F8FAFC',
+    paddingHorizontal: 6,
+    paddingVertical: 1.5,
+    borderRadius: 6,
   },
   countText: {
-    ...typography.micro,
-    color: colors.textMuted,
-    marginTop: 3,
+    fontSize: 10,
+    fontWeight: '600',
+    color: '#64748B',
+    letterSpacing: 0.1,
   },
 });

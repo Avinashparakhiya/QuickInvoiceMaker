@@ -56,7 +56,7 @@ export const Button: React.FC<ButtonProps> = ({
     // Variant
     switch (variant) {
       case 'primary':
-        list.push(styles.primary, shadows.sm);
+        list.push(styles.primary, shadows.glow);
         break;
       case 'secondary':
         list.push(styles.secondary);
@@ -121,7 +121,7 @@ export const Button: React.FC<ButtonProps> = ({
 
   return (
     <TouchableOpacity
-      activeOpacity={0.8}
+      activeOpacity={0.82}
       onPress={onPress}
       disabled={disabled || loading}
       style={getContainerStyle()}
@@ -144,7 +144,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    borderRadius: 12,
+    borderRadius: 14,
   },
   fullWidth: {
     width: '100%',
@@ -163,33 +163,35 @@ const styles = StyleSheet.create({
   sizeSm: {
     paddingVertical: 8,
     paddingHorizontal: 12,
-    borderRadius: 8,
+    borderRadius: 10,
   },
   sizeMd: {
     paddingVertical: 12,
-    paddingHorizontal: 16,
-    borderRadius: 12,
+    paddingHorizontal: 18,
+    borderRadius: 14,
   },
   sizeLg: {
     paddingVertical: 14,
-    paddingHorizontal: 20,
-    borderRadius: 14,
+    paddingHorizontal: 22,
+    borderRadius: 16,
   },
   primary: {
-    backgroundColor: colors.primary,
+    backgroundColor: '#10B981',
+    borderWidth: 1,
+    borderColor: '#059669',
   },
   secondary: {
-    backgroundColor: colors.primarySoft,
+    backgroundColor: '#ECFDF5',
     borderWidth: 1,
-    borderColor: colors.primaryLight,
+    borderColor: '#A7F3D0',
   },
   outline: {
-    backgroundColor: 'transparent',
+    backgroundColor: '#FFFFFF',
     borderWidth: 1.5,
-    borderColor: colors.border,
+    borderColor: 'rgba(226, 232, 240, 0.9)',
   },
   danger: {
-    backgroundColor: colors.danger,
+    backgroundColor: '#EF4444',
   },
   ghost: {
     backgroundColor: 'transparent',
@@ -203,7 +205,9 @@ const styles = StyleSheet.create({
     opacity: 0.5,
   },
   textBase: {
-    ...typography.button,
+    fontSize: 15,
+    fontWeight: '700',
+    letterSpacing: -0.1,
   },
   textSm: {
     fontSize: 13,
@@ -219,26 +223,26 @@ const styles = StyleSheet.create({
   },
   textPrimary: {
     color: '#FFFFFF',
-    fontWeight: '600',
+    fontWeight: '700',
   },
   textSecondary: {
-    color: colors.primaryDark,
-    fontWeight: '600',
+    color: '#047857',
+    fontWeight: '700',
   },
   textOutline: {
-    color: colors.text,
-    fontWeight: '600',
+    color: '#0F172A',
+    fontWeight: '700',
   },
   textDanger: {
     color: '#FFFFFF',
-    fontWeight: '600',
+    fontWeight: '700',
   },
   textGhost: {
     color: colors.textSecondary,
-    fontWeight: '500',
+    fontWeight: '600',
   },
   textWhite: {
-    color: colors.text,
-    fontWeight: '600',
+    color: '#0F172A',
+    fontWeight: '700',
   },
 });

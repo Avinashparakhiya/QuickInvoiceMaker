@@ -62,30 +62,35 @@ export const DateRangeFilter: React.FC<DateRangeFilterProps> = ({
 
 const styles = StyleSheet.create({
   container: {
-    marginBottom: 10,
+    marginBottom: 12,
     paddingTop: 4,
   },
   scrollRow: {
     flexDirection: 'row',
-    gap: 8,
+    gap: 7,
     paddingVertical: 2,
   },
   chip: {
     paddingHorizontal: 14,
     paddingVertical: 7,
-    borderRadius: 14,
+    borderRadius: 12,
     borderWidth: 1,
     minHeight: 34,
     alignItems: 'center',
     justifyContent: 'center',
   },
   chipActive: {
-    backgroundColor: '#22C55E',
-    borderColor: '#22C55E',
+    backgroundColor: '#10B981',
+    borderColor: '#10B981',
+    shadowColor: '#10B981',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.25,
+    shadowRadius: 4,
+    elevation: 2,
   },
   chipInactive: {
     backgroundColor: '#FFFFFF',
-    borderColor: '#E2E8F0',
+    borderColor: 'rgba(226, 232, 240, 0.8)',
   },
   chipText: {
     fontSize: 12,

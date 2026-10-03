@@ -1,66 +1,107 @@
 export const colors = {
-  // Brand Colors
-  primary: '#22C55E', // Fresh Emerald Green
-  primaryDark: '#16A34A',
-  primaryDarker: '#15803D',
-  primaryLight: '#86EFAC',
-  primarySoft: '#DCFCE7',
+  // Brand Colors (Vibrant Emerald & Mint FinTech Theme)
+  primary: '#10B981', // Modern Emerald Green
+  primaryDark: '#059669',
+  primaryDarker: '#047857',
+  primaryLight: '#6EE7B7',
+  primarySoft: '#ECFDF5',
   primarySubtle: '#F0FDF4',
+  primaryGlow: 'rgba(16, 185, 129, 0.25)',
+
+  // Secondary Brand & Accent Colors
+  accent: '#0EA5E9', // Sky Blue
+  accentSoft: '#F0F9FF',
+  indigo: '#6366F1',
+  indigoSoft: '#EEF2FF',
+  purple: '#8B5CF6',
+  purpleSoft: '#F5F3FF',
 
   // Background & Surfaces
-  background: '#FFFFFF', // Pure White Canvas Background
-  backgroundSecondary: '#F8FAFC',
+  background: '#F8FAFC', // Crisp, modern canvas background
+  backgroundSecondary: '#F1F5F9',
+  backgroundMint: '#F0FDF4',
   card: '#FFFFFF',
-  cardPressed: '#F8FAFC',
-  overlay: 'rgba(15, 23, 42, 0.45)',
+  cardSecondary: '#F8FAFC',
+  cardPressed: '#F1F5F9',
+  cardHover: '#F8FAFC',
+  overlay: 'rgba(15, 23, 42, 0.55)',
+  glassBg: 'rgba(255, 255, 255, 0.92)',
+  glassBorder: 'rgba(226, 232, 240, 0.8)',
 
   // Borders & Dividers
   border: '#E2E8F0',
   borderLight: '#F1F5F9',
-  borderFocus: '#22C55E',
+  borderDark: '#CBD5E1',
+  borderFocus: '#10B981',
 
-  // Typography / Text Hierarchy (Slate)
+  // Typography / Text Hierarchy (Rich Slate & Onyx)
   text: '#0F172A', // Slate 900
-  textSecondary: '#64748B', // Slate 500
+  textPrimary: '#0F172A',
+  textSecondary: '#475569', // Slate 600
   textMuted: '#94A3B8', // Slate 400
+  textLight: '#CBD5E1',
   textInverse: '#FFFFFF',
 
   // Status Badges & Lifecycle Colors
   status: {
     paid: {
-      text: '#15803D',
-      bg: '#DCFCE7',
-      border: '#BBF7D0',
+      text: '#047857',
+      bg: '#ECFDF5',
+      border: '#A7F3D0',
+      dot: '#10B981',
     },
     unpaid: {
       text: '#B45309',
-      bg: '#FEF3C7',
+      bg: '#FFFBEB',
       border: '#FDE68A',
+      dot: '#F59E0B',
     },
     partial: {
       text: '#0369A1',
-      bg: '#E0F2FE',
+      bg: '#F0F9FF',
       border: '#BAE6FD',
+      dot: '#0EA5E9',
     },
     overdue: {
-      text: '#DC2626',
-      bg: '#FEE2E2',
-      border: '#FECACA',
+      text: '#BE123C',
+      bg: '#FFF1F2',
+      border: '#FECDD3',
+      dot: '#F43F5E',
     },
     draft: {
       text: '#475569',
       bg: '#F1F5F9',
       border: '#E2E8F0',
+      dot: '#94A3B8',
     },
     cancelled: {
       text: '#64748B',
       bg: '#F8FAFC',
       border: '#E2E8F0',
+      dot: '#CBD5E1',
+    },
+    accepted: {
+      text: '#047857',
+      bg: '#ECFDF5',
+      border: '#A7F3D0',
+      dot: '#10B981',
+    },
+    declined: {
+      text: '#BE123C',
+      bg: '#FFF1F2',
+      border: '#FECDD3',
+      dot: '#F43F5E',
+    },
+    sent: {
+      text: '#4338CA',
+      bg: '#EEF2FF',
+      border: '#C7D2FE',
+      dot: '#6366F1',
     },
   },
 
   // Functional Colors
-  success: '#16A34A',
+  success: '#10B981',
   warning: '#F59E0B',
   danger: '#EF4444',
   info: '#3B82F6',

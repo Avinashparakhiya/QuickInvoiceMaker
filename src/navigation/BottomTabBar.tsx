@@ -27,18 +27,18 @@ export const BottomTabBar: React.FC<BottomTabBarProps> = ({
   const [quickCreateVisible, setQuickCreateVisible] = useState(false);
 
   const getTabIcon = (routeName: string, isFocused: boolean) => {
-    const iconColor = isFocused ? colors.primary : '#94A3B8';
-    const iconSize = 22;
+    const iconColor = isFocused ? '#059669' : '#64748B';
+    const iconSize = 20;
 
     switch (routeName) {
       case 'DashboardTab':
-        return <Home size={iconSize} color={iconColor} strokeWidth={isFocused ? 2.2 : 1.8} />;
+        return <Home size={iconSize} color={iconColor} strokeWidth={isFocused ? 2.4 : 1.8} />;
       case 'TransactionsTab':
-        return <ReceiptText size={iconSize} color={iconColor} strokeWidth={isFocused ? 2.2 : 1.8} />;
+        return <ReceiptText size={iconSize} color={iconColor} strokeWidth={isFocused ? 2.4 : 1.8} />;
       case 'CalendarTab':
-        return <Calendar size={iconSize} color={iconColor} strokeWidth={isFocused ? 2.2 : 1.8} />;
+        return <Calendar size={iconSize} color={iconColor} strokeWidth={isFocused ? 2.4 : 1.8} />;
       case 'ReportsTab':
-        return <BarChart3 size={iconSize} color={iconColor} strokeWidth={isFocused ? 2.2 : 1.8} />;
+        return <BarChart3 size={iconSize} color={iconColor} strokeWidth={isFocused ? 2.4 : 1.8} />;
       default:
         return null;
     }
@@ -49,11 +49,11 @@ export const BottomTabBar: React.FC<BottomTabBarProps> = ({
       case 'DashboardTab':
         return 'Home';
       case 'TransactionsTab':
-        return 'Transactions';
+        return 'Activity';
       case 'CalendarTab':
-        return 'Calendar';
+        return 'Schedule';
       case 'ReportsTab':
-        return 'Reports';
+        return 'Analytics';
       default:
         return '';
     }
@@ -94,11 +94,11 @@ export const BottomTabBar: React.FC<BottomTabBarProps> = ({
               return (
                 <View key="create-button" style={styles.createButtonWrapper}>
                   <TouchableOpacity
-                    activeOpacity={0.85}
+                    activeOpacity={0.88}
                     onPress={() => setQuickCreateVisible(true)}
                     style={styles.createButton}
                   >
-                    <Plus size={24} color="#FFFFFF" strokeWidth={3} />
+                    <Plus size={24} color="#FFFFFF" strokeWidth={2.8} />
                   </TouchableOpacity>
                 </View>
               );
@@ -123,7 +123,9 @@ export const BottomTabBar: React.FC<BottomTabBarProps> = ({
                 onPress={onPress}
                 style={styles.tabItem}
               >
-                {getTabIcon(route.name, isFocused)}
+                <View style={[styles.iconContainer, isFocused && styles.iconContainerActive]}>
+                  {getTabIcon(route.name, isFocused)}
+                </View>
                 <Text
                   style={[
                     styles.tabLabel,
@@ -151,13 +153,13 @@ const styles = StyleSheet.create({
   bottomOuter: {
     backgroundColor: '#FFFFFF',
     borderTopWidth: 1,
-    borderTopColor: colors.border,
+    borderTopColor: 'rgba(226, 232, 240, 0.8)',
     width: '100%',
     alignItems: 'center',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: -2 },
-    shadowOpacity: 0.04,
-    shadowRadius: 8,
+    shadowColor: '#0F172A',
+    shadowOffset: { width: 0, height: -4 },
+    shadowOpacity: 0.05,
+    shadowRadius: 12,
     elevation: 8,
   },
   barContainer: {
@@ -166,24 +168,34 @@ const styles = StyleSheet.create({
     justifyContent: 'space-around',
     width: '100%',
     height: Platform.OS === 'ios' ? 84 : 64,
-    paddingBottom: Platform.OS === 'ios' ? 24 : 6,
-    paddingHorizontal: 4,
+    paddingBottom: Platform.OS === 'ios' ? 24 : 4,
+    paddingHorizontal: 8,
   },
   tabItem: {
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
-    paddingTop: 8,
+    paddingVertical: 4,
+  },
+  iconContainer: {
+    paddingHorizontal: 12,
+    paddingVertical: 3,
+    borderRadius: 14,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  iconContainerActive: {
+    backgroundColor: '#ECFDF5',
   },
   tabLabel: {
-    fontSize: 10,
-    fontWeight: '500',
-    color: '#94A3B8',
-    marginTop: 4,
-    letterSpacing: 0.1,
+    fontSize: 11,
+    fontWeight: '600',
+    color: '#64748B',
+    marginTop: 2,
+    letterSpacing: -0.1,
   },
   tabLabelActive: {
-    color: colors.primary,
+    color: '#059669',
     fontWeight: '700',
   },
   createButtonWrapper: {
@@ -195,16 +207,16 @@ const styles = StyleSheet.create({
   createButton: {
     width: 52,
     height: 52,
-    borderRadius: 16,
-    backgroundColor: colors.primary,
+    borderRadius: 18,
+    backgroundColor: '#10B981',
     alignItems: 'center',
     justifyContent: 'center',
-    shadowColor: '#22C55E',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
+    shadowColor: '#10B981',
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.4,
     shadowRadius: 12,
     elevation: 8,
-    borderWidth: 4,
+    borderWidth: 3.5,
     borderColor: '#FFFFFF',
   },
 });

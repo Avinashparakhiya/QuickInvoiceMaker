@@ -19,18 +19,18 @@ export const QuoteListItem: React.FC<QuoteListItemProps> = ({
   const getStatusConfig = () => {
     switch (quote.status) {
       case 'ACCEPTED':
-        return { bg: '#DCFCE7', color: '#15803D', label: 'Accepted' };
+        return { bg: '#ECFDF5', border: '#A7F3D0', color: '#047857', dot: '#10B981', label: 'Accepted' };
       case 'SENT':
-        return { bg: '#E0F2FE', color: '#0369A1', label: 'Sent' };
+        return { bg: '#EEF2FF', border: '#C7D2FE', color: '#4338CA', dot: '#6366F1', label: 'Sent' };
       case 'CONVERTED':
-        return { bg: '#E0F2FE', color: '#0284C7', label: 'Converted' };
+        return { bg: '#F0F9FF', border: '#BAE6FD', color: '#0369A1', dot: '#0EA5E9', label: 'Converted' };
       case 'DECLINED':
-        return { bg: '#FEE2E2', color: '#EF4444', label: 'Declined' };
+        return { bg: '#FFF1F2', border: '#FECDD3', color: '#BE123C', dot: '#EF4444', label: 'Declined' };
       case 'EXPIRED':
-        return { bg: '#FEF3C7', color: '#D97706', label: 'Expired' };
+        return { bg: '#FFFBEB', border: '#FDE68A', color: '#B45309', dot: '#F59E0B', label: 'Expired' };
       case 'DRAFT':
       default:
-        return { bg: '#F1F5F9', color: '#64748B', label: 'Draft' };
+        return { bg: '#F1F5F9', border: '#E2E8F0', color: '#475569', dot: '#94A3B8', label: 'Draft' };
     }
   };
 
@@ -38,26 +38,29 @@ export const QuoteListItem: React.FC<QuoteListItemProps> = ({
 
   return (
     <TouchableOpacity
-      activeOpacity={0.72}
+      activeOpacity={0.75}
       onPress={onPress}
       style={styles.card}
     >
       {/* Left: Quote Icon Circle */}
       <View style={styles.iconCircle}>
-        <FileSpreadsheet size={20} color="#0284C7" strokeWidth={2.2} />
+        <FileSpreadsheet size={19} color="#4F46E5" strokeWidth={2.4} />
       </View>
 
-      {/* Center: Quote Number + Customer + Valid Date */}
+      {/* Center: Customer + Quote Number + Valid Date */}
       <View style={styles.centerCol}>
-        <Text numberOfLines={1} style={styles.quoteNumber}>
-          {quote.estimateNumber}
-        </Text>
         <Text numberOfLines={1} style={styles.customerName}>
           {quote.customerName || 'Potential Client'}
         </Text>
-        <Text style={styles.validityText}>
-          {quote.expiryDate ? `Valid till ${formatDate(quote.expiryDate, 'dd MMM yyyy')}` : 'No expiry set'}
-        </Text>
+        <View style={styles.subRow}>
+          <Text numberOfLines={1} style={styles.quoteNumber}>
+            {quote.estimateNumber}
+          </Text>
+          <Text style={styles.dotSeparator}>•</Text>
+          <Text style={styles.validityText}>
+            {quote.expiryDate ? `Exp ${formatDate(quote.expiryDate, 'dd MMM')}` : 'No expiry'}
+          </Text>
+        </View>
       </View>
 
       {/* Right: Amount + Status */}
@@ -65,7 +68,8 @@ export const QuoteListItem: React.FC<QuoteListItemProps> = ({
         <Text style={styles.amount}>
           {formatCurrency(quote.totalAmount, quote.currencySymbol || currencySymbol)}
         </Text>
-        <View style={[styles.statusPill, { backgroundColor: statusConfig.bg }]}>
+        <View style={[styles.statusPill, { backgroundColor: statusConfig.bg, borderColor: statusConfig.border }]}>
+          <View style={[styles.statusDot, { backgroundColor: statusConfig.dot }]} />
           <Text style={[styles.statusPillText, { color: statusConfig.color }]}>
             {statusConfig.label}
           </Text>
@@ -78,25 +82,25 @@ export const QuoteListItem: React.FC<QuoteListItemProps> = ({
 const styles = StyleSheet.create({
   card: {
     backgroundColor: '#FFFFFF',
-    borderRadius: 14,
+    borderRadius: 16,
     borderWidth: 1,
-    borderColor: '#E2E8F0',
-    padding: 14,
+    borderColor: 'rgba(226, 232, 240, 0.8)',
+    padding: 13,
     marginBottom: 10,
     flexDirection: 'row',
     alignItems: 'center',
-    shadowColor: '#000000',
-    shadowOffset: { width: 0, height: 1 },
+    shadowColor: '#0F172A',
+    shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.03,
-    shadowRadius: 4,
-    elevation: 1,
+    shadowRadius: 6,
+    elevation: 2,
     minHeight: 74,
   },
   iconCircle: {
     width: 42,
     height: 42,
     borderRadius: 12,
-    backgroundColor: '#E0F2FE',
+    backgroundColor: '#EEF2FF',
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -106,41 +110,61 @@ const styles = StyleSheet.create({
     marginRight: 8,
     justifyContent: 'center',
   },
-  quoteNumber: {
-    fontSize: 14,
+  customerName: {
+    fontSize: 15,
     fontWeight: '700',
     color: '#0F172A',
     marginBottom: 2,
     letterSpacing: -0.2,
   },
-  customerName: {
+  subRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+  },
+  quoteNumber: {
     fontSize: 12,
     fontWeight: '600',
     color: '#64748B',
-    marginBottom: 2,
+  },
+  dotSeparator: {
+    fontSize: 10,
+    color: '#CBD5E1',
   },
   validityText: {
-    fontSize: 11,
+    fontSize: 12,
     color: '#94A3B8',
+    fontWeight: '500',
   },
   rightCol: {
     alignItems: 'flex-end',
     justifyContent: 'center',
   },
   amount: {
-    fontSize: 16,
+    fontSize: 15,
     fontWeight: '800',
     color: '#0F172A',
     letterSpacing: -0.3,
-    marginBottom: 4,
+    marginBottom: 3,
   },
   statusPill: {
-    paddingHorizontal: 8,
-    paddingVertical: 2.5,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    paddingHorizontal: 7,
+    paddingVertical: 2,
     borderRadius: 6,
+    borderWidth: 1,
+  },
+  statusDot: {
+    width: 5,
+    height: 5,
+    borderRadius: 2.5,
   },
   statusPillText: {
-    fontSize: 11,
+    fontSize: 10,
     fontWeight: '700',
+    letterSpacing: 0.1,
   },
 });
+

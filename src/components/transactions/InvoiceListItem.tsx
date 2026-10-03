@@ -17,7 +17,7 @@ export const InvoiceListItem: React.FC<InvoiceListItemProps> = ({ invoice, onPre
 
   return (
     <TouchableOpacity
-      activeOpacity={0.72}
+      activeOpacity={0.75}
       onPress={onPress}
       style={styles.card}
     >
@@ -65,18 +65,18 @@ export const InvoiceListItem: React.FC<InvoiceListItemProps> = ({ invoice, onPre
 const styles = StyleSheet.create({
   card: {
     backgroundColor: '#FFFFFF',
-    borderRadius: 14,
+    borderRadius: 16,
     borderWidth: 1,
-    borderColor: '#E2E8F0',
-    padding: 14,
+    borderColor: 'rgba(226, 232, 240, 0.8)',
+    padding: 13,
     marginBottom: 10,
     flexDirection: 'row',
     alignItems: 'center',
-    shadowColor: '#000000',
-    shadowOffset: { width: 0, height: 1 },
+    shadowColor: '#0F172A',
+    shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.03,
-    shadowRadius: 4,
-    elevation: 1,
+    shadowRadius: 6,
+    elevation: 2,
     minHeight: 74,
   },
   centerCol: {
@@ -86,7 +86,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   customerName: {
-    fontSize: 14,
+    fontSize: 15,
     fontWeight: '700',
     color: '#0F172A',
     marginBottom: 3,
@@ -95,6 +95,7 @@ const styles = StyleSheet.create({
   metaRow: {
     flexDirection: 'row',
     alignItems: 'center',
+    gap: 4,
   },
   invoiceNumber: {
     fontSize: 12,
@@ -102,39 +103,37 @@ const styles = StyleSheet.create({
     color: '#64748B',
   },
   dotSeparator: {
-    marginHorizontal: 5,
     fontSize: 10,
-    color: '#94A3B8',
+    color: '#CBD5E1',
   },
   dateText: {
     fontSize: 12,
-    color: '#64748B',
-    fontWeight: '400',
+    color: '#94A3B8',
+    fontWeight: '500',
   },
   rightCol: {
     alignItems: 'flex-end',
     justifyContent: 'center',
   },
   amount: {
-    fontSize: 16,
+    fontSize: 15,
     fontWeight: '800',
     color: '#0F172A',
     letterSpacing: -0.3,
-    marginBottom: 4,
+    marginBottom: 3,
   },
   badgeWrapper: {
-    alignSelf: 'flex-end',
+    marginTop: 1,
   },
   dueText: {
     fontSize: 11,
-    fontWeight: '600',
+    fontWeight: '700',
     marginTop: 3,
-    letterSpacing: -0.1,
   },
   dueTextOverdue: {
-    color: '#EF4444',
+    color: '#BE123C',
   },
   dueTextNormal: {
-    color: '#0284C7',
+    color: '#B45309',
   },
 });

@@ -24,13 +24,13 @@ export const CashflowOverviewCard: React.FC<CashflowOverviewCardProps> = ({
 
   const grandTotal = totalSales > 0 ? totalSales : (collected + outstanding + overdue) || 1;
 
-  const collectedPct = Math.round((collected / grandTotal) * 100);
-  const outstandingPct = Math.round(((outstanding - overdue) / grandTotal) * 100);
-  const overduePct = Math.round((overdue / grandTotal) * 100);
+  const collectedPct = totalSales > 0 ? Math.round((collected / grandTotal) * 100) : 0;
+  const outstandingPct = totalSales > 0 ? Math.round(((outstanding - overdue) / grandTotal) * 100) : 0;
+  const overduePct = totalSales > 0 ? Math.round((overdue / grandTotal) * 100) : 0;
 
   return (
     <TouchableOpacity
-      activeOpacity={onPress ? 0.85 : 1}
+      activeOpacity={onPress ? 0.82 : 1}
       onPress={onPress}
       style={styles.card}
     >
@@ -38,15 +38,15 @@ export const CashflowOverviewCard: React.FC<CashflowOverviewCardProps> = ({
       <View style={styles.headerRow}>
         <View style={styles.headerLeft}>
           <View style={styles.iconBox}>
-            <TrendingUp size={16} color="#15803D" />
+            <TrendingUp size={15} color="#059669" strokeWidth={2.4} />
           </View>
-          <Text style={styles.title}>Cashflow Overview</Text>
+          <Text style={styles.title}>Cashflow Breakdown</Text>
         </View>
 
         {onPress && (
           <View style={styles.viewReportsRow}>
-            <Text style={styles.viewReportsText}>Reports</Text>
-            <ArrowUpRight size={14} color="#15803D" />
+            <Text style={styles.viewReportsText}>View Analytics</Text>
+            <ArrowUpRight size={13} color="#059669" strokeWidth={2.4} />
           </View>
         )}
       </View>
@@ -57,7 +57,7 @@ export const CashflowOverviewCard: React.FC<CashflowOverviewCardProps> = ({
           <View
             style={[
               styles.barSegment,
-              { flex: Math.max(1, collectedPct), backgroundColor: '#22C55E' },
+              { flex: Math.max(1, collectedPct), backgroundColor: '#10B981' },
             ]}
           />
         )}
@@ -87,10 +87,10 @@ export const CashflowOverviewCard: React.FC<CashflowOverviewCardProps> = ({
         {/* Collected */}
         <View style={styles.metricItem}>
           <View style={styles.metricLabelRow}>
-            <View style={[styles.dot, { backgroundColor: '#22C55E' }]} />
-            <Text style={styles.metricLabel}>Collected</Text>
+            <View style={[styles.dot, { backgroundColor: '#10B981' }]} />
+            <Text style={styles.metricLabel}>Collected ({collectedPct}%)</Text>
           </View>
-          <Text style={[styles.metricValue, { color: '#15803D' }]}>
+          <Text style={[styles.metricValue, { color: '#047857' }]}>
             {formatCurrency(collected, currencySymbol)}
           </Text>
         </View>
@@ -99,10 +99,10 @@ export const CashflowOverviewCard: React.FC<CashflowOverviewCardProps> = ({
         <View style={styles.metricItem}>
           <View style={styles.metricLabelRow}>
             <View style={[styles.dot, { backgroundColor: '#F59E0B' }]} />
-            <Text style={styles.metricLabel}>Outstanding</Text>
+            <Text style={styles.metricLabel}>Pending ({outstandingPct}%)</Text>
           </View>
-          <Text style={[styles.metricValue, { color: '#D97706' }]}>
-            {formatCurrency(outstanding, currencySymbol)}
+          <Text style={[styles.metricValue, { color: '#B45309' }]}>
+            {formatCurrency(outstanding - overdue, currencySymbol)}
           </Text>
         </View>
 
@@ -110,9 +110,9 @@ export const CashflowOverviewCard: React.FC<CashflowOverviewCardProps> = ({
         <View style={styles.metricItem}>
           <View style={styles.metricLabelRow}>
             <View style={[styles.dot, { backgroundColor: '#EF4444' }]} />
-            <Text style={styles.metricLabel}>Overdue</Text>
+            <Text style={styles.metricLabel}>Overdue ({overduePct}%)</Text>
           </View>
-          <Text style={[styles.metricValue, { color: '#DC2626' }]}>
+          <Text style={[styles.metricValue, { color: '#BE123C' }]}>
             {formatCurrency(overdue, currencySymbol)}
           </Text>
         </View>
@@ -124,22 +124,22 @@ export const CashflowOverviewCard: React.FC<CashflowOverviewCardProps> = ({
 const styles = StyleSheet.create({
   card: {
     backgroundColor: '#FFFFFF',
-    borderRadius: 16,
+    borderRadius: 18,
     padding: 16,
     marginBottom: 16,
     borderWidth: 1,
-    borderColor: colors.border,
-    shadowColor: '#000000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.03,
-    shadowRadius: 4,
+    borderColor: 'rgba(226, 232, 240, 0.8)',
+    shadowColor: '#0F172A',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.04,
+    shadowRadius: 8,
     elevation: 2,
   },
   headerRow: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    marginBottom: 12,
+    marginBottom: 14,
   },
   headerLeft: {
     flexDirection: 'row',
@@ -150,29 +150,33 @@ const styles = StyleSheet.create({
     width: 28,
     height: 28,
     borderRadius: 8,
-    backgroundColor: colors.primarySubtle,
+    backgroundColor: '#ECFDF5',
     alignItems: 'center',
     justifyContent: 'center',
   },
   title: {
-    ...typography.captionSemiBold,
     color: '#0F172A',
     fontSize: 14,
     fontWeight: '700',
+    letterSpacing: -0.2,
   },
   viewReportsRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 2,
+    gap: 3,
+    backgroundColor: '#ECFDF5',
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 8,
   },
   viewReportsText: {
-    ...typography.micro,
-    color: '#15803D',
+    color: '#059669',
     fontWeight: '700',
+    fontSize: 11,
   },
   barContainer: {
-    height: 8,
-    borderRadius: 4,
+    height: 10,
+    borderRadius: 5,
     backgroundColor: '#F1F5F9',
     flexDirection: 'row',
     overflow: 'hidden',
@@ -181,7 +185,7 @@ const styles = StyleSheet.create({
   },
   barSegment: {
     height: '100%',
-    borderRadius: 2,
+    borderRadius: 3,
   },
   metricsRow: {
     flexDirection: 'row',
@@ -195,21 +199,22 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 5,
-    marginBottom: 3,
+    marginBottom: 4,
   },
   dot: {
-    width: 7,
-    height: 7,
-    borderRadius: 3.5,
+    width: 6,
+    height: 6,
+    borderRadius: 3,
   },
   metricLabel: {
-    fontSize: 11,
+    fontSize: 10,
     color: '#64748B',
-    fontWeight: '500',
+    fontWeight: '600',
   },
   metricValue: {
     fontSize: 13,
-    fontWeight: '700',
+    fontWeight: '800',
     letterSpacing: -0.2,
   },
 });
+
