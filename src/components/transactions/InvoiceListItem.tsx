@@ -69,7 +69,7 @@ export const InvoiceListItem: React.FC<InvoiceListItemProps> = ({ invoice, onPre
       {/* Left: Customer Avatar */}
       <CustomerAvatar
         name={invoice.customerName}
-        size={42}
+        size={36}
         backgroundColor={statusConfig.avatarBg}
         textColor={statusConfig.avatarText}
       />
@@ -115,31 +115,32 @@ export const InvoiceListItem: React.FC<InvoiceListItemProps> = ({ invoice, onPre
 const styles = StyleSheet.create({
   card: {
     backgroundColor: '#FFFFFF',
-    borderRadius: 16,
+    borderRadius: 14,
     borderWidth: 1,
     borderColor: 'rgba(226, 232, 240, 0.8)',
-    padding: 13,
-    marginBottom: 10,
+    paddingVertical: 9,
+    paddingHorizontal: 12,
+    marginBottom: 7,
     flexDirection: 'row',
     alignItems: 'center',
     shadowColor: '#0F172A',
-    shadowOffset: { width: 0, height: 2 },
+    shadowOffset: { width: 0, height: 1 },
     shadowOpacity: 0.03,
-    shadowRadius: 6,
-    elevation: 2,
-    minHeight: 74,
+    shadowRadius: 4,
+    elevation: 1.5,
+    minHeight: 58,
   },
   centerCol: {
     flex: 1,
-    marginLeft: 12,
-    marginRight: 8,
+    marginLeft: 10,
+    marginRight: 6,
     justifyContent: 'center',
   },
   customerName: {
-    fontSize: 15,
+    fontSize: 14.5,
     fontWeight: '700',
     color: '#0F172A',
-    marginBottom: 3,
+    marginBottom: 1,
     letterSpacing: -0.2,
   },
   metaRow: {
@@ -148,7 +149,7 @@ const styles = StyleSheet.create({
     gap: 4,
   },
   invoiceNumber: {
-    fontSize: 12,
+    fontSize: 11.5,
     fontWeight: '600',
     color: '#64748B',
   },
@@ -157,7 +158,7 @@ const styles = StyleSheet.create({
     color: '#CBD5E1',
   },
   dateText: {
-    fontSize: 12,
+    fontSize: 11.5,
     color: '#94A3B8',
     fontWeight: '500',
   },
@@ -166,19 +167,19 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   amount: {
-    fontSize: 15,
+    fontSize: 14.5,
     fontWeight: '800',
     color: '#0F172A',
     letterSpacing: -0.3,
-    marginBottom: 3,
+    marginBottom: 2,
   },
   badgeWrapper: {
     marginTop: 1,
   },
   dueText: {
-    fontSize: 11,
+    fontSize: 10.5,
     fontWeight: '700',
-    marginTop: 3,
+    marginTop: 2,
   },
   dueTextOverdue: {
     color: '#BE123C',

@@ -5,8 +5,8 @@ import {
   StyleSheet,
   Animated,
   Dimensions,
+  Image,
 } from 'react-native';
-import { colors } from '../../theme/colors';
 
 const { width, height } = Dimensions.get('window');
 
@@ -15,107 +15,68 @@ interface SplashScreenProps {
 }
 
 export const SplashScreen: React.FC<SplashScreenProps> = ({ onFinish }) => {
-  const iconScale = useRef(new Animated.Value(0.3)).current;
-  const iconOpacity = useRef(new Animated.Value(0)).current;
-  const titleOpacity = useRef(new Animated.Value(0)).current;
-  const titleTranslateY = useRef(new Animated.Value(20)).current;
-  const taglineOpacity = useRef(new Animated.Value(0)).current;
+  const splashScale = useRef(new Animated.Value(0.85)).current;
+  const splashOpacity = useRef(new Animated.Value(0)).current;
+  const footerOpacity = useRef(new Animated.Value(0)).current;
 
   useEffect(() => {
     Animated.sequence([
-      // Icon appears with scale + fade
+      // 1. Splash image smoothly appears and scales to full size
       Animated.parallel([
-        Animated.spring(iconScale, {
+        Animated.spring(splashScale, {
           toValue: 1,
-          friction: 6,
-          tension: 50,
+          friction: 7,
+          tension: 40,
           useNativeDriver: true,
         }),
-        Animated.timing(iconOpacity, {
+        Animated.timing(splashOpacity, {
           toValue: 1,
-          duration: 400,
+          duration: 500,
           useNativeDriver: true,
         }),
       ]),
-      // Title slides up + fades in
-      Animated.parallel([
-        Animated.timing(titleOpacity, {
-          toValue: 1,
-          duration: 350,
-          useNativeDriver: true,
-        }),
-        Animated.timing(titleTranslateY, {
-          toValue: 0,
-          duration: 350,
-          useNativeDriver: true,
-        }),
-      ]),
-      // Tagline fades in
-      Animated.timing(taglineOpacity, {
+      // 2. Footer fades in
+      Animated.timing(footerOpacity, {
         toValue: 1,
-        duration: 300,
+        duration: 350,
         useNativeDriver: true,
       }),
-      // Hold
-      Animated.delay(600),
+      // 3. Display duration
+      Animated.delay(1200),
     ]).start(() => {
       onFinish();
     });
   }, []);
 
+  const imageSize = Math.min(width * 0.82, 380);
+
   return (
     <View style={styles.container}>
-      {/* Decorative background shapes */}
-      <View style={styles.bgShapeTopRight} />
-      <View style={styles.bgShapeBottomLeft} />
-      <View style={styles.bgShapeCenter} />
+      {/* Decorative ambient background glows */}
+      <View style={styles.bgGlowTop} />
+      <View style={styles.bgGlowBottom} />
 
-      <View style={styles.content}>
-        {/* Animated invoice icon */}
-        <Animated.View
-          style={[
-            styles.iconContainer,
-            {
-              opacity: iconOpacity,
-              transform: [{ scale: iconScale }],
-            },
-          ]}
-        >
-          <View style={styles.iconDocument}>
-            <View style={styles.iconDocumentInner}>
-              {/* Document lines */}
-              <View style={styles.iconLine1} />
-              <View style={styles.iconLine2} />
-              <View style={styles.iconLine3} />
-              {/* Green checkmark circle */}
-              <View style={styles.checkCircle}>
-                <Text style={styles.checkMark}>✓</Text>
-              </View>
-            </View>
-          </View>
-        </Animated.View>
+      {/* Centered Splash Image */}
+      <Animated.View
+        style={[
+          styles.imageWrapper,
+          {
+            opacity: splashOpacity,
+            transform: [{ scale: splashScale }],
+          },
+        ]}
+      >
+        <Image
+          source={require('../../../assets/splash-icon.png')}
+          style={{ width: imageSize, height: imageSize }}
+          resizeMode="contain"
+        />
+      </Animated.View>
 
-        {/* App Name */}
-        <Animated.View
-          style={{
-            opacity: titleOpacity,
-            transform: [{ translateY: titleTranslateY }],
-            alignItems: 'center',
-          }}
-        >
-          <Text style={styles.appNameBold}>Quick Invoice Maker</Text>
-        </Animated.View>
-
-        {/* Tagline */}
-        <Animated.View style={{ opacity: taglineOpacity, marginTop: 8 }}>
-          <Text style={styles.tagline}>Create Professional Invoices in Seconds</Text>
-        </Animated.View>
-      </View>
-
-      {/* Bottom branding */}
-      <Animated.View style={[styles.bottomBrand, { opacity: taglineOpacity }]}>
+      {/* Bottom Version Pill */}
+      <Animated.View style={[styles.bottomBrand, { opacity: footerOpacity }]}>
         <View style={styles.versionBadge}>
-          <Text style={styles.versionText}>v1.0 • Offline First</Text>
+          <Text style={styles.versionText}>⚡ Quick Invoice Maker • Fast & Offline</Text>
         </View>
       </Animated.View>
     </View>
@@ -125,150 +86,56 @@ export const SplashScreen: React.FC<SplashScreenProps> = ({ onFinish }) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#F8FAFC',
+    backgroundColor: '#FFFFFF',
     justifyContent: 'center',
     alignItems: 'center',
   },
-  content: {
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-
-  // Background decorative shapes
-  bgShapeTopRight: {
+  bgGlowTop: {
     position: 'absolute',
-    top: -60,
-    right: -40,
-    width: 220,
-    height: 220,
-    borderRadius: 110,
-    backgroundColor: '#ECFDF5',
-    opacity: 0.8,
-  },
-  bgShapeBottomLeft: {
-    position: 'absolute',
-    bottom: -80,
-    left: -50,
+    top: -80,
+    right: -60,
     width: 260,
     height: 260,
     borderRadius: 130,
-    backgroundColor: '#F0FDF4',
-    opacity: 0.8,
-  },
-  bgShapeCenter: {
-    position: 'absolute',
-    top: height * 0.15,
-    left: -20,
-    width: 140,
-    height: 140,
-    borderRadius: 70,
     backgroundColor: '#ECFDF5',
-    opacity: 0.6,
+    opacity: 0.7,
   },
-
-  // Icon
-  iconContainer: {
-    marginBottom: 32,
-  },
-  iconDocument: {
-    width: 104,
-    height: 124,
-    backgroundColor: '#FFFFFF',
-    borderRadius: 20,
-    borderWidth: 2,
-    borderColor: '#A7F3D0',
-    padding: 18,
-    justifyContent: 'center',
-    alignItems: 'center',
-    position: 'relative',
-    shadowColor: '#10B981',
-    shadowOffset: { width: 0, height: 8 },
-    shadowOpacity: 0.15,
-    shadowRadius: 16,
-    elevation: 6,
-  },
-  iconDocumentInner: {
-    width: '100%',
-    alignItems: 'flex-start',
-  },
-  iconLine1: {
-    width: '80%',
-    height: 6,
-    backgroundColor: '#A7F3D0',
-    borderRadius: 3,
-    marginBottom: 10,
-  },
-  iconLine2: {
-    width: '60%',
-    height: 6,
-    backgroundColor: '#E2E8F0',
-    borderRadius: 3,
-    marginBottom: 10,
-  },
-  iconLine3: {
-    width: '70%',
-    height: 6,
-    backgroundColor: '#E2E8F0',
-    borderRadius: 3,
-  },
-  checkCircle: {
+  bgGlowBottom: {
     position: 'absolute',
-    bottom: -8,
-    right: -12,
-    width: 34,
-    height: 34,
-    borderRadius: 17,
-    backgroundColor: '#10B981',
+    bottom: -100,
+    left: -80,
+    width: 300,
+    height: 300,
+    borderRadius: 150,
+    backgroundColor: '#F0FDF4',
+    opacity: 0.7,
+  },
+  imageWrapper: {
     alignItems: 'center',
     justifyContent: 'center',
-    borderWidth: 3,
-    borderColor: '#FFFFFF',
-    shadowColor: '#10B981',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.3,
-    shadowRadius: 4,
-    elevation: 3,
   },
-  checkMark: {
-    color: '#FFFFFF',
-    fontSize: 16,
-    fontWeight: '800',
-  },
-
-  appNameBold: {
-    fontSize: 28,
-    fontWeight: '800',
-    color: '#0F172A',
-    textAlign: 'center',
-    letterSpacing: -0.5,
-    marginBottom: 4,
-  },
-  tagline: {
-    fontSize: 14,
-    fontWeight: '500',
-    color: '#64748B',
-    textAlign: 'center',
-    letterSpacing: 0.1,
-  },
-
-  // Bottom
   bottomBrand: {
     position: 'absolute',
-    bottom: 40,
+    bottom: 36,
     alignItems: 'center',
   },
   versionBadge: {
-    backgroundColor: '#ECFDF5',
+    backgroundColor: '#F0FDF4',
     borderWidth: 1,
-    borderColor: '#A7F3D0',
-    paddingHorizontal: 12,
-    paddingVertical: 5,
-    borderRadius: 12,
+    borderColor: '#BBF7D0',
+    paddingHorizontal: 14,
+    paddingVertical: 6,
+    borderRadius: 20,
+    shadowColor: '#10B981',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.06,
+    shadowRadius: 6,
+    elevation: 1,
   },
   versionText: {
-    fontSize: 11,
+    fontSize: 12,
     fontWeight: '700',
-    color: '#047857',
+    color: '#059669',
+    letterSpacing: 0.2,
   },
 });
-

@@ -466,8 +466,8 @@ const styles = StyleSheet.create({
     color: '#0F172A',
   },
   sectionContainer: {
-    marginTop: 6,
-    marginBottom: 12,
+    marginTop: 4,
+    marginBottom: 8,
   },
   emptyUpcomingCard: {
     backgroundColor: '#FFFFFF',
